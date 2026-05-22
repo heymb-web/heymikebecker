@@ -1,0 +1,78 @@
+============================================================
+  MIKE BECKER SITE — EDIT THIS FILE TO UPDATE THE SITE
+============================================================
+
+Every editable thing on the site lives in this file.
+Edit the values, save, commit. Site updates in ~1 minute.
+
+Format: each line is "FIELD = VALUE". Anything after a # is
+a comment. Blank lines are ignored. Order doesn't matter.
+
+
+============================================================
+  IDENTITY
+============================================================
+
+NAME    = Mike Becker
+EMAIL   = hello@mikebecker.com
+
+
+============================================================
+  HERO REEL
+============================================================
+
+# The video that autoplays at the top of the site.
+# Drop the file into media/reel/ and write its filename here.
+
+REEL_FILE = reel.mp4
+
+
+============================================================
+  TILE 1
+============================================================
+
+# Drop the video into media/tile-1/ and write its filename here.
+# TILE_1_TITLE is the title shown when the user hovers the tile.
+
+TILE_1_FILE  = tile-1.mp4
+TILE_1_TITLE = Night Bloom
+
+
+============================================================
+  TILE 2
+============================================================
+
+TILE_2_FILE  = tile-2.mp4
+TILE_2_TITLE = Wide Open
+
+
+============================================================
+  TILE 3
+============================================================
+
+TILE_3_FILE  = tile-3.mp4
+TILE_3_TITLE = Project Three
+
+
+============================================================
+  TILE 4
+============================================================
+
+TILE_4_FILE  = tile-4.mp4
+TILE_4_TITLE = Project Four
+
+
+============================================================
+  TILE 5
+============================================================
+
+TILE_5_FILE  = tile-5.mp4
+TILE_5_TITLE = Project Five
+
+
+============================================================
+  TILE 6
+============================================================
+
+TILE_6_FILE  = tile-6.mp4
+TILE_6_TITLE = Project Six
