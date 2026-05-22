@@ -459,6 +459,13 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .grid-row.row-asym .tile:nth-child(2) .tile-media {
     aspect-ratio: 4 / 5;
   }
+  /* Full-width closer row: a single cinematic 2.39:1 tile that acts
+     as the punctuation at the end of the work grid. Wider than the
+     16:9 tiles above so the closer is visually distinct, not just
+     "the same tile bigger." */
+  .row-1 .tile-media {
+    aspect-ratio: 2.39 / 1;
+  }
 }
 
 .tile {
@@ -610,16 +617,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   display: inline-block;
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 18;
-  font-weight: 500;
-  font-size: clamp(15px, 1.1vw, 18px);
-  letter-spacing: 0;
+  /* Match the brand/menu treatment: uppercase, weight 600, positive
+     tracking. Tile titles read as the same family of marks as the
+     wordmark and menu items, not as a separate label system. */
+  font-weight: 600;
+  font-size: clamp(18px, 1.5vw, 24px);
+  letter-spacing: 0.04em;
   line-height: 1;
-  /* Plain sentence case to match the menu treatment. */
-  text-transform: none;
-  /* Pure white text plus mix-blend-mode: difference makes the title
-     auto-invert against whatever pixel is behind it. Always readable,
-     never disappears, picks up the inverse color of the underlying
-     image. The Park Pictures effect. */
+  text-transform: uppercase;
+  /* Pure white + mix-blend-mode: difference makes the title auto-invert
+     against whatever pixel is behind it. Always readable. */
   color: #fff;
   mix-blend-mode: difference;
   transform: translateY(105%);
@@ -706,6 +713,99 @@ body.intro-handoff .menu-wrap {
   body.intro-active { overflow: auto !important; }
 }
 
+/* ====== LIGHTBOX ======
+   Full-screen overlay for project playback. Sits above everything,
+   centers the player, dims the page behind. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(8, 7, 5, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(40px, 5vw, 80px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms cubic-bezier(.22,.61,.36,1);
+}
+.lightbox.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+body.lightbox-open { overflow: hidden; }
+
+.lightbox-frame {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.4vw, 22px);
+  transform: translateY(20px);
+  transition: transform 380ms cubic-bezier(.22,.61,.36,1);
+}
+.lightbox.open .lightbox-frame { transform: translateY(0); }
+
+.lightbox-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.lightbox-title {
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 24;
+  font-weight: 600;
+  font-size: clamp(18px, 1.6vw, 26px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+}
+
+.lightbox-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: clamp(6px, 0.7vw, 10px);
+  overflow: hidden;
+}
+.lightbox-player video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
+}
+
+/* Close button — top-right corner, X icon */
+.lightbox-close {
+  position: absolute;
+  top: clamp(20px, 2vw, 32px);
+  right: clamp(20px, 2vw, 32px);
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  z-index: 510;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lightbox-close-line {
+  position: absolute;
+  width: 22px;
+  height: 1.5px;
+  background: #fff;
+  transition: background 200ms ease;
+}
+.lightbox-close-line:nth-child(1) { transform: rotate(45deg); }
+.lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
+.lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
+
 </style>
 </head>
 <body class="intro-active">
@@ -774,26 +874,26 @@ body.intro-handoff .menu-wrap {
 
   <section class="grid" id="work">
 
-    <!-- To swap projects: rename the title text and drop media/01.mp4
-         through media/06.mp4. That's it. The first frame is used as the
-         still automatically, and the loop starts when the tile scrolls
-         into view. -->
+    <!-- 2 + 2 + 1 layout:
+         Row 1: asymmetric (landscape + portrait) — opens the work
+         Row 2: two equal 16:9 tiles — the body
+         Row 3: full-width closer — the punctuation. -->
 
     <div class="grid-row row-2 row-asym">
-      <a class="tile t1" href="#">
+      <a class="tile t1" href="#" data-slot="1">
         <div class="tile-media">
           <div class="tile-ph" aria-hidden="true"></div>
           <video data-cfg-video="1" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/01.mp4" type="video/mp4">
+            <source src="media/tile-1/tile-1.mp4" type="video/mp4">
           </video>
         </div>
         <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="1">Night Bloom</span></span></div>
       </a>
-      <a class="tile t2" href="#">
+      <a class="tile t2" href="#" data-slot="2">
         <div class="tile-media">
           <div class="tile-ph" aria-hidden="true"></div>
           <video data-cfg-video="2" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/02.mp4" type="video/mp4">
+            <source src="media/tile-2/tile-2.mp4" type="video/mp4">
           </video>
         </div>
         <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="2">Wide Open</span></span></div>
@@ -801,50 +901,60 @@ body.intro-handoff .menu-wrap {
     </div>
 
     <div class="grid-row row-2">
-      <a class="tile t3" href="#">
+      <a class="tile t3" href="#" data-slot="3">
         <div class="tile-media">
           <div class="tile-ph" aria-hidden="true"></div>
           <video data-cfg-video="3" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/03.mp4" type="video/mp4">
+            <source src="media/tile-3/tile-3.mp4" type="video/mp4">
           </video>
         </div>
         <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="3">East Side</span></span></div>
       </a>
-      <a class="tile t4" href="#">
+      <a class="tile t4" href="#" data-slot="4">
         <div class="tile-media">
           <div class="tile-ph" aria-hidden="true"></div>
           <video data-cfg-video="4" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/04.mp4" type="video/mp4">
+            <source src="media/tile-4/tile-4.mp4" type="video/mp4">
           </video>
         </div>
         <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="4">Blue Hour</span></span></div>
       </a>
     </div>
 
-    <div class="grid-row row-2">
-      <a class="tile t5" href="#">
+    <div class="grid-row row-1">
+      <a class="tile t5 t-wide" href="#" data-slot="5">
         <div class="tile-media">
           <div class="tile-ph" aria-hidden="true"></div>
           <video data-cfg-video="5" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/05.mp4" type="video/mp4">
+            <source src="media/tile-5/tile-5.mp4" type="video/mp4">
           </video>
         </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="5">Soft Focus</span></span></div>
-      </a>
-      <a class="tile t6" href="#">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="6" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/06.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="6">The Long Take</span></span></div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="5">The Long Take</span></span></div>
       </a>
     </div>
 
   </section>
 
 </main>
+
+<!-- ====== PROJECT LIGHTBOX ======
+     Opens when a tile is clicked. Plays the full project video from
+     the matching media/tile-N/ folder. Closes on Escape, click outside
+     the player, or the close button. -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">
+    <span class="lightbox-close-line"></span>
+    <span class="lightbox-close-line"></span>
+  </button>
+  <div class="lightbox-frame">
+    <div class="lightbox-meta">
+      <h3 class="lightbox-title" id="lightboxTitle"></h3>
+    </div>
+    <div class="lightbox-player">
+      <video id="lightboxVideo" controls playsinline preload="metadata"></video>
+    </div>
+  </div>
+</div>
 
 <script>
   // ====== CONTENT LOADER ======
@@ -932,9 +1042,10 @@ body.intro-handoff .menu-wrap {
         }
       }
 
-      // Tile slots 1-6 — file and title are separate, explicit fields
+      // Tile slots 1-5 — file (hover loop), full (lightbox video), title
       for (let slot = 1; slot <= 6; slot++) {
         const file = cfg[`TILE_${slot}_FILE`] || cfg[String(slot)];
+        const full = cfg[`TILE_${slot}_FULL`];
         const title = cfg[`TILE_${slot}_TITLE`];
 
         if (file) {
@@ -945,6 +1056,15 @@ body.intro-handoff .menu-wrap {
             if (source) source.setAttribute('src', src);
             else v.setAttribute('src', src);
             try { v.load(); } catch (e) {}
+          }
+        }
+
+        // Store full-project video path on the tile element so the
+        // click handler can find it without re-parsing the config.
+        if (full) {
+          const tile = document.querySelector('.tile[data-slot="' + slot + '"]');
+          if (tile) {
+            tile.setAttribute('data-full', 'media/tile-' + slot + '/' + encodeURI(full));
           }
         }
 
@@ -1068,9 +1188,16 @@ body.intro-handoff .menu-wrap {
 
     // === Arm interaction listeners + fallback ===
     // Hold state: reel plays, big wordmark stays. Interaction (or
-    // 6s timeout) triggers handoff to small wordmark + menu.
+    // timeout after actual playback begins) triggers handoff to
+    // small wordmark + menu.
+    //
+    // The fallback timer starts on the actual 'playing' event, not on
+    // play() being called — the gap between those two events can be
+    // 100-500ms, and counting from play() would shorten the visible
+    // hold time.
     const FALLBACK_MS = 6000;
     let triggered = false;
+    let fallbackTimer = null;
     function handoff() {
       if (triggered) return;
       triggered = true;
@@ -1091,7 +1218,24 @@ body.intro-handoff .menu-wrap {
     const events = ['scroll', 'wheel', 'click', 'touchstart',
                     'keydown', 'mousemove'];
     events.forEach(e => window.addEventListener(e, handoff, { capture: true, passive: true, once: false }));
-    const fallbackTimer = setTimeout(handoff, FALLBACK_MS);
+
+    // Start the fallback timer the moment the video genuinely starts
+    // rendering motion, not when play() is called.
+    function startFallback() {
+      if (fallbackTimer) return;
+      fallbackTimer = setTimeout(handoff, FALLBACK_MS);
+    }
+    if (heroVideo) {
+      if (!heroVideo.paused && heroVideo.currentTime > 0) {
+        startFallback();
+      } else {
+        heroVideo.addEventListener('playing', startFallback, { once: true });
+        // Safety net: if 'playing' never fires, start the timer after 2s
+        setTimeout(startFallback, 2000);
+      }
+    } else {
+      startFallback();
+    }
   })();
 
   // Pause the hero video when the tab is hidden, resume when it returns.
@@ -1102,6 +1246,66 @@ body.intro-handoff .menu-wrap {
     if (document.hidden) v.pause();
     else v.play().catch(() => {});
   });
+
+  // ====== PROJECT LIGHTBOX ======
+  // Click any tile -> open lightbox with the full project video.
+  // Close via the X button, click on backdrop, or Escape key.
+  (function setupLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxVideo = document.getElementById('lightboxVideo');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxClose = document.getElementById('lightboxClose');
+    if (!lightbox || !lightboxVideo) return;
+
+    function open(fullSrc, title) {
+      if (!fullSrc) return;
+      lightboxVideo.src = fullSrc;
+      lightboxTitle.textContent = title || '';
+      lightbox.classList.add('open');
+      document.body.classList.add('lightbox-open');
+      lightbox.setAttribute('aria-hidden', 'false');
+      // Play once visible. Browser may block autoplay without user
+      // gesture; the click on the tile counts as a gesture so this
+      // usually succeeds.
+      setTimeout(() => {
+        lightboxVideo.play().catch(() => {});
+      }, 100);
+    }
+
+    function close() {
+      lightbox.classList.remove('open');
+      document.body.classList.remove('lightbox-open');
+      lightbox.setAttribute('aria-hidden', 'true');
+      lightboxVideo.pause();
+      // Clear src after the close transition so the video stops
+      // downloading in the background.
+      setTimeout(() => {
+        lightboxVideo.removeAttribute('src');
+        lightboxVideo.load();
+      }, 400);
+    }
+
+    // Wire click on every tile
+    document.querySelectorAll('.tile[data-slot]').forEach(tile => {
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fullSrc = tile.getAttribute('data-full');
+        const titleEl = tile.querySelector('.tile-overlay-title');
+        const title = titleEl ? titleEl.textContent.trim() : '';
+        if (fullSrc) open(fullSrc, title);
+      });
+    });
+
+    // Close interactions
+    lightboxClose.addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+      // Click on the backdrop (not on the frame or its children) closes
+      if (e.target === lightbox) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lightbox.classList.contains('open')) close();
+    });
+  })();
 
   // Menu toggle
   const wrap = document.getElementById('menuWrap');

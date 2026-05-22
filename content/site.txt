@@ -28,22 +28,25 @@ REEL_FILE = reel.mp4
 
 
 ============================================================
-  TILE 1
+  TILE 1  (landscape — opens the work)
 ============================================================
 
-# Drop the video into media/tile-1/ and write its filename here.
-# TILE_1_TITLE is the title shown when the user hovers the tile.
+# TILE_N_FILE  = the short hover loop (3-5 seconds, plays on hover)
+# TILE_N_FULL  = the full project video (plays in the lightbox on click)
+# TILE_N_TITLE = the project name
 
 TILE_1_FILE  = tile-1.mp4
-TILE_1_TITLE = Night Bloom
+TILE_1_FULL  = tile-1-full.mp4
+TILE_1_TITLE = Smoke
 
 
 ============================================================
-  TILE 2
+  TILE 2  (portrait — paired with tile 1)
 ============================================================
 
 TILE_2_FILE  = tile-2.mp4
-TILE_2_TITLE = Wide Open
+TILE_2_FULL  = tile-2-full.mp4
+TILE_2_TITLE = Born in Baltimore
 
 
 ============================================================
@@ -51,7 +54,8 @@ TILE_2_TITLE = Wide Open
 ============================================================
 
 TILE_3_FILE  = tile-3.mp4
-TILE_3_TITLE = Project Three
+TILE_3_FULL  = tile-3-full.mp4
+TILE_3_TITLE = Rab — NetPlus x Microlight
 
 
 ============================================================
@@ -59,20 +63,14 @@ TILE_3_TITLE = Project Three
 ============================================================
 
 TILE_4_FILE  = tile-4.mp4
-TILE_4_TITLE = Project Four
+TILE_4_FULL  = tile-4-full.mp4
+TILE_4_TITLE = Blue Hour
 
 
 ============================================================
-  TILE 5
+  TILE 5  (full-width closer — strongest piece goes here)
 ============================================================
 
 TILE_5_FILE  = tile-5.mp4
-TILE_5_TITLE = Project Five
-
-
-============================================================
-  TILE 6
-============================================================
-
-TILE_6_FILE  = tile-6.mp4
-TILE_6_TITLE = Project Six
+TILE_5_FULL  = tile-5-full.mp4
+TILE_5_TITLE = The Long Take
