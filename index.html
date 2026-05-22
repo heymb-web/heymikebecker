@@ -132,54 +132,34 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: #fff;
 }
 
-/* Secondary text revealed on brand hover. Hidden by default with
-   opacity and a small left offset; slides in and fades up on hover.
-   Tuned to feel like a small reward for paying attention to the
-   wordmark, not a permanent piece of chrome. */
-/* Bracket-frame reveal on brand hover. The square brackets fade in
-   first, then the text inside fills out left-to-right (via a
-   max-width transition with overflow hidden, which clips the text
-   from the right edge as it expands). Reads as a quiet typographic
-   signature framed like a citation. */
+/* Brand-sub reveal — a quiet fade-in on hover. The full label
+   "[ Director · Cinematographer ]" appears together as one piece,
+   no stagger, no slide. Treats the secondary text as supplementary
+   information that reveals when the wordmark is attended to. */
 .brand-sub {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.35em;
+  gap: 0.4em;
   margin-left: clamp(10px, 0.8vw, 16px);
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 18;
   font-weight: 400;
   font-size: clamp(11px, 0.8vw, 13px);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.65);
   pointer-events: none;
   line-height: 1;
   white-space: nowrap;
-}
-.brand-sub-bracket {
   opacity: 0;
-  transition: opacity 220ms cubic-bezier(.22,.61,.36,1);
+  transition: opacity 420ms cubic-bezier(.22,.61,.36,1);
 }
-.brand-sub-text {
-  display: inline-block;
-  overflow: hidden;
-  max-width: 0;
-  /* Width animates open after the brackets land. Use a generous
-     max-width target so any length of text fits. */
-  transition: max-width 520ms cubic-bezier(.22,.61,.36,1);
+.brand-sub-bracket,
+.brand-sub-dot {
+  color: rgba(255, 255, 255, 0.4);
 }
-.brand:hover .brand-sub-bracket-l {
+.brand:hover .brand-sub {
   opacity: 1;
-  transition-delay: 0ms;
-}
-.brand:hover .brand-sub-bracket-r {
-  opacity: 1;
-  transition-delay: 80ms;
-}
-.brand:hover .brand-sub-text {
-  max-width: 30em;
-  transition-delay: 160ms;
 }
 
 /* ======================================================
@@ -662,14 +642,16 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 
 body.intro-active { overflow: hidden; }
 
-/* Rack focus intro. The poster image is blurred until intro-active
-   is removed; then it racks to focus over 400ms. */
+/* The intro: blurred and zoomed-in poster, snaps to sharp + normal
+   scale in a single 150ms cubic motion. Both filter and transform
+   transition together — reads as one decisive snap, not two cues. */
 body.intro-active .hero-inner {
   filter: blur(28px) saturate(0.95) brightness(0.98);
-  transition: filter 400ms cubic-bezier(.65,0,.35,1);
+  transform: scale(1.07);
 }
 .hero-inner {
-  transition: filter 400ms cubic-bezier(.65,0,.35,1);
+  transition: filter 150ms cubic-bezier(.65,0,.35,1),
+              transform 150ms cubic-bezier(.65,0,.35,1);
 }
 
 /* Large wordmark that sits in the upper-left during the intro
@@ -739,9 +721,11 @@ body.intro-handoff .menu-wrap {
   <a href="#top" class="brand" aria-label="Home">
     <span class="brand-name" data-cfg="name">Mike Becker</span>
     <span class="brand-sub" aria-hidden="true">
-      <span class="brand-sub-bracket brand-sub-bracket-l">[</span>
-      <span class="brand-sub-text">Director&nbsp;·&nbsp;Cinematographer</span>
-      <span class="brand-sub-bracket brand-sub-bracket-r">]</span>
+      <span class="brand-sub-item brand-sub-bracket">[</span>
+      <span class="brand-sub-item">Director</span>
+      <span class="brand-sub-item brand-sub-dot">·</span>
+      <span class="brand-sub-item">Cinematographer</span>
+      <span class="brand-sub-item brand-sub-bracket">]</span>
     </span>
   </a>
 
@@ -1005,10 +989,6 @@ body.intro-handoff .menu-wrap {
     const introMark = document.getElementById('introMark');
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // The poster image (poster.jpg) loads with the page and is visible
-    // immediately, blurred by the CSS body.intro-active rule. No need
-    // to wait for anything before starting the timeline.
-
     if (reduced) {
       document.body.classList.remove('intro-active');
       if (introMark && introMark.parentNode) introMark.remove();
@@ -1018,43 +998,100 @@ body.intro-handoff .menu-wrap {
       return;
     }
 
-    // === Timeline ===
-    //   0–1000ms       Blurred poster on screen. Big wordmark visible.
-    //   1000–1400ms    Focus snap (CSS unblurs).
-    //   1400–1600ms    Sharp still, breath.
-    //   1600ms         Video plays, poster fades out.
-    //   2100ms         Big wordmark dissolves.
-    //   ~2500ms        Small nav brand drops in.
-    const BLUR_HOLD   = 1000;
-    const FOCUS_TRANS = 400;
-    const STILL_HOLD  = 200;
-    const PLAY_HOLD   = 500;
-    const HANDOFF     = 400;
-    const HANDOFF_PAUSE = 180;
+    // === Adaptive intro ===
+    // The three beats (blur, snap, still, play) are tied to video buffer
+    // progress, not fixed timers. The blur holds while the video loads
+    // its first frame; the snap fires when the first frame is paintable
+    // (readyState >= 2 = HAVE_CURRENT_DATA); the still holds while the
+    // video buffers enough for smooth playback; playback starts when
+    // readyState >= 4 = HAVE_ENOUGH_DATA.
+    //
+    // Each phase has a MIN floor (so the aesthetic beat always reads)
+    // and a MAX ceiling (so a slow connection never feels broken).
+    const BLUR_MIN  = 1000;
+    const BLUR_MAX  = 5000;
+    const STILL_MIN = 1000;
+    const STILL_MAX = 5000;
 
-    setTimeout(() => {
-      document.body.classList.remove('intro-active');
-      document.body.classList.add('intro-handoff');
-    }, BLUR_HOLD);
+    function waitForReadyState(target, maxWait) {
+      return new Promise(resolve => {
+        if (!heroVideo) return resolve();
+        if (heroVideo.readyState >= target) return resolve();
+        let done = false;
+        const finish = () => { if (!done) { done = true; cleanup(); resolve(); } };
+        const check = () => { if (heroVideo.readyState >= target) finish(); };
+        const onProgress = () => check();
+        const cleanup = () => {
+          heroVideo.removeEventListener('loadeddata', onProgress);
+          heroVideo.removeEventListener('canplay', onProgress);
+          heroVideo.removeEventListener('canplaythrough', onProgress);
+          heroVideo.removeEventListener('progress', onProgress);
+          if (interval) clearInterval(interval);
+          if (timeout) clearTimeout(timeout);
+        };
+        heroVideo.addEventListener('loadeddata', onProgress);
+        heroVideo.addEventListener('canplay', onProgress);
+        heroVideo.addEventListener('canplaythrough', onProgress);
+        heroVideo.addEventListener('progress', onProgress);
+        const interval = setInterval(check, 100);
+        const timeout = setTimeout(finish, maxWait);
+      });
+    }
 
-    setTimeout(async () => {
-      await contentReady;
-      if (heroVideo) heroVideo.play().catch(() => {});
-      if (heroPoster) heroPoster.classList.add('gone');
-    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD);
+    // === Phase 1: blur ===
+    // Hold the blur until the video has its first frame (readyState >= 2)
+    // OR the minimum aesthetic time has passed, whichever is later.
+    // Also enforce a max so slow connections don't sit blurry forever.
+    const blurStart = performance.now();
+    await Promise.all([
+      waitForReadyState(2, BLUR_MAX),
+      new Promise(r => setTimeout(r, BLUR_MIN)),
+    ]);
 
-    setTimeout(() => {
+    // === Snap ===
+    // The 150ms CSS transition triggers when we remove intro-active.
+    document.body.classList.remove('intro-active');
+    document.body.classList.add('intro-handoff');
+    await new Promise(r => setTimeout(r, 150)); // wait for CSS snap to finish
+
+    // === Phase 2: still ===
+    // Hold the sharp still while the video buffers enough for smooth
+    // playback (readyState >= 4). Same min/max guard rails.
+    await Promise.all([
+      waitForReadyState(4, STILL_MAX),
+      new Promise(r => setTimeout(r, STILL_MIN)),
+    ]);
+
+    // === Play ===
+    if (heroVideo) heroVideo.play().catch(() => {});
+    if (heroPoster) heroPoster.classList.add('gone');
+
+    // === Arm interaction listeners + fallback ===
+    // Hold state: reel plays, big wordmark stays. Interaction (or
+    // 6s timeout) triggers handoff to small wordmark + menu.
+    const FALLBACK_MS = 6000;
+    let triggered = false;
+    function handoff() {
+      if (triggered) return;
+      triggered = true;
+
       if (introMark) introMark.classList.add('gone');
-    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD);
+      setTimeout(() => {
+        document.body.classList.remove('intro-handoff');
+      }, 350);
+      setTimeout(() => {
+        if (introMark && introMark.parentNode) introMark.remove();
+        if (heroPoster && heroPoster.parentNode) heroPoster.remove();
+      }, 1200);
 
-    setTimeout(() => {
-      document.body.classList.remove('intro-handoff');
-    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD + HANDOFF + HANDOFF_PAUSE);
+      events.forEach(e => window.removeEventListener(e, handoff, true));
+      if (fallbackTimer) clearTimeout(fallbackTimer);
+    }
 
-    setTimeout(() => {
-      if (introMark && introMark.parentNode) introMark.remove();
-      if (heroPoster && heroPoster.parentNode) heroPoster.remove();
-    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD + HANDOFF + HANDOFF_PAUSE + 800);
+    const events = ['scroll', 'wheel', 'click', 'touchstart',
+                    'keydown', 'mousemove'];
+    events.forEach(e => window.addEventListener(e, handoff, { capture: true, passive: true, once: false }));
+    const fallbackTimer = setTimeout(handoff, FALLBACK_MS);
   })();
 
   // Pause the hero video when the tab is hidden, resume when it returns.
