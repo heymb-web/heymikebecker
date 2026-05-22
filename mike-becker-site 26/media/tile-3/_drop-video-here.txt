@@ -1,0 +1,2 @@
+Drop your video file (.mp4) into this folder.
+Then go to content/videos.txt and write its filename.

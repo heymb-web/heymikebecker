@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>MIKE BECKER / DIRECTOR / CINEMATOGRAPHER / LOS ANGELES</title>
+<meta name="description" content="Mike Becker. Director and cinematographer based in Los Angeles." />
+<meta name="theme-color" content="#0C0B09" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet" />
+
+<style>
+/* ======================================================
+   TOKENS
+====================================================== */
+:root {
+  --bg:     #0C0B09;
+  --bg-2:   #131210;
+  --fg:     #EDE6D8;
+  --fg-dim: #B6AF9F;
+  --muted:  #6A655B;
+  --line:   rgba(237, 230, 216, 0.10);
+  /* Header background when locked to the page (panel area). 80% opacity
+     so the underlying page color shows through subtly. */
+  --nav-bg: rgba(12, 11, 9, 0.80);
+
+  /* Horizontal gutter for tile gaps and section padding. Smaller,
+     so tiles can sit close together. */
+  --edge: clamp(8px, 1vw, 14px);
+
+  /* Larger gutter just for the nav (brand and burger breathing room
+     from the page edges). Doesn't affect tile spacing. */
+  --nav-edge: clamp(16px, 1.8vw, 28px);
+
+  /* Height of the fixed nav bar at the top. Used to push the hero
+     and any sticky content down by this amount so they don't sit
+     behind the nav. */
+  --nav-h: 60px;
+
+  --buffer: 15vh;
+
+  --t-fast: 220ms cubic-bezier(.22,.61,.36,1);
+  --t-mid:  420ms cubic-bezier(.22,.61,.36,1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* No top padding: the nav floats transparently over the hero
+     using mix-blend-mode: difference. The hero begins at y=0. */
+}
+a { color: inherit; text-decoration: none; }
+img, video { display: block; max-width: 100%; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
+
+/* ======================================================
+   GRAIN
+====================================================== */
+.grain {
+  position: fixed; inset: -50%;
+  width: 200%; height: 200%;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
+  animation: grainShift 7s steps(8) infinite;
+}
+@keyframes grainShift {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-3%, 4%); }
+  40%  { transform: translate(5%, -2%); }
+  60%  { transform: translate(-4%, -3%); }
+  80%  { transform: translate(2%, 5%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ======================================================
+   NAV — uses --edge for left/right padding so the brand
+   sits on the same left axis as "Selected Works" and the grid.
+====================================================== */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 200;
+  height: var(--nav-h);
+  padding: 0 var(--nav-edge);
+  display: flex; align-items: center; justify-content: space-between;
+  /* Transparent: the nav floats over the content. Text uses
+     mix-blend-mode: difference so it adapts per-pixel to whatever
+     is behind it — reads white on dark, dark on light. Park
+     Pictures and similar high-end commercial sites use this so
+     chrome doesn't fight the work. */
+  background: transparent;
+  mix-blend-mode: difference;
+  pointer-events: none;
+}
+/* Restore clickability for the actual links inside the nav. */
+.nav a,
+.nav button,
+.nav .menu-wrap {
+  pointer-events: auto;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  gap: 0.5em;
+  position: relative;
+}
+.brand-name {
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 32;
+  /* Uppercase, slightly bolder, mild positive tracking. Matches the
+     Park Pictures treatment — confident, declarative, masthead. */
+  font-weight: 600;
+  font-size: clamp(18px, 1.4vw, 22px);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: #fff;
+}
+
+/* Secondary text revealed on brand hover. Hidden by default with
+   opacity and a small left offset; slides in and fades up on hover.
+   Tuned to feel like a small reward for paying attention to the
+   wordmark, not a permanent piece of chrome. */
+/* Bracket-frame reveal on brand hover. The square brackets fade in
+   first, then the text inside fills out left-to-right (via a
+   max-width transition with overflow hidden, which clips the text
+   from the right edge as it expands). Reads as a quiet typographic
+   signature framed like a citation. */
+.brand-sub {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35em;
+  margin-left: clamp(10px, 0.8vw, 16px);
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 18;
+  font-weight: 400;
+  font-size: clamp(11px, 0.8vw, 13px);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+  pointer-events: none;
+  line-height: 1;
+  white-space: nowrap;
+}
+.brand-sub-bracket {
+  opacity: 0;
+  transition: opacity 220ms cubic-bezier(.22,.61,.36,1);
+}
+.brand-sub-text {
+  display: inline-block;
+  overflow: hidden;
+  max-width: 0;
+  /* Width animates open after the brackets land. Use a generous
+     max-width target so any length of text fits. */
+  transition: max-width 520ms cubic-bezier(.22,.61,.36,1);
+}
+.brand:hover .brand-sub-bracket-l {
+  opacity: 1;
+  transition-delay: 0ms;
+}
+.brand:hover .brand-sub-bracket-r {
+  opacity: 1;
+  transition-delay: 80ms;
+}
+.brand:hover .brand-sub-text {
+  max-width: 30em;
+  transition-delay: 160ms;
+}
+
+/* ======================================================
+   MENU
+====================================================== */
+.menu-wrap { display: flex; align-items: center; gap: 14px; }
+
+.menu-stack {
+  position: relative;
+  height: clamp(14px, 1.05vw, 17px);
+  /* No fixed width and no overflow clipping. The menu items are
+     absolutely positioned to the right and pre-laid out; they just
+     toggle visibility via opacity, not width. */
+}
+
+.menu-label,
+.menu {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 18;
+  font-size: clamp(15px, 1.1vw, 18px);
+  font-weight: 500;
+  letter-spacing: 0;
+  /* Plain sentence case as written in the HTML: "Home", "Work",
+     "About", "Contact". No caps transformation. */
+  text-transform: none;
+  color: #fff;
+  line-height: 1;
+}
+
+/* "MENU" label fades out as items fade in. */
+.menu-label {
+  opacity: 1;
+  transition: opacity 200ms cubic-bezier(.22,.61,.36,1);
+}
+.menu-wrap.open .menu-label { opacity: 0; }
+
+.menu {
+  gap: 14px;
+  pointer-events: none;
+}
+.menu-wrap.open .menu { pointer-events: auto; }
+
+/* Each child of .menu (links + separators) slides in from a small
+   right offset while fading in. Stagger goes right-to-left so the
+   rightmost item moves first and the leftmost last. */
+.menu > * {
+  opacity: 0;
+  transform: translateX(14px);
+  transition: opacity 480ms cubic-bezier(.22,.61,.36,1),
+              transform 520ms cubic-bezier(.22,.61,.36,1);
+}
+.menu-wrap.open .menu > * {
+  opacity: 1;
+  transform: translateX(0);
+}
+.menu-wrap.open .menu > *:nth-child(7) { transition-delay: 60ms; }
+.menu-wrap.open .menu > *:nth-child(6) { transition-delay: 110ms; }
+.menu-wrap.open .menu > *:nth-child(5) { transition-delay: 160ms; }
+.menu-wrap.open .menu > *:nth-child(4) { transition-delay: 210ms; }
+.menu-wrap.open .menu > *:nth-child(3) { transition-delay: 260ms; }
+.menu-wrap.open .menu > *:nth-child(2) { transition-delay: 310ms; }
+.menu-wrap.open .menu > *:nth-child(1) { transition-delay: 360ms; }
+
+.menu .sep {
+  color: rgba(255, 255, 255, 0.35);
+  user-select: none;
+  font-style: normal;
+}
+
+.menu a {
+  position: relative;
+  padding: 2px 0;
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
+  transition:
+    opacity 480ms cubic-bezier(.22,.61,.36,1),
+    transform 520ms cubic-bezier(.22,.61,.36,1);
+}
+/* Subtle underline that draws in from the left on hover. Italic
+   serif text doesn't transition weight nicely (not a variable font),
+   so the indicator is a thin underline that grows under the word. */
+.menu a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: #fff;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 420ms cubic-bezier(.22,.61,.36,1);
+}
+.menu a:hover::after { transform: scaleX(1); }
+
+.burger {
+  width: 36px; height: 36px;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-end;
+  gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  position: relative;
+  z-index: 1;
+}
+.burger span {
+  display: block;
+  height: 1.5px;
+  background: #fff;
+  border-radius: 1px;
+  transition: transform 420ms cubic-bezier(.22,.61,.36,1),
+              width 420ms cubic-bezier(.22,.61,.36,1),
+              opacity 240ms ease;
+  transform-origin: center;
+}
+/* Uneven lines: top is full-width (22px), bottom is shorter (14px).
+   Right-aligned via the flex container so the difference reads as
+   intentional rather than arbitrary. */
+.burger span:nth-child(1) { width: 22px; }
+.burger span:nth-child(2) { width: 14px; }
+/* Open: both lines become equal width and rotate into an X. */
+.menu-wrap.open .burger span:nth-child(1) {
+  width: 22px;
+  transform: translateY(5px) rotate(45deg);
+}
+.menu-wrap.open .burger span:nth-child(2) {
+  width: 22px;
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+@media (max-width: 720px) {
+  .menu-label, .menu { font-size: 13px; letter-spacing: 0.06em; }
+  .menu { gap: 9px; }
+}
+
+/* ======================================================
+   HERO — in document flow, edge-to-edge
+====================================================== */
+.hero {
+  /* Fills the full viewport. The nav floats transparently over the
+     top edge using mix-blend-mode: difference, so the reel runs all
+     the way to the top of the page. */
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--bg);
+}
+.hero-media {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* Sharp corners. The hero IS the page edge; rounding here would
+     contradict the full-bleed geometry. Tiles keep their radius
+     because they're floating objects, not page-edge elements. */
+  border-radius: 0;
+}
+/* Inner wrapper holds the video and placeholder. The scroll-driven
+   parallax (scale, translate, opacity) applies to THIS element, so
+   the outer .hero-media frame stays the same size as the reel
+   recedes. */
+.hero-inner {
+  position: absolute;
+  inset: 0;
+  transform-origin: center center;
+  will-change: transform, opacity;
+}
+/* Hero poster: a canvas that JS paints with the reel's first frame.
+   Sits above the video. Starts solid black (covers the empty hero
+   while the video loads in the background). Once JS has painted the
+   first frame, the canvas shows that frame. Fades out via .gone
+   once the video is playing. */
+.hero-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 400ms cubic-bezier(.22,.61,.36,1);
+}
+.hero-poster.gone {
+  opacity: 0;
+}
+/* Caption strip in the dark gap between the hero and the grid.
+   Right-aligned to the same gutter as the tiles. Two-tone: primary
+   role in white, secondary in muted gray. */
+.hero-caption {
+  display: flex;
+  justify-content: flex-end;
+  padding: clamp(10px, 1.2vw, 16px) var(--edge);
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 18, "wght" 500;
+  font-size: clamp(11px, 0.85vw, 13px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--bg);
+}
+.hero-caption .role-primary { color: #fff; }
+.hero-caption .role-sep { color: rgba(255, 255, 255, 0.35); margin: 0 0.5em; }
+.hero-caption .role-secondary { color: rgba(255, 255, 255, 0.48); }
+.hero-media .placeholder { position: absolute; inset: 0; }
+.hero-media .featured-ph {
+  background: linear-gradient(135deg, #1c1915 0%, #3a2c1f 40%, #1d1812 70%, #2a2218 100%);
+  background-size: 220% 220%;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+.hero-media .featured-ph::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
+  opacity: 0.25;
+  mix-blend-mode: overlay;
+}
+@keyframes drift {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+
+/* ======================================================
+   OVERLAY — sits below the hero in document flow
+====================================================== */
+.overlay {
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+  padding-top: var(--edge);
+}
+
+/* ======================================================
+   SECTION TITLE — sits just below the top of the panel
+====================================================== */
+.section-title {
+  padding: clamp(80px, 10vw, 160px) var(--edge) clamp(40px, 5vw, 72px);
+}
+.section-title h2 {
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 32, "wght" 700;
+  font-weight: 700;
+  font-size: clamp(48px, 9vw, 140px);
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+  color: var(--fg);
+  margin: 0;
+  text-transform: uppercase;
+  /* Dissolve reveal: hidden + blurred + slightly offset until in view */
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(10px);
+  transition: opacity 900ms cubic-bezier(.22,.61,.36,1),
+              filter 900ms cubic-bezier(.22,.61,.36,1),
+              transform 900ms cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, filter, transform;
+}
+.section-title h2.revealed {
+  opacity: 1;
+  filter: blur(0);
+  transform: translateY(0);
+}
+
+/* ======================================================
+   GRID
+====================================================== */
+.grid {
+  padding: 0 var(--edge) clamp(40px, 6vw, 80px);
+  display: grid;
+  gap: var(--edge);
+}
+.grid-row { display: grid; gap: var(--edge); grid-template-columns: 1fr; }
+@media (min-width: 760px) {
+  .row-2 { grid-template-columns: 1fr 1fr; }
+  /* The first row is intentionally asymmetric: tile-1 takes 2/3 of
+     the width (landscape), tile-2 takes 1/3 (portrait, 4:5). The
+     portrait sibling determines the row's height; the wide tile
+     stretches to match instead of leaving a gap below itself. */
+  .grid-row.row-asym {
+    grid-template-columns: 2fr 1fr;
+  }
+  .grid-row.row-asym .tile { height: 100%; }
+  .grid-row.row-asym .tile:nth-child(1) .tile-media {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+  .grid-row.row-asym .tile:nth-child(2) .tile-media {
+    aspect-ratio: 4 / 5;
+  }
+}
+
+.tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--bg-2);
+  border-radius: clamp(8px, 0.9vw, 14px);
+  cursor: pointer;
+}
+.tile-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+/* Embedded video elements behave exactly like the placeholders they
+   replace: cover the parent, inherit the same hover transforms via the
+   shared .placeholder class. */
+.placeholder, .tile-media video, .hero-media video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.placeholder {
+  /* Default: slightly zoomed in so the image overfills the frame.
+     On hover it relaxes to a smaller scale, but stays above 1 so the
+     frame is never exposed. */
+  transform: scale(1.05);
+  transform-origin: center center;
+  transition: transform 700ms cubic-bezier(.22,.61,.36,1),
+              filter    520ms cubic-bezier(.22,.61,.36,1);
+}
+.placeholder::before {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+/* Preview placeholders (.tile-ph, .hero-placeholder)
+   ------------------------------------------------------
+   These sit behind the video elements. When the video has no source
+   or hasn't loaded yet, the placeholder shows through. When a real
+   video file loads, it covers the placeholder. Each has a slow
+   gradient drift to feel like ambient footage rather than a flat
+   color block, so you can preview the site locally without uploading
+   any videos. */
+.tile-ph,
+.hero-placeholder {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: 220% 220%;
+  animation: ph-drift 16s ease-in-out infinite alternate;
+}
+.tile-media {
+  position: relative;
+}
+.tile-media video,
+.hero-media video {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+@keyframes ph-drift {
+  0%   { background-position: 0% 30%; }
+  100% { background-position: 100% 70%; }
+}
+
+.hero-placeholder {
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(80, 110, 140, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(120, 90, 70, 0.35) 0%, transparent 60%),
+    linear-gradient(160deg, #0e1418 0%, #1a2530 55%, #08090c 100%);
+}
+
+.t1 .tile-ph { background: linear-gradient(160deg, #10131a 0%, #1d2a3a 55%, #0a0d12 100%); }
+.t2 .tile-ph { background: linear-gradient(120deg, #1a1612 0%, #482e1e 45%, #170e07 100%); }
+.t3 .tile-ph { background: linear-gradient(140deg, #131618 0%, #28383b 55%, #0c0f10 100%); }
+.t4 .tile-ph { background: linear-gradient(145deg, #1a1812 0%, #3b2d18 55%, #14100a 100%); }
+.t5 .tile-ph { background: linear-gradient(150deg, #181a14 0%, #2f3a25 50%, #0f120c 100%); }
+.t6 .tile-ph { background: linear-gradient(125deg, #181418 0%, #3a2236 55%, #100a10 100%); }
+
+.t1 .placeholder { background: linear-gradient(160deg, #10131a 0%, #1d2a3a 55%, #0a0d12 100%); }
+.t2 .placeholder { background: linear-gradient(120deg, #1a1612 0%, #482e1e 45%, #170e07 100%); }
+.t3 .placeholder { background: linear-gradient(140deg, #131618 0%, #28383b 55%, #0c0f10 100%); }
+.t4 .placeholder { background: linear-gradient(145deg, #1a1812 0%, #3b2d18 55%, #14100a 100%); }
+.t5 .placeholder { background: linear-gradient(150deg, #181a14 0%, #2f3a25 50%, #0f120c 100%); }
+.t6 .placeholder { background: linear-gradient(125deg, #181418 0%, #3a2236 55%, #100a10 100%); }
+
+/* Tile videos and placeholders: subtle scale on hover, no blur. */
+.tile-media video,
+.tile-media .tile-ph,
+.tile-media .placeholder {
+  transform: scale(1.02);
+  transform-origin: center center;
+  transition: transform 700ms cubic-bezier(.22,.61,.36,1);
+}
+.tile:hover .tile-media video,
+.tile:hover .tile-media .tile-ph,
+.tile:hover .tile-media .placeholder {
+  transform: scale(1.04);
+}
+
+/* Hover treatment: a warm amber color cast washes over the tile,
+   rather than a generic dark tint. Same affordance (the tile is
+   reacting to your cursor) but with character — a small piece of
+   color in an otherwise monochrome page. */
+.tile-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: rgba(220, 140, 80, 0.22);
+  mix-blend-mode: multiply;
+  opacity: 0;
+  transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
+  pointer-events: none;
+}
+.tile:hover .tile-media::after {
+  opacity: 1;
+}
+
+/* Hover overlay — title sits in the lower-left, slides up from the bottom */
+.tile-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: clamp(16px, 2vw, 28px) clamp(18px, 2.2vw, 30px);
+  z-index: 5;
+  pointer-events: none;
+  text-align: left;
+}
+.tile-overlay-line {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  line-height: 1;
+}
+.tile-overlay-title {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 18;
+  font-weight: 500;
+  font-size: clamp(15px, 1.1vw, 18px);
+  letter-spacing: 0;
+  line-height: 1;
+  /* Plain sentence case to match the menu treatment. */
+  text-transform: none;
+  /* Pure white text plus mix-blend-mode: difference makes the title
+     auto-invert against whatever pixel is behind it. Always readable,
+     never disappears, picks up the inverse color of the underlying
+     image. The Park Pictures effect. */
+  color: #fff;
+  mix-blend-mode: difference;
+  transform: translateY(105%);
+  opacity: 0;
+  transition: transform 540ms cubic-bezier(.22,.61,.36,1) 80ms,
+              opacity 280ms ease 140ms;
+}
+.tile:hover .tile-overlay-title {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ======================================================
+   INTRO — dissolve, then nav slides down
+   The site loads with a black overlay covering everything. The
+   overlay dissolves quickly, revealing the hero video. After the
+   video has been playing for a beat, the brand and menu slide
+   down from the top and fade in.
+====================================================== */
+
+body.intro-active { overflow: hidden; }
+
+/* Rack focus intro. The poster image is blurred until intro-active
+   is removed; then it racks to focus over 400ms. */
+body.intro-active .hero-inner {
+  filter: blur(28px) saturate(0.95) brightness(0.98);
+  transition: filter 400ms cubic-bezier(.65,0,.35,1);
+}
+.hero-inner {
+  transition: filter 400ms cubic-bezier(.65,0,.35,1);
+}
+
+/* Large wordmark that sits in the upper-left during the intro
+   sequence. Same typographic treatment as the small nav brand
+   (Inter weight 600, uppercase, mild positive tracking) so the
+   small one reads as a direct scaled-down version. */
+.intro-mark {
+  position: fixed;
+  top: var(--nav-edge);
+  left: var(--nav-edge);
+  z-index: 300;
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 32;
+  font-weight: 600;
+  font-size: clamp(56px, 9vw, 140px);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 0.92;
+  color: #fff;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  opacity: 1;
+  transition: opacity 450ms cubic-bezier(.22,.61,.36,1);
+}
+.intro-mark.gone { opacity: 0; }
+
+/* Brand and menu are held hidden during the intro (both .intro-active
+   and the handoff window). They fade/slide into place after the large
+   wordmark has dissolved. */
+.brand, .menu-wrap {
+  transition:
+    opacity 700ms cubic-bezier(.22,.61,.36,1),
+    transform 800ms cubic-bezier(.22,.61,.36,1);
+}
+body.intro-active .brand,
+body.intro-active .menu-wrap,
+body.intro-handoff .brand,
+body.intro-handoff .menu-wrap {
+  opacity: 0;
+  transform: translateY(-28px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+  .intro-mark { display: none !important; }
+  body.intro-active .brand,
+  body.intro-active .menu-wrap {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  body.intro-active { overflow: auto !important; }
+}
+
+</style>
+</head>
+<body class="intro-active">
+
+<!-- Black cover that hides the page until the video has painted its
+     first frame. Removed by JS once the frame is ready. -->
+<div class="intro-mark" id="introMark" aria-hidden="true">Mike Becker</div>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ====== NAV ====== -->
+<nav class="nav">
+  <a href="#top" class="brand" aria-label="Home">
+    <span class="brand-name" data-cfg="name">Mike Becker</span>
+    <span class="brand-sub" aria-hidden="true">
+      <span class="brand-sub-bracket brand-sub-bracket-l">[</span>
+      <span class="brand-sub-text">Director&nbsp;·&nbsp;Cinematographer</span>
+      <span class="brand-sub-bracket brand-sub-bracket-r">]</span>
+    </span>
+  </a>
+
+  <div class="menu-wrap" id="menuWrap">
+    <div class="menu-stack">
+      <nav class="menu" aria-label="Primary">
+        <a href="#top" data-text="Home">Home</a>
+        <span class="sep">/</span>
+        <a href="#work" data-text="Work">Work</a>
+        <span class="sep">/</span>
+        <a href="#about" data-text="About">About</a>
+        <span class="sep">/</span>
+        <a href="mailto:hello@example.com" data-text="Contact" data-cfg-email>Contact</a>
+      </nav>
+    </div>
+    <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ====== HERO ======
+     Drop your reel at media/reel.mp4 and it just works.
+     - The first frame of the file is the held still during the intro.
+     - The video downloads in the background while the still is held.
+     - JS calls .play() when the intro lands, motion begins. -->
+<section class="hero" id="top" aria-label="Reel 2026">
+  <div class="hero-media">
+    <div class="hero-inner">
+      <div class="hero-placeholder" aria-hidden="true"></div>
+      <!-- Hero poster: poster.jpg ships with the project (extracted
+           from the reel's first frame). Loads instantly with the page,
+           visible immediately, blurred by the intro CSS. Once the video
+           is ready, JS fades the poster out to reveal motion. -->
+      <img id="heroPoster" class="hero-poster" src="media/reel/poster.jpg" alt="" aria-hidden="true">
+      <video id="heroVideo" preload="auto" muted loop playsinline disablepictureinpicture disableremoteplayback poster="media/reel/poster.jpg">
+        <source src="media/reel/reel.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- ====== OVERLAY ====== -->
+<main class="overlay">
+
+  <section class="grid" id="work">
+
+    <!-- To swap projects: rename the title text and drop media/01.mp4
+         through media/06.mp4. That's it. The first frame is used as the
+         still automatically, and the loop starts when the tile scrolls
+         into view. -->
+
+    <div class="grid-row row-2 row-asym">
+      <a class="tile t1" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="1" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/01.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="1">Night Bloom</span></span></div>
+      </a>
+      <a class="tile t2" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="2" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/02.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="2">Wide Open</span></span></div>
+      </a>
+    </div>
+
+    <div class="grid-row row-2">
+      <a class="tile t3" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="3" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/03.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="3">East Side</span></span></div>
+      </a>
+      <a class="tile t4" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="4" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/04.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="4">Blue Hour</span></span></div>
+      </a>
+    </div>
+
+    <div class="grid-row row-2">
+      <a class="tile t5" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="5" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/05.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="5">Soft Focus</span></span></div>
+      </a>
+      <a class="tile t6" href="#">
+        <div class="tile-media">
+          <div class="tile-ph" aria-hidden="true"></div>
+          <video data-cfg-video="6" preload="metadata" muted loop playsinline disablepictureinpicture>
+            <source src="media/06.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="6">The Long Take</span></span></div>
+      </a>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+  // ====== CONTENT LOADER ======
+  // Reads one file: content/videos.txt
+  //
+  // Format (one key per line):
+  //   name: Mike Becker
+  //   email: hello@example.com
+  //   reel: My Reel.mp4
+  //   1: First Project.mp4 | Custom Title
+  //   2: Brooklyn.mp4
+  //   3: Night Bloom.mp4
+  //
+  // - `reel:` is the hero video, filename relative to media/reel/
+  // - 1-6 are the tile slots, filename relative to media/tile-1/ etc
+  // - After the filename, an optional "| Title" overrides the
+  //   default title (which is the filename minus .mp4)
+  //
+  // If the file is missing, the page falls back to whatever is
+  // already in the HTML defaults.
+  const contentReady = (async function loadContent() {
+    // Parse the new site.txt format: "FIELD = VALUE", # comments, blank
+    // lines ignored. Keys are uppercased so the file is forgiving of
+    // case. Old "field: value" format is also accepted for back-compat.
+    function parse(text) {
+      const cfg = {};
+      text.split(/\r?\n/).forEach(line => {
+        const t = line.trim();
+        if (!t || t.startsWith('#')) return;
+        let i = t.indexOf('=');
+        if (i === -1) i = t.indexOf(':');
+        if (i === -1) return;
+        const key = t.slice(0, i).trim().toUpperCase();
+        const val = t.slice(i + 1).trim();
+        if (key) cfg[key] = val;
+      });
+      return cfg;
+    }
+
+    function waitForHeroReady(hero) {
+      return new Promise(resolve => {
+        if (!hero || hero.readyState >= 1) return resolve();
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        hero.addEventListener('loadedmetadata', finish, { once: true });
+        hero.addEventListener('error', finish, { once: true });
+        setTimeout(finish, 2500);
+      });
+    }
+
+    // Try site.txt first, then fall back to the old videos.txt name.
+    let text = null;
+    for (const path of ['content/site.txt', 'content/videos.txt']) {
+      try {
+        const r = await fetch(path, { cache: 'no-cache' });
+        if (r.ok) { text = await r.text(); break; }
+      } catch (e) {}
+    }
+
+    if (text) {
+      const cfg = parse(text);
+
+      // Identity
+      const name = cfg.NAME || cfg.name;
+      if (name) {
+        document.querySelectorAll('[data-cfg="name"]').forEach(el => el.textContent = name);
+      }
+      const email = cfg.EMAIL || cfg.email;
+      if (email) {
+        document.querySelectorAll('[data-cfg-email]').forEach(el => {
+          el.setAttribute('href', 'mailto:' + email);
+        });
+      }
+
+      // Hero reel
+      const reelFile = cfg.REEL_FILE || cfg.reel;
+      if (reelFile) {
+        const hero = document.getElementById('heroVideo');
+        if (hero) {
+          const src = 'media/reel/' + encodeURI(reelFile);
+          const source = hero.querySelector('source');
+          if (source) source.setAttribute('src', src);
+          else hero.setAttribute('src', src);
+          try { hero.load(); } catch (e) {}
+        }
+      }
+
+      // Tile slots 1-6 — file and title are separate, explicit fields
+      for (let slot = 1; slot <= 6; slot++) {
+        const file = cfg[`TILE_${slot}_FILE`] || cfg[String(slot)];
+        const title = cfg[`TILE_${slot}_TITLE`];
+
+        if (file) {
+          const v = document.querySelector('[data-cfg-video="' + slot + '"]');
+          if (v) {
+            const src = 'media/tile-' + slot + '/' + encodeURI(file);
+            const source = v.querySelector('source');
+            if (source) source.setAttribute('src', src);
+            else v.setAttribute('src', src);
+            try { v.load(); } catch (e) {}
+          }
+        }
+
+        if (title) {
+          const t = document.querySelector('[data-cfg-project="' + slot + '"]');
+          if (t) {
+            t.textContent = title;
+            if (t.hasAttribute('data-text')) t.setAttribute('data-text', title);
+          }
+        }
+      }
+    }
+
+    const hero = document.getElementById('heroVideo');
+    await waitForHeroReady(hero);
+    if (hero) {
+      await new Promise(resolve => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        hero.addEventListener('seeked', finish, { once: true });
+        hero.addEventListener('error', finish, { once: true });
+        setTimeout(finish, 1500);
+        try { hero.currentTime = 0.001; } catch (e) { finish(); }
+      });
+    }
+  })();
+
+  // ====== INTRO (dissolve, then nav slides down) ======
+  // Timeline (relative to when contentReady resolves):
+  //   0ms       Black overlay covers the site. Brand and menu are
+  //             hidden (translated up + opacity 0). Hero video sits
+  //             on its first frame.
+  //   100ms     Overlay starts fading out (600ms). Hero video starts
+  //             playing.
+  //   700ms     Overlay fully gone.
+  //   1800ms    Brand and menu slide down from above and fade in
+  //             (800ms). The page is now interactive.
+  //   2600ms    Settled.
+  (async function runIntro() {
+    const heroVideo = document.getElementById('heroVideo');
+    const heroPoster = document.getElementById('heroPoster');
+    const introMark = document.getElementById('introMark');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // The poster image (poster.jpg) loads with the page and is visible
+    // immediately, blurred by the CSS body.intro-active rule. No need
+    // to wait for anything before starting the timeline.
+
+    if (reduced) {
+      document.body.classList.remove('intro-active');
+      if (introMark && introMark.parentNode) introMark.remove();
+      if (heroPoster) heroPoster.classList.add('gone');
+      await contentReady;
+      if (heroVideo) heroVideo.play().catch(() => {});
+      return;
+    }
+
+    // === Timeline ===
+    //   0–1000ms       Blurred poster on screen. Big wordmark visible.
+    //   1000–1400ms    Focus snap (CSS unblurs).
+    //   1400–1600ms    Sharp still, breath.
+    //   1600ms         Video plays, poster fades out.
+    //   2100ms         Big wordmark dissolves.
+    //   ~2500ms        Small nav brand drops in.
+    const BLUR_HOLD   = 1000;
+    const FOCUS_TRANS = 400;
+    const STILL_HOLD  = 200;
+    const PLAY_HOLD   = 500;
+    const HANDOFF     = 400;
+    const HANDOFF_PAUSE = 180;
+
+    setTimeout(() => {
+      document.body.classList.remove('intro-active');
+      document.body.classList.add('intro-handoff');
+    }, BLUR_HOLD);
+
+    setTimeout(async () => {
+      await contentReady;
+      if (heroVideo) heroVideo.play().catch(() => {});
+      if (heroPoster) heroPoster.classList.add('gone');
+    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD);
+
+    setTimeout(() => {
+      if (introMark) introMark.classList.add('gone');
+    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD);
+
+    setTimeout(() => {
+      document.body.classList.remove('intro-handoff');
+    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD + HANDOFF + HANDOFF_PAUSE);
+
+    setTimeout(() => {
+      if (introMark && introMark.parentNode) introMark.remove();
+      if (heroPoster && heroPoster.parentNode) heroPoster.remove();
+    }, BLUR_HOLD + FOCUS_TRANS + STILL_HOLD + PLAY_HOLD + HANDOFF + HANDOFF_PAUSE + 800);
+  })();
+
+  // Pause the hero video when the tab is hidden, resume when it returns.
+  // Saves CPU and bandwidth without affecting the loop.
+  document.addEventListener('visibilitychange', () => {
+    const v = document.getElementById('heroVideo');
+    if (!v) return;
+    if (document.hidden) v.pause();
+    else v.play().catch(() => {});
+  });
+
+  // Menu toggle
+  const wrap = document.getElementById('menuWrap');
+  const burger = document.getElementById('burger');
+  const backdrop = document.getElementById('menuBackdrop');
+
+  function setMenu(open) {
+    if (!wrap || !burger) return;
+    wrap.classList.toggle('open', open);
+    document.body.classList.toggle('menu-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  if (burger && wrap) {
+    burger.addEventListener('click', () => {
+      setMenu(!wrap.classList.contains('open'));
+    });
+    wrap.querySelectorAll('.menu a').forEach(a =>
+      a.addEventListener('click', () => setMenu(false))
+    );
+  }
+  if (backdrop) {
+    backdrop.addEventListener('click', () => setMenu(false));
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && wrap && wrap.classList.contains('open')) {
+      setMenu(false);
+    }
+  });
+
+  // Scroll-driven effects:
+  // 1) Nav background swap (transparent over the reel, semi-opaque
+  //    once the panel covers the area behind the nav)
+  // 2) Hero reaction: as the Selected Works panel rises over the
+  //    reel, the reel itself scales down slightly and fades, so it
+  //    feels alive — like it's receding behind the page instead of
+  //    sitting frozen
+  const navEl = document.querySelector('.nav');
+  const heroInnerEl = document.querySelector('.hero-inner');
+  const heroCaptionEl = document.querySelector('.hero-caption');
+  let ticking = false;
+  function update() {
+    const y = window.scrollY || window.pageYOffset || 0;
+    const vh = window.innerHeight;
+
+    if (navEl) {
+      const navH = navEl.offsetHeight || 54;
+      const triggerAt = vh - navH;
+      navEl.classList.toggle('scrolled', y > triggerAt);
+    }
+
+    if (heroInnerEl) {
+      // Skip the scroll-brightness reaction while the intro is running
+      // — the intro applies its own blur via CSS class, and writing an
+      // inline filter here would override it. Once the intro has fully
+      // handed off (both intro-active and intro-handoff classes are
+      // gone), the scroll reaction takes over.
+      const introRunning = document.body.classList.contains('intro-active')
+                        || document.body.classList.contains('intro-handoff');
+      if (introRunning) {
+        ticking = false;
+        return;
+      }
+
+      // Subtle scroll reaction: the video gently darkens as the user
+      // scrolls past the hero. Progress is measured against the hero's
+      // actual height, so the reaction completes naturally as the hero
+      // exits the viewport.
+      const heroEl = document.querySelector('.hero');
+      const heroH = heroEl ? heroEl.offsetHeight : vh;
+      const progress = Math.min(Math.max(y / heroH, 0), 1);
+      // Ease the brightness with a cubic ease-in. Starts slow (hero
+      // stays mostly bright as you begin scrolling), then accelerates
+      // the dim as you near the end of the hero. Feels intentional
+      // rather than mechanical.
+      const eased = progress * progress * progress;
+      const brightness = 1 - eased * 0.55;
+      heroInnerEl.style.filter = 'brightness(' + brightness + ')';
+      heroInnerEl.style.transform = '';
+      heroInnerEl.style.opacity = '';
+      if (heroCaptionEl) heroCaptionEl.style.opacity = 1 - eased * 0.7;
+    }
+
+    ticking = false;
+  }
+  function onScroll() {
+    if (!ticking) { requestAnimationFrame(update); ticking = true; }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+
+  // Tile thumbnails: show first frame as still by default. On hover,
+  // play the video so the viewer sees motion from the project. On
+  // hover out, pause and reset to the first frame so the still
+  // returns immediately.
+  const tileVideos = document.querySelectorAll('.tile-media video');
+  tileVideos.forEach(v => {
+    v.removeAttribute('autoplay');
+    v.loop = true; // loops only while hovering
+    v.muted = true;
+    const seekFirstFrame = () => {
+      try { v.currentTime = 0.001; } catch (e) {}
+    };
+    if (v.readyState >= 1) seekFirstFrame();
+    else v.addEventListener('loadedmetadata', seekFirstFrame, { once: true });
+
+    const tile = v.closest('.tile');
+    if (!tile) return;
+    tile.addEventListener('mouseenter', () => {
+      // Start from the beginning so every hover plays the same opening
+      // moment of the project — predictable, like a film trailer's
+      // first beat.
+      try { v.currentTime = 0.001; } catch (e) {}
+      v.play().catch(() => {});
+    });
+    tile.addEventListener('mouseleave', () => {
+      v.pause();
+      try { v.currentTime = 0.001; } catch (e) {}
+    });
+  });
+
+  // Dissolve-reveal the "Selected Works" title when it scrolls into view.
+  const titleEl = document.querySelector('.section-title h2');
+  if (titleEl && 'IntersectionObserver' in window) {
+    const titleObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          titleEl.classList.add('revealed');
+          titleObs.unobserve(titleEl);
+        }
+      });
+    }, { threshold: 0.2 });
+    titleObs.observe(titleEl);
+  } else if (titleEl) {
+    titleEl.classList.add('revealed');
+  }
+</script>
+
+</body>
+</html>
