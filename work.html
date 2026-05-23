@@ -807,6 +807,24 @@ body.lightbox-open { overflow: hidden; }
   color: #fff;
   margin: 0;
 }
+/* Role credit sits inside the player at the bottom right. */
+.lightbox-role {
+  position: absolute;
+  right: clamp(14px, 1.4vw, 22px);
+  bottom: clamp(12px, 1.2vw, 20px);
+  z-index: 3;
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 14;
+  font-weight: 400;
+  font-size: clamp(11px, 0.85vw, 14px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5);
+  margin: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
 
 .lightbox-player {
   position: relative;
@@ -1046,6 +1064,7 @@ body.lightbox-open { overflow: hidden; }
     </div>
     <div class="lightbox-player">
       <video id="lightboxVideo" controls playsinline preload="metadata"></video>
+      <span class="lightbox-role" id="lightboxRole"></span>
     </div>
   </div>
 </div>
@@ -1121,6 +1140,7 @@ body.lightbox-open { overflow: hidden; }
       item.setAttribute('href', '#');
       item.setAttribute('data-slot', 'work-' + p.n);
       item.setAttribute('data-full', fullSrc);
+      item.setAttribute('data-role', p.role);
 
       item.innerHTML =
         '<div class="tile-media">' +
@@ -1183,13 +1203,15 @@ body.lightbox-open { overflow: hidden; }
     const lightbox = document.getElementById('lightbox');
     const lightboxVideo = document.getElementById('lightboxVideo');
     const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxRole = document.getElementById('lightboxRole');
     const lightboxClose = document.getElementById('lightboxClose');
     if (!lightbox || !lightboxVideo) return;
 
-    window.__openLightbox = function (fullSrc, title) {
+    window.__openLightbox = function (fullSrc, title, role) {
       if (!fullSrc) return;
       lightboxVideo.src = fullSrc;
       lightboxTitle.textContent = title || '';
+      if (lightboxRole) lightboxRole.textContent = role || '';
       lightbox.classList.add('open');
       document.body.classList.add('lightbox-open');
       lightbox.setAttribute('aria-hidden', 'false');
@@ -1226,7 +1248,8 @@ body.lightbox-open { overflow: hidden; }
         const fullSrc = tile.getAttribute('data-full');
         const titleEl = tile.querySelector('.tile-overlay-title');
         const title = titleEl ? titleEl.textContent.trim() : '';
-        if (fullSrc && window.__openLightbox) window.__openLightbox(fullSrc, title);
+        const role = tile.getAttribute('data-role') || '';
+        if (fullSrc && window.__openLightbox) window.__openLightbox(fullSrc, title, role);
       });
     });
   }
