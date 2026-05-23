@@ -34,10 +34,12 @@ REEL_FILE = reel.mp4
 # TILE_N_FILE  = the short hover loop (3-5 seconds, plays on hover)
 # TILE_N_FULL  = the full project video (plays in the lightbox on click)
 # TILE_N_TITLE = the project name
+# TILE_N_ROLE  = your role on the project (Director, Operator, DP, etc.)
 
 TILE_1_FILE  = tile-1.mp4
 TILE_1_FULL  = tile-1-full.mp4
 TILE_1_TITLE = Smoke
+TILE_1_ROLE  = Director
 
 
 ============================================================
@@ -47,6 +49,7 @@ TILE_1_TITLE = Smoke
 TILE_2_FILE  = tile-2.mp4
 TILE_2_FULL  = tile-2-full.mp4
 TILE_2_TITLE = Born in Baltimore
+TILE_2_ROLE  = Director
 
 
 ============================================================
@@ -56,6 +59,7 @@ TILE_2_TITLE = Born in Baltimore
 TILE_3_FILE  = tile-3.mp4
 TILE_3_FULL  = tile-3-full.mp4
 TILE_3_TITLE = Rab — NetPlus x Microlight
+TILE_3_ROLE  = Operator
 
 
 ============================================================
@@ -65,6 +69,7 @@ TILE_3_TITLE = Rab — NetPlus x Microlight
 TILE_4_FILE  = tile-4.mp4
 TILE_4_FULL  = tile-4-full.mp4
 TILE_4_TITLE = CRACKED
+TILE_4_ROLE  = Operator
 
 
 ============================================================
@@ -74,3 +79,67 @@ TILE_4_TITLE = CRACKED
 TILE_5_FILE  = tile-5.mp4
 TILE_5_FULL  = tile-5-full.mp4
 TILE_5_TITLE = Ford Bronco – Dust is Gold
+TILE_5_ROLE  = Operator
+
+
+============================================================
+  WORK PAGE — PROJECTS
+============================================================
+
+# Each project on the Work page has its own block below.
+# Only blocks with all four fields filled in render on the page.
+# Empty / commented-out blocks are skipped entirely (no empty tiles).
+#
+# WORK_N_FILE  = hover loop video
+# WORK_N_FULL  = full project video (lightbox)
+# WORK_N_TITLE = project name
+# WORK_N_ROLE  = your credit (Director / Operator / DP / etc.)
+#
+# PATH CONVENTION:
+#   - If the value contains a slash, it's a full path from site root
+#     (e.g. media/tile-1/tile-1.mp4). Useful for reusing home files.
+#   - Otherwise, the value is just a filename and the page looks in
+#     media/work-N/ for it. Useful for new project folders.
+#
+# To add a new project: drop the files into media/work-N/, fill in
+# the four lines below. To remove: delete or comment out the block.
+
+WORK_1_FILE  = media/tile-1/tile-1.mp4
+WORK_1_FULL  = media/tile-1/tile-1-full.mp4
+WORK_1_TITLE = Smoke
+WORK_1_ROLE  = Director
+
+WORK_2_FILE  = media/tile-2/tile-2.mp4
+WORK_2_FULL  = media/tile-2/tile-2-full.mp4
+WORK_2_TITLE = Born in Baltimore
+WORK_2_ROLE  = Director
+
+WORK_3_FILE  = media/tile-3/tile-3.mp4
+WORK_3_FULL  = media/tile-3/tile-3-full.mp4
+WORK_3_TITLE = Rab — NetPlus x Microlight
+WORK_3_ROLE  = Operator
+
+WORK_4_FILE  = media/tile-4/tile-4.mp4
+WORK_4_FULL  = media/tile-4/tile-4-full.mp4
+WORK_4_TITLE = CRACKED
+WORK_4_ROLE  = Operator
+
+WORK_5_FILE  = media/tile-5/tile-5.mp4
+WORK_5_FULL  = media/tile-5/tile-5-full.mp4
+WORK_5_TITLE = Ford Bronco – Dust is Gold
+WORK_5_ROLE  = Operator
+
+# WORK_6_FILE  =
+# WORK_6_FULL  =
+# WORK_6_TITLE =
+# WORK_6_ROLE  =
+
+# WORK_7_FILE  =
+# WORK_7_FULL  =
+# WORK_7_TITLE =
+# WORK_7_ROLE  =
+
+# WORK_8_FILE  =
+# WORK_8_FULL  =
+# WORK_8_TITLE =
+# WORK_8_ROLE  =

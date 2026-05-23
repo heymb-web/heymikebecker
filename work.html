@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>MIKE BECKER / DIRECTOR / CINEMATOGRAPHER / LOS ANGELES</title>
-<meta name="description" content="Mike Becker. Director and cinematographer based in Los Angeles." />
+<title>MIKE BECKER / WORK</title>
+<meta name="description" content="Mike Becker. Selected directing and cinematography work." />
 <meta name="theme-color" content="#0C0B09" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -459,6 +459,20 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   .grid-row.row-asym .tile:nth-child(2) .tile-media {
     aspect-ratio: 4 / 5;
   }
+  /* Flipped asymmetric row: portrait on the LEFT, landscape on the
+     RIGHT. Used for later cycles so the work grid alternates rhythm
+     instead of repeating the same composition. */
+  .grid-row.row-asym.row-asym-flip {
+    grid-template-columns: 1fr 2fr;
+  }
+  .grid-row.row-asym.row-asym-flip .tile:nth-child(1) .tile-media {
+    aspect-ratio: 4 / 5;
+    height: auto;
+  }
+  .grid-row.row-asym.row-asym-flip .tile:nth-child(2) .tile-media {
+    aspect-ratio: auto;
+    height: 100%;
+  }
   /* Full-width closer row: a single cinematic 2.39:1 tile that acts
      as the punctuation at the end of the work grid. Wider than the
      16:9 tiles above so the closer is visually distinct, not just
@@ -836,19 +850,142 @@ body.lightbox-open { overflow: hidden; }
 .lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
 .lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
+/* ======================================================
+   WORK PAGE
+   Park Pictures-style work index. A clean uniform grid of
+   16:9 thumbnails with the title and role set as a refined
+   caption below each tile, both visible at rest. Hover plays
+   the loop. Click opens the lightbox. Generous gaps and side
+   gutters carry the editorial weight; the project IS the
+   moment, not the chrome around it.
+====================================================== */
+.work-main {
+  /* Generous breathing room above the grid so it doesn't crash
+     into the nav. Nav height plus a comfortable visual gutter. */
+  padding-top: calc(var(--nav-h) + clamp(56px, 8vw, 120px));
+  padding-bottom: clamp(80px, 10vw, 160px);
+  background: var(--bg);
+  position: relative;
+  z-index: 1;
+}
+
+.work-grid {
+  /* Side gutters that feel architectural, not template-y.
+     Bigger than the home grid's edge so the work page reads as
+     curated, not packed. */
+  padding: 0 clamp(20px, 4vw, 64px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* Wide gap between tiles. The whitespace does a lot of the
+     "this is serious work" lift. */
+  column-gap: clamp(20px, 3vw, 48px);
+  row-gap: clamp(56px, 7vw, 100px);
+}
+@media (max-width: 720px) {
+  .work-grid {
+    grid-template-columns: 1fr;
+    padding: 0 var(--edge);
+    row-gap: clamp(40px, 6vw, 64px);
+  }
+}
+
+/* A work item: the tile + its caption stacked vertically. */
+.work-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.work-item .tile-media {
+  aspect-ratio: 16 / 9;
+  position: relative;
+  overflow: hidden;
+  background: var(--bg-2);
+}
+.work-item .tile-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Subtle hover lift: the tile slightly brightens and the video
+   itself plays. No transform — keeps the grid lines tidy. */
+.work-item .tile-media::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  transition: background 320ms cubic-bezier(.22,.61,.36,1);
+  pointer-events: none;
+}
+.work-item:hover .tile-media::after {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Caption: title left, role right, baseline-aligned. The slash
+   between them is part of the typography, not a separator span. */
+.work-item-caption {
+  margin-top: clamp(14px, 1.4vw, 22px);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1.5em;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.1;
+}
+.work-item-title {
+  font-variation-settings: "opsz" 18;
+  font-weight: 500;
+  font-size: clamp(16px, 1.25vw, 20px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fg);
+  /* Long titles wrap; the role stays anchored to the right. */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.work-item-role {
+  font-variation-settings: "opsz" 14;
+  font-weight: 400;
+  font-size: clamp(12px, 0.95vw, 15px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.work-item:hover .work-item-title {
+  color: #fff;
+}
+
+/* Page cover: opaque black overlay that fades out on load.
+   Replaces the elaborate hero-intro from the home page with a
+   quiet fade. */
+.page-cover {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 400;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 600ms cubic-bezier(.22,.61,.36,1);
+}
+.page-cover.gone {
+  opacity: 0;
+}
+
 </style>
 </head>
-<body class="intro-active">
+<body class="work-page">
 
-<!-- Black cover that hides the page until the video has painted its
-     first frame. Removed by JS once the frame is ready. -->
-<div class="intro-mark" id="introMark" aria-hidden="true">Mike Becker</div>
+<!-- Smooth fade-in cover. Removed by JS once content is ready. -->
+<div class="page-cover" id="pageCover" aria-hidden="true"></div>
 
 <div class="grain" aria-hidden="true"></div>
 
 <!-- ====== NAV ====== -->
 <nav class="nav">
-  <a href="#top" class="brand" aria-label="Home">
+  <a href="index.html" class="brand" aria-label="Home">
     <span class="brand-name" data-cfg="name">Mike Becker</span>
     <span class="brand-sub" aria-hidden="true">
       <span class="brand-sub-item brand-sub-bracket">[</span>
@@ -878,99 +1015,21 @@ body.lightbox-open { overflow: hidden; }
   </div>
 </nav>
 
-<!-- ====== HERO ======
-     Drop your reel at media/reel.mp4 and it just works.
-     - The first frame of the file is the held still during the intro.
-     - The video downloads in the background while the still is held.
-     - JS calls .play() when the intro lands, motion begins. -->
-<section class="hero" id="top" aria-label="Reel 2026">
-  <div class="hero-media">
-    <div class="hero-inner">
-      <div class="hero-placeholder" aria-hidden="true"></div>
-      <!-- Hero poster: poster.jpg ships with the project (extracted
-           from the reel's first frame). Loads instantly with the page,
-           visible immediately, blurred by the intro CSS. Once the video
-           is ready, JS fades the poster out to reveal motion. -->
-      <img id="heroPoster" class="hero-poster" src="media/reel/poster.jpg" alt="" aria-hidden="true">
-      <video id="heroVideo" preload="auto" muted loop playsinline disablepictureinpicture disableremoteplayback poster="media/reel/poster.jpg">
-        <source src="media/reel/reel.mp4" type="video/mp4">
-      </video>
-    </div>
-  </div>
-</section>
+<!-- ====== WORK PAGE MAIN ====== -->
+<main class="work-main">
 
-<!-- ====== OVERLAY ====== -->
-<main class="overlay">
-
-  <section class="grid" id="work">
-
-    <!-- 2 + 2 + 1 layout:
-         Row 1: asymmetric (landscape + portrait) — opens the work
-         Row 2: two equal 16:9 tiles — the body
-         Row 3: full-width closer — the punctuation. -->
-
-    <div class="grid-row row-2 row-asym">
-      <a class="tile t1" href="#" data-slot="1">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="1" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-1/tile-1.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="1">Night Bloom</span></span></div>
-        <span class="tile-overlay-role" data-cfg-role="1">Director</span>
-      </a>
-      <a class="tile t2" href="#" data-slot="2">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="2" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-2/tile-2.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="2">Wide Open</span></span></div>
-        <span class="tile-overlay-role" data-cfg-role="2">Director</span>
-      </a>
-    </div>
-
-    <div class="grid-row row-2">
-      <a class="tile t3" href="#" data-slot="3">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="3" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-3/tile-3.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="3">East Side</span></span></div>
-        <span class="tile-overlay-role" data-cfg-role="3">Operator</span>
-      </a>
-      <a class="tile t4" href="#" data-slot="4">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="4" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-4/tile-4.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="4">Blue Hour</span></span></div>
-        <span class="tile-overlay-role" data-cfg-role="4">Operator</span>
-      </a>
-    </div>
-
-    <div class="grid-row row-1">
-      <a class="tile t5 t-wide" href="#" data-slot="5">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="5" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-5/tile-5.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="5">The Long Take</span></span></div>
-        <span class="tile-overlay-role" data-cfg-role="5">Operator</span>
-      </a>
-    </div>
-
+  <!-- ====== WORK GRID ======
+       Rendered by JS from WORK_N_* blocks in content/site.txt.
+       Each project: 16:9 thumbnail tile (hover plays the loop),
+       caption below with title on the left and role on the right.
+       Empty / commented-out blocks are skipped, so the page only
+       shows projects that are fully filled in. -->
+  <section class="work-grid" id="workGrid" aria-label="Selected work">
+    <!-- Tiles inserted here by JS. -->
   </section>
 
 </main>
+
 
 <!-- ====== PROJECT LIGHTBOX ======
      Opens when a tile is clicked. Plays the full project video from
@@ -991,306 +1050,135 @@ body.lightbox-open { overflow: hidden; }
   </div>
 </div>
 
+
 <script>
   // ====== CONTENT LOADER ======
-  // Reads one file: content/videos.txt
+  // Reads content/site.txt and populates the page:
+  // - identity (name, email)
+  // - reels (DIRECTING_REEL_FILE, OPERATING_REEL_FILE)
+  // - work projects (WORK_N_FILE, WORK_N_FULL, WORK_N_TITLE, WORK_N_ROLE)
   //
-  // Format (one key per line):
-  //   name: Mike Becker
-  //   email: hello@example.com
-  //   reel: My Reel.mp4
-  //   1: First Project.mp4 | Custom Title
-  //   2: Brooklyn.mp4
-  //   3: Night Bloom.mp4
-  //
-  // - `reel:` is the hero video, filename relative to media/reel/
-  // - 1-6 are the tile slots, filename relative to media/tile-1/ etc
-  // - After the filename, an optional "| Title" overrides the
-  //   default title (which is the filename minus .mp4)
-  //
-  // If the file is missing, the page falls back to whatever is
-  // already in the HTML defaults.
-  const contentReady = (async function loadContent() {
-    // Parse the new site.txt format: "FIELD = VALUE", # comments, blank
-    // lines ignored. Keys are uppercased so the file is forgiving of
-    // case. Old "field: value" format is also accepted for back-compat.
-    function parse(text) {
-      const cfg = {};
-      text.split(/\r?\n/).forEach(line => {
-        const t = line.trim();
-        if (!t || t.startsWith('#')) return;
-        let i = t.indexOf('=');
-        if (i === -1) i = t.indexOf(':');
-        if (i === -1) return;
-        const key = t.slice(0, i).trim().toUpperCase();
-        const val = t.slice(i + 1).trim();
-        if (key) cfg[key] = val;
-      });
-      return cfg;
+  // The work grid is rendered from scratch by JS based on whatever
+  // WORK_N_* blocks exist in site.txt. Empty / missing blocks are
+  // skipped, so the page only shows projects that are fully filled in.
+
+  function parseConfig(text) {
+    const cfg = {};
+    text.split(/\r?\n/).forEach(line => {
+      const t = line.trim();
+      if (!t || t.startsWith('#')) return;
+      let i = t.indexOf('=');
+      if (i === -1) i = t.indexOf(':');
+      if (i === -1) return;
+      const key = t.slice(0, i).trim().toUpperCase();
+      const val = t.slice(i + 1).trim();
+      if (key) cfg[key] = val;
+    });
+    return cfg;
+  }
+
+  // Resolve a file value to a usable src path.
+  // - If the value contains a slash, treat it as a path from site root.
+  // - Otherwise, the value is a filename inside the given folder.
+  function resolveSrc(value, folder) {
+    if (!value) return '';
+    if (value.indexOf('/') !== -1) return value.split('/').map(encodeURIComponent).join('/');
+    return folder.replace(/\/$/, '') + '/' + encodeURIComponent(value);
+  }
+
+  // Build the work grid. Park Pictures-style uniform 2-column grid.
+  // Each item is a 16:9 tile with title + role caption below.
+  function buildWorkGrid(cfg) {
+    const container = document.getElementById('workGrid');
+    if (!container) return;
+
+    // Collect available WORK_N projects. Numeric scan, stop after a
+    // run of empty slots so we don't loop forever.
+    const projects = [];
+    let missCount = 0;
+    for (let n = 1; n < 200 && missCount < 10; n++) {
+      const file  = cfg[`WORK_${n}_FILE`];
+      const full  = cfg[`WORK_${n}_FULL`];
+      const title = cfg[`WORK_${n}_TITLE`];
+      const role  = cfg[`WORK_${n}_ROLE`];
+      if (file && full && title && role) {
+        projects.push({ n, file, full, title, role });
+        missCount = 0;
+      } else {
+        missCount++;
+      }
     }
 
-    function waitForHeroReady(hero) {
-      return new Promise(resolve => {
-        if (!hero || hero.readyState >= 1) return resolve();
-        let done = false;
-        const finish = () => { if (!done) { done = true; resolve(); } };
-        hero.addEventListener('loadedmetadata', finish, { once: true });
-        hero.addEventListener('error', finish, { once: true });
-        setTimeout(finish, 2500);
-      });
-    }
+    if (!projects.length) return;
 
-    // Try site.txt first, then fall back to the old videos.txt name.
+    container.innerHTML = '';
+    projects.forEach((p) => {
+      const fileSrc = resolveSrc(p.file, 'media/work-' + p.n);
+      const fullSrc = resolveSrc(p.full, 'media/work-' + p.n);
+
+      const item = document.createElement('a');
+      item.className = 'work-item tile';
+      item.setAttribute('href', '#');
+      item.setAttribute('data-slot', 'work-' + p.n);
+      item.setAttribute('data-full', fullSrc);
+
+      item.innerHTML =
+        '<div class="tile-media">' +
+          '<video preload="metadata" muted loop playsinline disablepictureinpicture>' +
+            '<source src="' + fileSrc + '" type="video/mp4">' +
+          '</video>' +
+        '</div>' +
+        '<div class="work-item-caption">' +
+          '<span class="work-item-title tile-overlay-title">' + p.title + '</span>' +
+          '<span class="work-item-role">' + p.role + '</span>' +
+        '</div>';
+
+      container.appendChild(item);
+    });
+  }
+
+  // Main initialization.
+  (async function init() {
     let text = null;
-    for (const path of ['content/site.txt', 'content/videos.txt']) {
-      try {
-        const r = await fetch(path, { cache: 'no-cache' });
-        if (r.ok) { text = await r.text(); break; }
-      } catch (e) {}
-    }
+    try {
+      const r = await fetch('content/site.txt', { cache: 'no-cache' });
+      if (r.ok) text = await r.text();
+    } catch (e) {}
 
     if (text) {
-      const cfg = parse(text);
+      const cfg = parseConfig(text);
+      window.__cfg = cfg;
 
-      // Identity
-      const name = cfg.NAME || cfg.name;
-      if (name) {
-        document.querySelectorAll('[data-cfg="name"]').forEach(el => el.textContent = name);
+      // Identity (brand name + contact email link)
+      if (cfg.NAME) {
+        document.querySelectorAll('[data-cfg="name"]').forEach(el => el.textContent = cfg.NAME);
       }
-      const email = cfg.EMAIL || cfg.email;
-      if (email) {
+      if (cfg.EMAIL) {
         document.querySelectorAll('[data-cfg-email]').forEach(el => {
-          el.setAttribute('href', 'mailto:' + email);
+          el.setAttribute('href', 'mailto:' + cfg.EMAIL);
         });
       }
 
-      // Hero reel
-      const reelFile = cfg.REEL_FILE || cfg.reel;
-      if (reelFile) {
-        const hero = document.getElementById('heroVideo');
-        if (hero) {
-          const src = 'media/reel/' + encodeURI(reelFile);
-          const source = hero.querySelector('source');
-          if (source) source.setAttribute('src', src);
-          else hero.setAttribute('src', src);
-          try { hero.load(); } catch (e) {}
-        }
-      }
-
-      // Tile slots 1-5 — file (hover loop), full (lightbox video), title, role
-      for (let slot = 1; slot <= 6; slot++) {
-        const file = cfg[`TILE_${slot}_FILE`] || cfg[String(slot)];
-        const full = cfg[`TILE_${slot}_FULL`];
-        const title = cfg[`TILE_${slot}_TITLE`];
-        const role = cfg[`TILE_${slot}_ROLE`];
-
-        if (file) {
-          const v = document.querySelector('[data-cfg-video="' + slot + '"]');
-          if (v) {
-            const src = 'media/tile-' + slot + '/' + encodeURI(file);
-            const source = v.querySelector('source');
-            if (source) source.setAttribute('src', src);
-            else v.setAttribute('src', src);
-            try { v.load(); } catch (e) {}
-          }
-        }
-
-        // Store full-project video path on the tile element so the
-        // click handler can find it without re-parsing the config.
-        if (full) {
-          const tile = document.querySelector('.tile[data-slot="' + slot + '"]');
-          if (tile) {
-            tile.setAttribute('data-full', 'media/tile-' + slot + '/' + encodeURI(full));
-          }
-        }
-
-        if (title) {
-          const t = document.querySelector('[data-cfg-project="' + slot + '"]');
-          if (t) {
-            t.textContent = title;
-            if (t.hasAttribute('data-text')) t.setAttribute('data-text', title);
-          }
-        }
-
-        if (role) {
-          const r = document.querySelector('[data-cfg-role="' + slot + '"]');
-          if (r) r.textContent = role;
-        }
-      }
+      // Work grid
+      buildWorkGrid(cfg);
     }
 
-    const hero = document.getElementById('heroVideo');
-    await waitForHeroReady(hero);
-    if (hero) {
-      await new Promise(resolve => {
-        let done = false;
-        const finish = () => { if (!done) { done = true; resolve(); } };
-        hero.addEventListener('seeked', finish, { once: true });
-        hero.addEventListener('error', finish, { once: true });
-        setTimeout(finish, 1500);
-        try { hero.currentTime = 0.001; } catch (e) { finish(); }
-      });
-    }
+    // Fade out the page cover once content is rendered.
+    requestAnimationFrame(() => {
+      const cover = document.getElementById('pageCover');
+      if (cover) cover.classList.add('gone');
+      // Remove after the transition completes.
+      setTimeout(() => { if (cover && cover.parentNode) cover.remove(); }, 700);
+    });
+
+    // Wire up tile click -> lightbox AFTER the work grid has been
+    // built. Reel tiles already exist in the DOM at page load, so
+    // they're included here too.
+    wireTileClicks();
+    wireTileHover();
   })();
 
-  // ====== INTRO (dissolve, then nav slides down) ======
-  // Timeline (relative to when contentReady resolves):
-  //   0ms       Black overlay covers the site. Brand and menu are
-  //             hidden (translated up + opacity 0). Hero video sits
-  //             on its first frame.
-  //   100ms     Overlay starts fading out (600ms). Hero video starts
-  //             playing.
-  //   700ms     Overlay fully gone.
-  //   1800ms    Brand and menu slide down from above and fade in
-  //             (800ms). The page is now interactive.
-  //   2600ms    Settled.
-  (async function runIntro() {
-    const heroVideo = document.getElementById('heroVideo');
-    const heroPoster = document.getElementById('heroPoster');
-    const introMark = document.getElementById('introMark');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (reduced) {
-      document.body.classList.remove('intro-active');
-      if (introMark && introMark.parentNode) introMark.remove();
-      if (heroPoster) heroPoster.classList.add('gone');
-      await contentReady;
-      if (heroVideo) heroVideo.play().catch(() => {});
-      return;
-    }
-
-    // === Adaptive intro ===
-    // The three beats (blur, snap, still, play) are tied to video buffer
-    // progress, not fixed timers. The blur holds while the video loads
-    // its first frame; the snap fires when the first frame is paintable
-    // (readyState >= 2 = HAVE_CURRENT_DATA); the still holds while the
-    // video buffers enough for smooth playback; playback starts when
-    // readyState >= 4 = HAVE_ENOUGH_DATA.
-    //
-    // Each phase has a MIN floor (so the aesthetic beat always reads)
-    // and a MAX ceiling (so a slow connection never feels broken).
-    const BLUR_MIN  = 1000;
-    const BLUR_MAX  = 5000;
-    const STILL_MIN = 1000;
-    const STILL_MAX = 5000;
-
-    function waitForReadyState(target, maxWait) {
-      return new Promise(resolve => {
-        if (!heroVideo) return resolve();
-        if (heroVideo.readyState >= target) return resolve();
-        let done = false;
-        const finish = () => { if (!done) { done = true; cleanup(); resolve(); } };
-        const check = () => { if (heroVideo.readyState >= target) finish(); };
-        const onProgress = () => check();
-        const cleanup = () => {
-          heroVideo.removeEventListener('loadeddata', onProgress);
-          heroVideo.removeEventListener('canplay', onProgress);
-          heroVideo.removeEventListener('canplaythrough', onProgress);
-          heroVideo.removeEventListener('progress', onProgress);
-          if (interval) clearInterval(interval);
-          if (timeout) clearTimeout(timeout);
-        };
-        heroVideo.addEventListener('loadeddata', onProgress);
-        heroVideo.addEventListener('canplay', onProgress);
-        heroVideo.addEventListener('canplaythrough', onProgress);
-        heroVideo.addEventListener('progress', onProgress);
-        const interval = setInterval(check, 100);
-        const timeout = setTimeout(finish, maxWait);
-      });
-    }
-
-    // === Phase 1: blur ===
-    // Hold the blur until the video has its first frame (readyState >= 2)
-    // OR the minimum aesthetic time has passed, whichever is later.
-    // Also enforce a max so slow connections don't sit blurry forever.
-    const blurStart = performance.now();
-    await Promise.all([
-      waitForReadyState(2, BLUR_MAX),
-      new Promise(r => setTimeout(r, BLUR_MIN)),
-    ]);
-
-    // === Snap ===
-    // The 150ms CSS transition triggers when we remove intro-active.
-    document.body.classList.remove('intro-active');
-    document.body.classList.add('intro-handoff');
-    await new Promise(r => setTimeout(r, 150)); // wait for CSS snap to finish
-
-    // === Phase 2: still ===
-    // Hold the sharp still while the video buffers enough for smooth
-    // playback (readyState >= 4). Same min/max guard rails.
-    await Promise.all([
-      waitForReadyState(4, STILL_MAX),
-      new Promise(r => setTimeout(r, STILL_MIN)),
-    ]);
-
-    // === Play ===
-    if (heroVideo) heroVideo.play().catch(() => {});
-    if (heroPoster) heroPoster.classList.add('gone');
-
-    // === Arm interaction listeners + fallback ===
-    // Hold state: reel plays, big wordmark stays. Interaction (or
-    // timeout after actual playback begins) triggers handoff to
-    // small wordmark + menu.
-    //
-    // The fallback timer starts on the actual 'playing' event, not on
-    // play() being called — the gap between those two events can be
-    // 100-500ms, and counting from play() would shorten the visible
-    // hold time.
-    const FALLBACK_MS = 6000;
-    let triggered = false;
-    let fallbackTimer = null;
-    function handoff() {
-      if (triggered) return;
-      triggered = true;
-
-      if (introMark) introMark.classList.add('gone');
-      setTimeout(() => {
-        document.body.classList.remove('intro-handoff');
-      }, 350);
-      setTimeout(() => {
-        if (introMark && introMark.parentNode) introMark.remove();
-        if (heroPoster && heroPoster.parentNode) heroPoster.remove();
-      }, 1200);
-
-      events.forEach(e => window.removeEventListener(e, handoff, true));
-      if (fallbackTimer) clearTimeout(fallbackTimer);
-    }
-
-    const events = ['scroll', 'wheel', 'click', 'touchstart',
-                    'keydown', 'mousemove'];
-    events.forEach(e => window.addEventListener(e, handoff, { capture: true, passive: true, once: false }));
-
-    // Start the fallback timer the moment the video genuinely starts
-    // rendering motion, not when play() is called.
-    function startFallback() {
-      if (fallbackTimer) return;
-      fallbackTimer = setTimeout(handoff, FALLBACK_MS);
-    }
-    if (heroVideo) {
-      if (!heroVideo.paused && heroVideo.currentTime > 0) {
-        startFallback();
-      } else {
-        heroVideo.addEventListener('playing', startFallback, { once: true });
-        // Safety net: if 'playing' never fires, start the timer after 2s
-        setTimeout(startFallback, 2000);
-      }
-    } else {
-      startFallback();
-    }
-  })();
-
-  // Pause the hero video when the tab is hidden, resume when it returns.
-  // Saves CPU and bandwidth without affecting the loop.
-  document.addEventListener('visibilitychange', () => {
-    const v = document.getElementById('heroVideo');
-    if (!v) return;
-    if (document.hidden) v.pause();
-    else v.play().catch(() => {});
-  });
-
-  // ====== PROJECT LIGHTBOX ======
-  // Click any tile -> open lightbox with the full project video.
-  // Close via the X button, click on backdrop, or Escape key.
+  // ====== LIGHTBOX ======
   (function setupLightbox() {
     const lightbox = document.getElementById('lightbox');
     const lightboxVideo = document.getElementById('lightboxVideo');
@@ -1298,49 +1186,29 @@ body.lightbox-open { overflow: hidden; }
     const lightboxClose = document.getElementById('lightboxClose');
     if (!lightbox || !lightboxVideo) return;
 
-    function open(fullSrc, title) {
+    window.__openLightbox = function (fullSrc, title) {
       if (!fullSrc) return;
       lightboxVideo.src = fullSrc;
       lightboxTitle.textContent = title || '';
       lightbox.classList.add('open');
       document.body.classList.add('lightbox-open');
       lightbox.setAttribute('aria-hidden', 'false');
-      // Play once visible. Browser may block autoplay without user
-      // gesture; the click on the tile counts as a gesture so this
-      // usually succeeds.
-      setTimeout(() => {
-        lightboxVideo.play().catch(() => {});
-      }, 100);
-    }
+      setTimeout(() => { lightboxVideo.play().catch(() => {}); }, 100);
+    };
 
     function close() {
       lightbox.classList.remove('open');
       document.body.classList.remove('lightbox-open');
       lightbox.setAttribute('aria-hidden', 'true');
       lightboxVideo.pause();
-      // Clear src after the close transition so the video stops
-      // downloading in the background.
       setTimeout(() => {
         lightboxVideo.removeAttribute('src');
         lightboxVideo.load();
       }, 400);
     }
 
-    // Wire click on every tile
-    document.querySelectorAll('.tile[data-slot]').forEach(tile => {
-      tile.addEventListener('click', (e) => {
-        e.preventDefault();
-        const fullSrc = tile.getAttribute('data-full');
-        const titleEl = tile.querySelector('.tile-overlay-title');
-        const title = titleEl ? titleEl.textContent.trim() : '';
-        if (fullSrc) open(fullSrc, title);
-      });
-    });
-
-    // Close interactions
     lightboxClose.addEventListener('click', close);
     lightbox.addEventListener('click', (e) => {
-      // Click on the backdrop (not on the frame or its children) closes
       if (e.target === lightbox) close();
     });
     document.addEventListener('keydown', (e) => {
@@ -1348,142 +1216,90 @@ body.lightbox-open { overflow: hidden; }
     });
   })();
 
-  // Menu toggle
-  const wrap = document.getElementById('menuWrap');
-  const burger = document.getElementById('burger');
-  const backdrop = document.getElementById('menuBackdrop');
-
-  function setMenu(open) {
-    if (!wrap || !burger) return;
-    wrap.classList.toggle('open', open);
-    document.body.classList.toggle('menu-open', open);
-    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  function wireTileClicks() {
+    document.querySelectorAll('.tile[data-slot]').forEach(tile => {
+      // Avoid double-binding if init is called twice.
+      if (tile.__wired) return;
+      tile.__wired = true;
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        const fullSrc = tile.getAttribute('data-full');
+        const titleEl = tile.querySelector('.tile-overlay-title');
+        const title = titleEl ? titleEl.textContent.trim() : '';
+        if (fullSrc && window.__openLightbox) window.__openLightbox(fullSrc, title);
+      });
+    });
   }
 
-  if (burger && wrap) {
+  function wireTileHover() {
+    const tileVideos = document.querySelectorAll('.tile-media video');
+    tileVideos.forEach(v => {
+      if (v.__hoverWired) return;
+      v.__hoverWired = true;
+      v.removeAttribute('autoplay');
+      v.loop = true;
+      v.muted = true;
+      const seekFirstFrame = () => { try { v.currentTime = 0.001; } catch (e) {} };
+      if (v.readyState >= 1) seekFirstFrame();
+      else v.addEventListener('loadedmetadata', seekFirstFrame, { once: true });
+
+      const tile = v.closest('.tile');
+      if (!tile) return;
+      tile.addEventListener('mouseenter', () => {
+        try { v.currentTime = 0.001; } catch (e) {}
+        v.play().catch(() => {});
+      });
+      tile.addEventListener('mouseleave', () => {
+        v.pause();
+        try { v.currentTime = 0.001; } catch (e) {}
+      });
+    });
+  }
+
+  // ====== MENU TOGGLE ======
+  (function setupMenu() {
+    const wrap = document.getElementById('menuWrap');
+    const burger = document.getElementById('burger');
+    if (!burger || !wrap) return;
+
+    function setMenu(open) {
+      wrap.classList.toggle('open', open);
+      document.body.classList.toggle('menu-open', open);
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
     burger.addEventListener('click', () => {
       setMenu(!wrap.classList.contains('open'));
     });
     wrap.querySelectorAll('.menu a').forEach(a =>
       a.addEventListener('click', () => setMenu(false))
     );
-  }
-  if (backdrop) {
-    backdrop.addEventListener('click', () => setMenu(false));
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && wrap && wrap.classList.contains('open')) {
-      setMenu(false);
-    }
-  });
-
-  // Scroll-driven effects:
-  // 1) Nav background swap (transparent over the reel, semi-opaque
-  //    once the panel covers the area behind the nav)
-  // 2) Hero reaction: as the Selected Works panel rises over the
-  //    reel, the reel itself scales down slightly and fades, so it
-  //    feels alive — like it's receding behind the page instead of
-  //    sitting frozen
-  const navEl = document.querySelector('.nav');
-  const heroInnerEl = document.querySelector('.hero-inner');
-  const heroCaptionEl = document.querySelector('.hero-caption');
-  let ticking = false;
-  function update() {
-    const y = window.scrollY || window.pageYOffset || 0;
-    const vh = window.innerHeight;
-
-    if (navEl) {
-      const navH = navEl.offsetHeight || 54;
-      const triggerAt = vh - navH;
-      navEl.classList.toggle('scrolled', y > triggerAt);
-    }
-
-    if (heroInnerEl) {
-      // Skip the scroll-brightness reaction while the intro is running
-      // — the intro applies its own blur via CSS class, and writing an
-      // inline filter here would override it. Once the intro has fully
-      // handed off (both intro-active and intro-handoff classes are
-      // gone), the scroll reaction takes over.
-      const introRunning = document.body.classList.contains('intro-active')
-                        || document.body.classList.contains('intro-handoff');
-      if (introRunning) {
-        ticking = false;
-        return;
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && wrap.classList.contains('open')) {
+        setMenu(false);
       }
+    });
+  })();
 
-      // Subtle scroll reaction: the video gently darkens as the user
-      // scrolls past the hero. Progress is measured against the hero's
-      // actual height, so the reaction completes naturally as the hero
-      // exits the viewport.
-      const heroEl = document.querySelector('.hero');
-      const heroH = heroEl ? heroEl.offsetHeight : vh;
-      const progress = Math.min(Math.max(y / heroH, 0), 1);
-      // Ease the brightness with a cubic ease-in. Starts slow (hero
-      // stays mostly bright as you begin scrolling), then accelerates
-      // the dim as you near the end of the hero. Feels intentional
-      // rather than mechanical.
-      const eased = progress * progress * progress;
-      const brightness = 1 - eased * 0.55;
-      heroInnerEl.style.filter = 'brightness(' + brightness + ')';
-      heroInnerEl.style.transform = '';
-      heroInnerEl.style.opacity = '';
-      if (heroCaptionEl) heroCaptionEl.style.opacity = 1 - eased * 0.7;
+  // ====== NAV SCROLL STATE ======
+  // The nav adds a .scrolled class once the user scrolls past a
+  // threshold so it can pick up a background tint for legibility
+  // (the same .scrolled rule from index.html applies).
+  (function setupNavScroll() {
+    const navEl = document.querySelector('.nav');
+    if (!navEl) return;
+    let ticking = false;
+    function update() {
+      const y = window.scrollY || window.pageYOffset || 0;
+      navEl.classList.toggle('scrolled', y > 40);
+      ticking = false;
     }
-
-    ticking = false;
-  }
-  function onScroll() {
-    if (!ticking) { requestAnimationFrame(update); ticking = true; }
-  }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
-  update();
-
-  // Tile thumbnails: show first frame as still by default. On hover,
-  // play the video so the viewer sees motion from the project. On
-  // hover out, pause and reset to the first frame so the still
-  // returns immediately.
-  const tileVideos = document.querySelectorAll('.tile-media video');
-  tileVideos.forEach(v => {
-    v.removeAttribute('autoplay');
-    v.loop = true; // loops only while hovering
-    v.muted = true;
-    const seekFirstFrame = () => {
-      try { v.currentTime = 0.001; } catch (e) {}
-    };
-    if (v.readyState >= 1) seekFirstFrame();
-    else v.addEventListener('loadedmetadata', seekFirstFrame, { once: true });
-
-    const tile = v.closest('.tile');
-    if (!tile) return;
-    tile.addEventListener('mouseenter', () => {
-      // Start from the beginning so every hover plays the same opening
-      // moment of the project — predictable, like a film trailer's
-      // first beat.
-      try { v.currentTime = 0.001; } catch (e) {}
-      v.play().catch(() => {});
-    });
-    tile.addEventListener('mouseleave', () => {
-      v.pause();
-      try { v.currentTime = 0.001; } catch (e) {}
-    });
-  });
-
-  // Dissolve-reveal the "Selected Works" title when it scrolls into view.
-  const titleEl = document.querySelector('.section-title h2');
-  if (titleEl && 'IntersectionObserver' in window) {
-    const titleObs = new IntersectionObserver((entries) => {
-      entries.forEach(e => {
-        if (e.isIntersecting) {
-          titleEl.classList.add('revealed');
-          titleObs.unobserve(titleEl);
-        }
-      });
-    }, { threshold: 0.2 });
-    titleObs.observe(titleEl);
-  } else if (titleEl) {
-    titleEl.classList.add('revealed');
-  }
+    function onScroll() {
+      if (!ticking) { requestAnimationFrame(update); ticking = true; }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+    update();
+  })();
 </script>
 
 </body>
