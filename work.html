@@ -870,65 +870,96 @@ body.lightbox-open { overflow: hidden; }
 
 /* ======================================================
    WORK PAGE
-   Park Pictures-style work index. A clean uniform grid of
-   16:9 thumbnails with the title and role set as a refined
-   caption below each tile, both visible at rest. Hover plays
-   the loop. Click opens the lightbox. Generous gaps and side
-   gutters carry the editorial weight; the project IS the
-   moment, not the chrome around it.
+   Editorial scrolling showcase. Each project gets a roughly
+   85vh section, alternating between side-left, side-right,
+   and a full-width hero opener. Numbered (01, 02, 03…) like
+   a film festival program. Videos autoplay on scroll into
+   view via IntersectionObserver. The page reads as a
+   sequence of moments rather than a grid of cells, so even
+   a tight body of work feels substantial and curated.
 ====================================================== */
 .work-main {
-  /* Generous breathing room above the grid so it doesn't crash
-     into the nav. Nav height plus a comfortable visual gutter. */
-  padding-top: calc(var(--nav-h) + clamp(56px, 8vw, 120px));
-  padding-bottom: clamp(80px, 10vw, 160px);
   background: var(--bg);
   position: relative;
   z-index: 1;
+  padding-top: var(--nav-h);
+  padding-bottom: clamp(60px, 8vw, 120px);
 }
 
-.work-grid {
-  /* Side gutters that feel architectural, not template-y.
-     Bigger than the home grid's edge so the work page reads as
-     curated, not packed. */
-  padding: 0 clamp(20px, 4vw, 64px);
+.work-showcase {
+  display: flex;
+  flex-direction: column;
+}
+
+/* A single project moment. The outer section is the layout
+   container; the inner .work-feature-media is the actual clickable
+   element (the tile). Each section claims its own vertical real
+   estate so the page reads as a paced sequence, not a list. */
+.work-feature {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  /* Wide gap between tiles. The whitespace does a lot of the
-     "this is serious work" lift. */
-  column-gap: clamp(20px, 3vw, 48px);
-  row-gap: clamp(56px, 7vw, 100px);
-}
-@media (max-width: 720px) {
-  .work-grid {
-    grid-template-columns: 1fr;
-    padding: 0 var(--edge);
-    row-gap: clamp(40px, 6vw, 64px);
-  }
+  align-items: center;
+  min-height: min(86vh, 800px);
+  padding: clamp(48px, 7vw, 110px) clamp(20px, 4vw, 72px);
+  position: relative;
+  gap: clamp(28px, 4vw, 80px);
 }
 
-/* A work item: the tile + its caption stacked vertically. */
-.work-item {
+/* ---- Hero (first project) ----
+   Full-width video. Title block sits in the lower-left, partially
+   tucked against the video so it reads as a poster moment. */
+.work-feature--hero {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  min-height: min(94vh, 900px);
+  padding-top: clamp(80px, 10vw, 160px);
+}
+.work-feature--hero .work-feature-media {
+  grid-row: 1;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+.work-feature--hero .work-feature-info {
+  grid-row: 2;
+  align-self: start;
+  margin-top: clamp(20px, 2.4vw, 36px);
+  max-width: 720px;
+}
+
+/* ---- Sided patterns ----
+   Two-column layout: video takes the larger column, info the
+   smaller. Alternates left/right to give the page rhythm. */
+.work-feature--side-left,
+.work-feature--side-right {
+  grid-template-columns: 1.55fr 1fr;
+}
+.work-feature--side-left .work-feature-media  { grid-column: 1; }
+.work-feature--side-left .work-feature-info   { grid-column: 2; }
+.work-feature--side-right .work-feature-media { grid-column: 2; }
+.work-feature--side-right .work-feature-info  {
+  grid-column: 1;
+  text-align: right;
+  align-items: flex-end;
+}
+
+/* Media element: the actual click target. Cursor + subtle hover
+   warmth on the frame edge to signal interactivity without
+   adding visual weight. */
+.work-feature-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: var(--bg-2);
+  overflow: hidden;
   display: block;
   text-decoration: none;
-  color: inherit;
+  cursor: pointer;
 }
-
-.work-item .tile-media {
-  aspect-ratio: 16 / 9;
-  position: relative;
-  overflow: hidden;
-  background: var(--bg-2);
-}
-.work-item .tile-media video {
+.work-feature-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-/* Subtle hover lift: the tile slightly brightens and the video
-   itself plays. No transform — keeps the grid lines tidy. */
-.work-item .tile-media::after {
+.work-feature-media::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -936,49 +967,80 @@ body.lightbox-open { overflow: hidden; }
   transition: background 320ms cubic-bezier(.22,.61,.36,1);
   pointer-events: none;
 }
-.work-item:hover .tile-media::after {
+.work-feature-media:hover::after {
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* Caption: title left, role right, baseline-aligned. The slash
-   between them is part of the typography, not a separator span. */
-.work-item-caption {
-  margin-top: clamp(14px, 1.4vw, 22px);
+/* Info column: number, title, role. Stacked vertically with
+   relaxed spacing so each line breathes. */
+.work-feature-info {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1.5em;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(14px, 1.2vw, 22px);
   font-family: 'Inter', sans-serif;
-  line-height: 1.1;
-}
-.work-item-title {
-  font-variation-settings: "opsz" 18;
-  font-weight: 500;
-  font-size: clamp(16px, 1.25vw, 20px);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--fg);
-  /* Long titles wrap; the role stays anchored to the right. */
-  flex: 1 1 auto;
-  min-width: 0;
-}
-.work-item-role {
-  font-variation-settings: "opsz" 14;
-  font-weight: 400;
-  font-size: clamp(12px, 0.95vw, 15px);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--fg-dim);
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-.work-item:hover .work-item-title {
-  color: #fff;
 }
 
-/* Page cover: opaque black overlay that fades out on load.
-   Replaces the elaborate hero-intro from the home page with a
-   quiet fade. */
+/* Two-digit project index. Small, wide-tracked, subtle. Reads as
+   curation — "this is item 02 in a chosen sequence." */
+.work-feature-num {
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1;
+}
+
+/* The project title is the typographic event of the section.
+   Large, opsz-tuned for display, slight negative tracking. */
+.work-feature-title {
+  font-variation-settings: "opsz" 32;
+  font-weight: 500;
+  font-size: clamp(32px, 4.4vw, 68px);
+  letter-spacing: -0.012em;
+  line-height: 1.02;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin: 0;
+}
+
+/* Role credit: small caps, wide tracking. Quiet, honest, metadata. */
+.work-feature-role {
+  font-size: clamp(12px, 0.95vw, 15px);
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  line-height: 1;
+}
+
+@media (max-width: 820px) {
+  .work-feature,
+  .work-feature--hero,
+  .work-feature--side-left,
+  .work-feature--side-right {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding: clamp(36px, 8vw, 64px) var(--edge);
+    gap: clamp(20px, 4vw, 32px);
+  }
+  .work-feature--side-left .work-feature-media,
+  .work-feature--side-left .work-feature-info,
+  .work-feature--side-right .work-feature-media,
+  .work-feature--side-right .work-feature-info {
+    grid-column: 1;
+  }
+  .work-feature--side-right .work-feature-info {
+    text-align: left;
+    align-items: flex-start;
+  }
+  .work-feature-title {
+    font-size: clamp(28px, 8vw, 44px);
+  }
+}
+
+/* Page cover: opaque overlay that fades out on load. */
 .page-cover {
   position: fixed;
   inset: 0;
@@ -1036,14 +1098,16 @@ body.lightbox-open { overflow: hidden; }
 <!-- ====== WORK PAGE MAIN ====== -->
 <main class="work-main">
 
-  <!-- ====== WORK GRID ======
+  <!-- ====== WORK SHOWCASE ======
        Rendered by JS from WORK_N_* blocks in content/site.txt.
-       Each project: 16:9 thumbnail tile (hover plays the loop),
-       caption below with title on the left and role on the right.
-       Empty / commented-out blocks are skipped, so the page only
-       shows projects that are fully filled in. -->
-  <section class="work-grid" id="workGrid" aria-label="Selected work">
-    <!-- Tiles inserted here by JS. -->
+       Each project becomes a near-full-viewport "feature" section
+       with a video, a two-digit index (01, 02…), a display title,
+       and a role credit. The layout alternates side-left and
+       side-right starting from the second project; the first
+       project is the full-width hero. Videos autoplay when their
+       section scrolls into view. -->
+  <section class="work-showcase" id="workGrid" aria-label="Selected work">
+    <!-- Features inserted here by JS. -->
   </section>
 
 </main>
@@ -1105,8 +1169,10 @@ body.lightbox-open { overflow: hidden; }
     return folder.replace(/\/$/, '') + '/' + encodeURIComponent(value);
   }
 
-  // Build the work grid. Park Pictures-style uniform 2-column grid.
-  // Each item is a 16:9 tile with title + role caption below.
+  // Build the work showcase. Vertical scrolling editorial format:
+  // first project = full-width hero, rest alternate side-left and
+  // side-right. Each project becomes a near-full-viewport section
+  // numbered 01, 02, 03... so the page reads as a curated sequence.
   function buildWorkGrid(cfg) {
     const container = document.getElementById('workGrid');
     if (!container) return;
@@ -1131,30 +1197,80 @@ body.lightbox-open { overflow: hidden; }
     if (!projects.length) return;
 
     container.innerHTML = '';
-    projects.forEach((p) => {
+    projects.forEach((p, i) => {
+      // Pattern selection:
+      //   index 0  => hero (full-width video, info below)
+      //   odd      => side-left (video left, info right)
+      //   even     => side-right (video right, info left)
+      let pattern;
+      if (i === 0) pattern = 'work-feature--hero';
+      else if (i % 2 === 1) pattern = 'work-feature--side-left';
+      else pattern = 'work-feature--side-right';
+
+      const num = String(i + 1).padStart(2, '0');
       const fileSrc = resolveSrc(p.file, 'media/work-' + p.n);
       const fullSrc = resolveSrc(p.full, 'media/work-' + p.n);
 
-      const item = document.createElement('a');
-      item.className = 'work-item tile';
-      item.setAttribute('href', '#');
-      item.setAttribute('data-slot', 'work-' + p.n);
-      item.setAttribute('data-full', fullSrc);
-      item.setAttribute('data-role', p.role);
+      const section = document.createElement('section');
+      section.className = 'work-feature ' + pattern;
 
-      item.innerHTML =
-        '<div class="tile-media">' +
+      section.innerHTML =
+        '<a class="work-feature-media tile" href="#" ' +
+            'data-slot="work-' + p.n + '" ' +
+            'data-full="' + fullSrc + '" ' +
+            'data-role="' + p.role + '">' +
           '<video preload="metadata" muted loop playsinline disablepictureinpicture>' +
             '<source src="' + fileSrc + '" type="video/mp4">' +
           '</video>' +
-        '</div>' +
-        '<div class="work-item-caption">' +
-          '<span class="work-item-title tile-overlay-title">' + p.title + '</span>' +
-          '<span class="work-item-role">' + p.role + '</span>' +
+        '</a>' +
+        '<div class="work-feature-info">' +
+          '<span class="work-feature-num">' + num + '</span>' +
+          '<h2 class="work-feature-title tile-overlay-title">' + p.title + '</h2>' +
+          '<span class="work-feature-role">' + p.role + '</span>' +
         '</div>';
 
-      container.appendChild(item);
+      container.appendChild(section);
     });
+
+    // Autoplay videos when scrolled into view; pause when out.
+    // Reduces battery hit on long pages and makes each project come
+    // alive as the viewer arrives at it.
+    setupScrollPlay();
+  }
+
+  // Use IntersectionObserver to play/pause feature videos as the
+  // user scrolls. Threshold of 0.35 means the video starts playing
+  // once about a third of it is visible.
+  function setupScrollPlay() {
+    const videos = document.querySelectorAll('.work-feature-media video');
+    if (!videos.length) return;
+
+    // Seek each video to its first real frame so it has a visible
+    // poster image at rest (before scroll triggers play).
+    videos.forEach(v => {
+      const seek = () => { try { v.currentTime = 0.001; } catch (e) {} };
+      if (v.readyState >= 1) seek();
+      else v.addEventListener('loadedmetadata', seek, { once: true });
+    });
+
+    if (!('IntersectionObserver' in window)) {
+      // Older browsers: just attempt to play all.
+      videos.forEach(v => v.play().catch(() => {}));
+      return;
+    }
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const v = entry.target;
+        if (entry.isIntersecting) {
+          v.play().catch(() => {});
+        } else {
+          v.pause();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    videos.forEach(v => io.observe(v));
   }
 
   // Main initialization.
@@ -1191,11 +1307,9 @@ body.lightbox-open { overflow: hidden; }
       setTimeout(() => { if (cover && cover.parentNode) cover.remove(); }, 700);
     });
 
-    // Wire up tile click -> lightbox AFTER the work grid has been
-    // built. Reel tiles already exist in the DOM at page load, so
-    // they're included here too.
+    // Wire tile click -> lightbox. Hover-play is replaced by scroll
+    // play, which is set up inside buildWorkGrid via IntersectionObserver.
     wireTileClicks();
-    wireTileHover();
   })();
 
   // ====== LIGHTBOX ======
