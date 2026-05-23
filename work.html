@@ -1,1046 +1,162 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>MIKE BECKER / WORK</title>
-<meta name="description" content="Mike Becker. Selected directing and cinematography work." />
-<meta name="theme-color" content="#0C0B09" />
-
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C0B09">
+<title>Work — Mike Becker</title>
+<meta name="description" content="Selected work. Mike Becker. Director and Specialty Camera based in Los Angeles." />
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
 
 <style>
 /* ======================================================
-   TOKENS
+   ROOT TOKENS
+   Inherits the same visual language as index.html so the
+   site reads as one coherent piece. Edit values here only
+   if the homepage tokens change.
 ====================================================== */
 :root {
-  --bg:     #0C0B09;
-  --bg-2:   #131210;
-  --fg:     #EDE6D8;
-  --fg-dim: #B6AF9F;
-  --muted:  #6A655B;
-  --line:   rgba(237, 230, 216, 0.10);
-  /* Header background when locked to the page (panel area). 80% opacity
-     so the underlying page color shows through subtly. */
-  --nav-bg: rgba(12, 11, 9, 0.80);
+  --bg:           #0C0B09;
+  --bg-2:         #161513;
+  --fg:           #F4F1EB;
+  --fg-dim:       #D9D5CC;
+  --muted:        #8A867D;
+  --accent-warm:  #C8B69A;
 
-  /* Horizontal gutter for tile gaps and section padding. Smaller,
-     so tiles can sit close together. */
-  --edge: clamp(8px, 1vw, 14px);
+  /* Horizontal gutter for tile gaps and section padding. Matches
+     the homepage exactly so the work page feels continuous with the
+     rest of the site. */
+  --edge:        clamp(8px, 1vw, 14px);
 
-  /* Larger gutter just for the nav (brand and burger breathing room
-     from the page edges). Doesn't affect tile spacing. */
-  --nav-edge: clamp(16px, 1.8vw, 28px);
+  /* Nav gutter — wider than --edge so the nav contents sit comfortably
+     in from the page edges. */
+  --nav-edge:    clamp(16px, 1.8vw, 28px);
 
-  /* Height of the fixed nav bar at the top. Used to push the hero
-     and any sticky content down by this amount so they don't sit
-     behind the nav. */
-  --nav-h: 60px;
-
-  --buffer: 15vh;
-
-  --t-fast: 220ms cubic-bezier(.22,.61,.36,1);
-  --t-mid:  420ms cubic-bezier(.22,.61,.36,1);
+  --radius:      clamp(8px, 0.9vw, 14px);
+  --nav-h:       64px;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { background: var(--bg); color: var(--fg); }
-html { scroll-behavior: smooth; }
-body {
-  font-family: 'Inter', system-ui, sans-serif;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 1.5;
-  letter-spacing: 0;
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* No top padding: the nav floats transparently over the hero
-     using mix-blend-mode: difference. The hero begins at y=0. */
 }
+
+body {
+  /* The page cover fades on load to mask reflow. Mirrors the
+     homepage handoff so navigation between pages feels continuous. */
+}
+
 a { color: inherit; text-decoration: none; }
-img, video { display: block; max-width: 100%; }
-button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0; }
 
 /* ======================================================
-   GRAIN
-====================================================== */
-.grain {
-  position: fixed; inset: -50%;
-  width: 200%; height: 200%;
-  pointer-events: none;
-  z-index: 100;
-  opacity: 0.09;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/></svg>");
-  animation: grainShift 7s steps(8) infinite;
-}
-@keyframes grainShift {
-  0%   { transform: translate(0, 0); }
-  20%  { transform: translate(-3%, 4%); }
-  40%  { transform: translate(5%, -2%); }
-  60%  { transform: translate(-4%, -3%); }
-  80%  { transform: translate(2%, 5%); }
-  100% { transform: translate(0, 0); }
-}
-
-/* ======================================================
-   NAV — uses --edge for left/right padding so the brand
-   sits on the same left axis as "Selected Works" and the grid.
+   NAV — flat horizontal menu
+   Brand on the left (name + role tagline that appears on hover).
+   Flat horizontal nav on the right: Home / Work / About / Contact.
+   No collapsible menu, no burger. The functional elements are
+   visible at all times because top-tier director sites do not
+   hide their navigation on desktop.
 ====================================================== */
 .nav {
-  position: fixed; top: 0; left: 0; right: 0;
-  z-index: 200;
+  position: fixed;
+  top: 0; left: 0; right: 0;
   height: var(--nav-h);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0 var(--nav-edge);
-  display: flex; align-items: center; justify-content: space-between;
-  /* Transparent: the nav floats over the content. Text and burger
-     are solid white with a soft drop shadow for readability against
-     varied backgrounds (matches the Park Pictures treatment). */
-  background: transparent;
   pointer-events: none;
 }
-/* Restore clickability for the actual links inside the nav. */
-.nav a,
-.nav button,
-.nav .menu-wrap {
-  pointer-events: auto;
-}
+.nav > * { pointer-events: auto; }
 
+/* Brand — same DOM and styles as the homepage so the upper-left
+   identity is identical between pages. */
 .brand {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
-  white-space: nowrap;
-  gap: 0.5em;
-  position: relative;
+  gap: 12px;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
 }
 .brand-name {
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 32;
-  /* Uppercase, slightly bolder, mild positive tracking. Matches the
-     Park Pictures treatment — confident, declarative, masthead. */
-  font-weight: 600;
-  font-size: clamp(18px, 1.4vw, 22px);
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
+  font-variation-settings: "opsz" 28;
+  font-weight: 500;
+  font-size: 16px;
+  letter-spacing: -0.005em;
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
+  text-transform: uppercase;
 }
-
-/* Brand-sub reveal — a quiet fade-in on hover. The full label
-   "[ Director · Cinematographer ]" appears together as one piece,
-   no stagger, no slide. Treats the secondary text as supplementary
-   information that reveals when the wordmark is attended to. */
 .brand-sub {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.4em;
-  margin-left: clamp(10px, 0.8vw, 16px);
+  gap: 6px;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 320ms cubic-bezier(.22,.61,.36,1),
+              transform 320ms cubic-bezier(.22,.61,.36,1);
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 18;
-  font-weight: 400;
-  font-size: clamp(11px, 0.8vw, 13px);
-  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-  pointer-events: none;
+  color: rgba(255,255,255,0.72);
   line-height: 1;
   white-space: nowrap;
-  opacity: 0;
-  transition: opacity 420ms cubic-bezier(.22,.61,.36,1);
-}
-.brand-sub-bracket,
-.brand-sub-dot {
-  color: rgba(255, 255, 255, 0.4);
 }
 .brand:hover .brand-sub {
   opacity: 1;
-}
-
-/* ======================================================
-   MENU
-====================================================== */
-.menu-wrap { display: flex; align-items: center; gap: 14px; }
-
-.menu-stack {
-  position: relative;
-  height: clamp(14px, 1.05vw, 17px);
-  /* No fixed width and no overflow clipping. The menu items are
-     absolutely positioned to the right and pre-laid out; they just
-     toggle visibility via opacity, not width. */
-}
-
-.menu-label,
-.menu {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  white-space: nowrap;
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 18;
-  font-size: clamp(15px, 1.1vw, 18px);
-  font-weight: 500;
-  letter-spacing: 0;
-  /* Plain sentence case as written in the HTML: "Home", "Work",
-     "About", "Contact". No caps transformation. */
-  text-transform: none;
-  color: #fff;
-  line-height: 1;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55), 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
-/* "MENU" label fades out as items fade in. */
-.menu-label {
-  opacity: 1;
-  transition: opacity 200ms cubic-bezier(.22,.61,.36,1);
-}
-.menu-wrap.open .menu-label { opacity: 0; }
-
-.menu {
-  gap: 14px;
-  pointer-events: none;
-}
-.menu-wrap.open .menu { pointer-events: auto; }
-
-/* Each child of .menu (links + separators) slides in from a small
-   right offset while fading in. Stagger goes right-to-left so the
-   rightmost item moves first and the leftmost last. */
-.menu > * {
-  opacity: 0;
-  transform: translateX(14px);
-  transition: opacity 480ms cubic-bezier(.22,.61,.36,1),
-              transform 520ms cubic-bezier(.22,.61,.36,1);
-}
-.menu-wrap.open .menu > * {
-  opacity: 1;
   transform: translateX(0);
 }
-.menu-wrap.open .menu > *:nth-child(7) { transition-delay: 60ms; }
-.menu-wrap.open .menu > *:nth-child(6) { transition-delay: 110ms; }
-.menu-wrap.open .menu > *:nth-child(5) { transition-delay: 160ms; }
-.menu-wrap.open .menu > *:nth-child(4) { transition-delay: 210ms; }
-.menu-wrap.open .menu > *:nth-child(3) { transition-delay: 260ms; }
-.menu-wrap.open .menu > *:nth-child(2) { transition-delay: 310ms; }
-.menu-wrap.open .menu > *:nth-child(1) { transition-delay: 360ms; }
-
-.menu .sep {
-  color: rgba(255, 255, 255, 0.35);
-  user-select: none;
-  font-style: normal;
+.brand-sub-bracket,
+.brand-sub-dot {
+  opacity: 0.55;
 }
 
-.menu a {
-  position: relative;
-  padding: 2px 0;
-  color: #fff;
-  text-decoration: none;
-  display: inline-block;
-  transition:
-    opacity 480ms cubic-bezier(.22,.61,.36,1),
-    transform 520ms cubic-bezier(.22,.61,.36,1);
-}
-/* Subtle underline that draws in from the left on hover. Italic
-   serif text doesn't transition weight nicely (not a variable font),
-   so the indicator is a thin underline that grows under the word. */
-.menu a::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -2px;
-  height: 1px;
-  background: #fff;
-  transform-origin: left center;
-  transform: scaleX(0);
-  transition: transform 420ms cubic-bezier(.22,.61,.36,1);
-}
-.menu a:hover::after { transform: scaleX(1); }
-
-.burger {
-  width: 36px; height: 36px;
-  display: flex; flex-direction: column;
-  justify-content: center; align-items: flex-end;
-  gap: 8px;
-  cursor: pointer;
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  position: relative;
-  z-index: 1;
-}
-.burger span {
-  display: block;
-  height: 1.5px;
-  background: #fff;
-  border-radius: 1px;
-  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.55));
-  transition: transform 420ms cubic-bezier(.22,.61,.36,1),
-              width 420ms cubic-bezier(.22,.61,.36,1),
-              opacity 240ms ease;
-  transform-origin: center;
-}
-/* Uneven lines: top is full-width (22px), bottom is shorter (14px).
-   Right-aligned via the flex container so the difference reads as
-   intentional rather than arbitrary. */
-.burger span:nth-child(1) { width: 22px; }
-.burger span:nth-child(2) { width: 14px; }
-/* Open: both lines become equal width and rotate into an X. */
-.menu-wrap.open .burger span:nth-child(1) {
-  width: 22px;
-  transform: translateY(5px) rotate(45deg);
-}
-.menu-wrap.open .burger span:nth-child(2) {
-  width: 22px;
-  transform: translateY(-5px) rotate(-45deg);
-}
-
-@media (max-width: 720px) {
-  .menu-label, .menu { font-size: 13px; letter-spacing: 0.06em; }
-  .menu { gap: 9px; }
-}
-
-/* ======================================================
-   HERO — in document flow, edge-to-edge
-====================================================== */
-.hero {
-  /* Fills the full viewport. The nav floats transparently over the
-     top edge using mix-blend-mode: difference, so the reel runs all
-     the way to the top of the page. */
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
-  overflow: hidden;
-  background: var(--bg);
-}
-.hero-media {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  /* Sharp corners. The hero IS the page edge; rounding here would
-     contradict the full-bleed geometry. Tiles keep their radius
-     because they're floating objects, not page-edge elements. */
-  border-radius: 0;
-}
-/* Inner wrapper holds the video and placeholder. The scroll-driven
-   parallax (scale, translate, opacity) applies to THIS element, so
-   the outer .hero-media frame stays the same size as the reel
-   recedes. */
-.hero-inner {
-  position: absolute;
-  inset: 0;
-  transform-origin: center center;
-  will-change: transform, opacity;
-}
-/* Hero poster: a canvas that JS paints with the reel's first frame.
-   Sits above the video. Starts solid black (covers the empty hero
-   while the video loads in the background). Once JS has painted the
-   first frame, the canvas shows that frame. Fades out via .gone
-   once the video is playing. */
-.hero-poster {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  background: #000;
-  z-index: 2;
-  opacity: 1;
-  transition: opacity 400ms cubic-bezier(.22,.61,.36,1);
-}
-.hero-poster.gone {
-  opacity: 0;
-}
-/* Caption strip in the dark gap between the hero and the grid.
-   Right-aligned to the same gutter as the tiles. Two-tone: primary
-   role in white, secondary in muted gray. */
-.hero-caption {
-  display: flex;
-  justify-content: flex-end;
-  padding: clamp(10px, 1.2vw, 16px) var(--edge);
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 18, "wght" 500;
-  font-size: clamp(11px, 0.85vw, 13px);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  background: var(--bg);
-}
-.hero-caption .role-primary { color: #fff; }
-.hero-caption .role-sep { color: rgba(255, 255, 255, 0.35); margin: 0 0.5em; }
-.hero-caption .role-secondary { color: rgba(255, 255, 255, 0.48); }
-.hero-media .placeholder { position: absolute; inset: 0; }
-.hero-media .featured-ph {
-  background: linear-gradient(135deg, #1c1915 0%, #3a2c1f 40%, #1d1812 70%, #2a2218 100%);
-  background-size: 220% 220%;
-  animation: drift 14s ease-in-out infinite alternate;
-}
-.hero-media .featured-ph::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>");
-  opacity: 0.25;
-  mix-blend-mode: overlay;
-}
-@keyframes drift {
-  0%   { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
-}
-
-/* ======================================================
-   OVERLAY — sits below the hero in document flow
-====================================================== */
-.overlay {
-  position: relative;
-  z-index: 2;
-  background: var(--bg);
-  padding-top: var(--edge);
-}
-
-/* ======================================================
-   SECTION TITLE — sits just below the top of the panel
-====================================================== */
-.section-title {
-  padding: clamp(80px, 10vw, 160px) var(--edge) clamp(40px, 5vw, 72px);
-}
-.section-title h2 {
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 32, "wght" 700;
-  font-weight: 700;
-  font-size: clamp(48px, 9vw, 140px);
-  line-height: 0.92;
-  letter-spacing: -0.035em;
-  color: var(--fg);
-  margin: 0;
-  text-transform: uppercase;
-  /* Dissolve reveal: hidden + blurred + slightly offset until in view */
-  opacity: 0;
-  filter: blur(10px);
-  transform: translateY(10px);
-  transition: opacity 900ms cubic-bezier(.22,.61,.36,1),
-              filter 900ms cubic-bezier(.22,.61,.36,1),
-              transform 900ms cubic-bezier(.22,.61,.36,1);
-  will-change: opacity, filter, transform;
-}
-.section-title h2.revealed {
-  opacity: 1;
-  filter: blur(0);
-  transform: translateY(0);
-}
-
-/* ======================================================
-   GRID
-====================================================== */
-.grid {
-  padding: 0 var(--edge) clamp(40px, 6vw, 80px);
-  display: grid;
-  gap: var(--edge);
-}
-.grid-row { display: grid; gap: var(--edge); grid-template-columns: 1fr; }
-@media (min-width: 760px) {
-  .row-2 { grid-template-columns: 1fr 1fr; }
-  /* The first row is intentionally asymmetric: tile-1 takes 2/3 of
-     the width (landscape), tile-2 takes 1/3 (portrait, 4:5). The
-     portrait sibling determines the row's height; the wide tile
-     stretches to match instead of leaving a gap below itself. */
-  .grid-row.row-asym {
-    grid-template-columns: 2fr 1fr;
-  }
-  .grid-row.row-asym .tile { height: 100%; }
-  .grid-row.row-asym .tile:nth-child(1) .tile-media {
-    aspect-ratio: auto;
-    height: 100%;
-  }
-  .grid-row.row-asym .tile:nth-child(2) .tile-media {
-    aspect-ratio: 4 / 5;
-  }
-  /* Flipped asymmetric row: portrait on the LEFT, landscape on the
-     RIGHT. Used for later cycles so the work grid alternates rhythm
-     instead of repeating the same composition. */
-  .grid-row.row-asym.row-asym-flip {
-    grid-template-columns: 1fr 2fr;
-  }
-  .grid-row.row-asym.row-asym-flip .tile:nth-child(1) .tile-media {
-    aspect-ratio: 4 / 5;
-    height: auto;
-  }
-  .grid-row.row-asym.row-asym-flip .tile:nth-child(2) .tile-media {
-    aspect-ratio: auto;
-    height: 100%;
-  }
-  /* Full-width closer row: a single cinematic 2.39:1 tile that acts
-     as the punctuation at the end of the work grid. Wider than the
-     16:9 tiles above so the closer is visually distinct, not just
-     "the same tile bigger." */
-  .row-1 .tile-media {
-    aspect-ratio: 2.39 / 1;
-  }
-}
-
-.tile {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  background: var(--bg-2);
-  border-radius: clamp(8px, 0.9vw, 14px);
-  cursor: pointer;
-}
-.tile-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-}
-
-/* Embedded video elements behave exactly like the placeholders they
-   replace: cover the parent, inherit the same hover transforms via the
-   shared .placeholder class. */
-.placeholder, .tile-media video, .hero-media video {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.placeholder {
-  /* Default: slightly zoomed in so the image overfills the frame.
-     On hover it relaxes to a smaller scale, but stays above 1 so the
-     frame is never exposed. */
-  transform: scale(1.05);
-  transform-origin: center center;
-  transition: transform 700ms cubic-bezier(.22,.61,.36,1),
-              filter    520ms cubic-bezier(.22,.61,.36,1);
-}
-.placeholder::before {
-  content: '';
-  position: absolute; inset: 0;
-  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/></svg>");
-  opacity: 0.3;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-
-/* Preview placeholders (.tile-ph, .hero-placeholder)
-   ------------------------------------------------------
-   These sit behind the video elements. When the video has no source
-   or hasn't loaded yet, the placeholder shows through. When a real
-   video file loads, it covers the placeholder. Each has a slow
-   gradient drift to feel like ambient footage rather than a flat
-   color block, so you can preview the site locally without uploading
-   any videos. */
-.tile-ph,
-.hero-placeholder {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-size: 220% 220%;
-  animation: ph-drift 16s ease-in-out infinite alternate;
-}
-.tile-media {
-  position: relative;
-}
-.tile-media video,
-.hero-media video {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-}
-
-@keyframes ph-drift {
-  0%   { background-position: 0% 30%; }
-  100% { background-position: 100% 70%; }
-}
-
-.hero-placeholder {
-  background:
-    radial-gradient(ellipse at 30% 40%, rgba(80, 110, 140, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 60%, rgba(120, 90, 70, 0.35) 0%, transparent 60%),
-    linear-gradient(160deg, #0e1418 0%, #1a2530 55%, #08090c 100%);
-}
-
-.t1 .tile-ph { background: linear-gradient(160deg, #10131a 0%, #1d2a3a 55%, #0a0d12 100%); }
-.t2 .tile-ph { background: linear-gradient(120deg, #1a1612 0%, #482e1e 45%, #170e07 100%); }
-.t3 .tile-ph { background: linear-gradient(140deg, #131618 0%, #28383b 55%, #0c0f10 100%); }
-.t4 .tile-ph { background: linear-gradient(145deg, #1a1812 0%, #3b2d18 55%, #14100a 100%); }
-.t5 .tile-ph { background: linear-gradient(150deg, #181a14 0%, #2f3a25 50%, #0f120c 100%); }
-.t6 .tile-ph { background: linear-gradient(125deg, #181418 0%, #3a2236 55%, #100a10 100%); }
-
-.t1 .placeholder { background: linear-gradient(160deg, #10131a 0%, #1d2a3a 55%, #0a0d12 100%); }
-.t2 .placeholder { background: linear-gradient(120deg, #1a1612 0%, #482e1e 45%, #170e07 100%); }
-.t3 .placeholder { background: linear-gradient(140deg, #131618 0%, #28383b 55%, #0c0f10 100%); }
-.t4 .placeholder { background: linear-gradient(145deg, #1a1812 0%, #3b2d18 55%, #14100a 100%); }
-.t5 .placeholder { background: linear-gradient(150deg, #181a14 0%, #2f3a25 50%, #0f120c 100%); }
-.t6 .placeholder { background: linear-gradient(125deg, #181418 0%, #3a2236 55%, #100a10 100%); }
-
-/* Tile videos and placeholders: subtle scale on hover, no blur. */
-.tile-media video,
-.tile-media .tile-ph,
-.tile-media .placeholder {
-  transform: scale(1.02);
-  transform-origin: center center;
-  transition: transform 700ms cubic-bezier(.22,.61,.36,1);
-}
-.tile:hover .tile-media video,
-.tile:hover .tile-media .tile-ph,
-.tile:hover .tile-media .placeholder {
-  transform: scale(1.04);
-}
-
-/* Hover treatment: a warm amber color cast washes over the tile,
-   rather than a generic dark tint. Same affordance (the tile is
-   reacting to your cursor) but with character — a small piece of
-   color in an otherwise monochrome page. */
-.tile-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: rgba(220, 140, 80, 0.22);
-  mix-blend-mode: multiply;
-  opacity: 0;
-  transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
-  pointer-events: none;
-}
-.tile:hover .tile-media::after {
-  opacity: 1;
-}
-
-/* Hover overlay — title sits in the lower-left, slides up from the bottom */
-.tile-overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: clamp(16px, 2vw, 28px) clamp(18px, 2.2vw, 30px);
-  z-index: 5;
-  pointer-events: none;
-  text-align: left;
-}
-.tile-overlay-line {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: bottom;
-  line-height: 1;
-}
-.tile-overlay-title {
-  display: inline-block;
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 18;
-  /* Uppercase with light positive tracking. Weight 500 (not bold)
-     keeps the type confident but quiet, matching the Park Pictures
-     treatment. Larger than the nav brand so the project name reads
-     as the primary mark on each tile. */
-  font-weight: 500;
-  font-size: clamp(22px, 1.85vw, 30px);
-  letter-spacing: 0.04em;
-  line-height: 1;
-  text-transform: uppercase;
-  /* Solid white + soft drop shadow stays readable against any image
-     pixel without picking up the background tint. */
-  color: #fff;
-  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.45);
-  transform: translateY(105%);
-  opacity: 0;
-  transition: transform 540ms cubic-bezier(.22,.61,.36,1) 80ms,
-              opacity 280ms ease 140ms;
-}
-.tile:hover .tile-overlay-title {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* Role label in the upper-right of each tile (Director, Operator, etc).
-   Sits diagonally opposite the title. Smaller and lighter than the
-   title so it reads as a credit, not a competing mark. Slides down
-   from above on hover, mirroring the title's slide-up from below. */
-.tile-overlay-role {
-  position: absolute;
-  top: clamp(16px, 2vw, 28px);
-  right: clamp(18px, 2.2vw, 30px);
-  z-index: 5;
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 14;
-  font-weight: 500;
-  font-size: clamp(11px, 0.85vw, 14px);
-  letter-spacing: 0.16em;
-  line-height: 1;
-  text-transform: uppercase;
-  color: #fff;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.45);
-  pointer-events: none;
-  transform: translateY(-115%);
-  opacity: 0;
-  transition: transform 540ms cubic-bezier(.22,.61,.36,1) 80ms,
-              opacity 280ms ease 140ms;
-}
-.tile:hover .tile-overlay-role {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-/* ======================================================
-   INTRO — dissolve, then nav slides down
-   The site loads with a black overlay covering everything. The
-   overlay dissolves quickly, revealing the hero video. After the
-   video has been playing for a beat, the brand and menu slide
-   down from the top and fade in.
-====================================================== */
-
-body.intro-active { overflow: hidden; }
-
-/* The intro: blurred and zoomed-in poster, snaps to sharp + normal
-   scale in a single 150ms cubic motion. Both filter and transform
-   transition together — reads as one decisive snap, not two cues. */
-body.intro-active .hero-inner {
-  filter: blur(28px) saturate(0.95) brightness(0.98);
-  transform: scale(1.07);
-}
-.hero-inner {
-  transition: filter 150ms cubic-bezier(.65,0,.35,1),
-              transform 150ms cubic-bezier(.65,0,.35,1);
-}
-
-/* Large wordmark that sits in the upper-left during the intro
-   sequence. Same typographic treatment as the small nav brand
-   (Inter weight 600, uppercase, mild positive tracking) so the
-   small one reads as a direct scaled-down version. */
-.intro-mark {
-  position: fixed;
-  top: var(--nav-edge);
-  left: var(--nav-edge);
-  z-index: 300;
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 32;
-  font-weight: 600;
-  font-size: clamp(56px, 9vw, 140px);
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  line-height: 0.92;
-  color: #fff;
-  pointer-events: none;
-  mix-blend-mode: difference;
-  opacity: 1;
-  transition: opacity 450ms cubic-bezier(.22,.61,.36,1);
-}
-.intro-mark.gone { opacity: 0; }
-
-/* Brand and menu are held hidden during the intro (both .intro-active
-   and the handoff window). They fade/slide into place after the large
-   wordmark has dissolved. */
-.brand, .menu-wrap {
-  transition:
-    opacity 700ms cubic-bezier(.22,.61,.36,1),
-    transform 800ms cubic-bezier(.22,.61,.36,1);
-}
-body.intro-active .brand,
-body.intro-active .menu-wrap,
-body.intro-handoff .brand,
-body.intro-handoff .menu-wrap {
-  opacity: 0;
-  transform: translateY(-28px);
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition: none !important; }
-  .intro-mark { display: none !important; }
-  body.intro-active .brand,
-  body.intro-active .menu-wrap {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-  body.intro-active { overflow: auto !important; }
-}
-
-/* ====== LIGHTBOX ======
-   Full-screen overlay for project playback. Sits above everything,
-   centers the player, dims the page behind. */
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 500;
-  background: rgba(8, 7, 5, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(40px, 5vw, 80px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 320ms cubic-bezier(.22,.61,.36,1);
-}
-.lightbox.open {
-  opacity: 1;
-  pointer-events: auto;
-}
-body.lightbox-open { overflow: hidden; }
-
-.lightbox-frame {
-  width: 100%;
-  max-width: 1400px;
-  display: flex;
-  flex-direction: column;
-  gap: clamp(14px, 1.4vw, 22px);
-  transform: translateY(20px);
-  transition: transform 380ms cubic-bezier(.22,.61,.36,1);
-}
-.lightbox.open .lightbox-frame { transform: translateY(0); }
-
-.lightbox-meta {
-  display: flex;
+/* Flat nav — premium typographic menu, no toggle. Each item is
+   small caps, wide tracking, with slashes between to echo the
+   bracketed brand-sub typography. The current-page item gets
+   full white; others sit at a slightly muted opacity. */
+.menu-flat {
+  display: inline-flex;
   align-items: baseline;
-  justify-content: space-between;
-}
-.lightbox-title {
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 24;
-  font-weight: 600;
-  font-size: clamp(18px, 1.6vw, 26px);
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  gap: 8px;
   color: #fff;
-  margin: 0;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
 }
-/* Role credit sits inside the player at the bottom right. */
-.lightbox-role {
-  position: absolute;
-  right: clamp(14px, 1.4vw, 22px);
-  bottom: clamp(12px, 1.2vw, 20px);
-  z-index: 3;
+.menu-flat-link {
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 14;
-  font-weight: 400;
-  font-size: clamp(11px, 0.85vw, 14px);
+  font-size: 12px;
+  font-weight: 500;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5);
-  margin: 0;
-  white-space: nowrap;
-  pointer-events: none;
+  line-height: 1;
+  color: rgba(255,255,255,0.72);
+  transition: color 240ms cubic-bezier(.22,.61,.36,1);
+  padding: 4px 2px;
 }
-
-.lightbox-player {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: clamp(6px, 0.7vw, 10px);
-  overflow: hidden;
+.menu-flat-link:hover { color: #fff; }
+.menu-flat-link.is-current { color: #fff; }
+.menu-flat-sep {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  line-height: 1;
 }
-.lightbox-player video {
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: contain;
-}
-
-/* Close button — top-right corner, X icon */
-.lightbox-close {
-  position: absolute;
-  top: clamp(20px, 2vw, 32px);
-  right: clamp(20px, 2vw, 32px);
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  padding: 0;
-  z-index: 510;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.lightbox-close-line {
-  position: absolute;
-  width: 22px;
-  height: 1.5px;
-  background: #fff;
-  transition: background 200ms ease;
-}
-.lightbox-close-line:nth-child(1) { transform: rotate(45deg); }
-.lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
-.lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
 /* ======================================================
-   WORK PAGE
-   Editorial scrolling showcase. Each project gets a roughly
-   85vh section, alternating between side-left, side-right,
-   and a full-width hero opener. Numbered (01, 02, 03…) like
-   a film festival program. Videos autoplay on scroll into
-   view via IntersectionObserver. The page reads as a
-   sequence of moments rather than a grid of cells, so even
-   a tight body of work feels substantial and curated.
+   PAGE COVER — fades out on load to mask any reflow during
+   font loading and content injection.
 ====================================================== */
-.work-main {
-  background: var(--bg);
-  position: relative;
-  z-index: 1;
-  padding-top: var(--nav-h);
-  padding-bottom: clamp(60px, 8vw, 120px);
-}
-
-.work-showcase {
-  display: flex;
-  flex-direction: column;
-}
-
-/* A single project moment. The outer section is the layout
-   container; the inner .work-feature-media is the actual clickable
-   element (the tile). Each section claims its own vertical real
-   estate so the page reads as a paced sequence, not a list. */
-.work-feature {
-  display: grid;
-  align-items: center;
-  min-height: min(86vh, 800px);
-  padding: clamp(48px, 7vw, 110px) clamp(20px, 4vw, 72px);
-  position: relative;
-  gap: clamp(28px, 4vw, 80px);
-}
-
-/* ---- Hero (first project) ----
-   Full-width video. Title block sits in the lower-left, partially
-   tucked against the video so it reads as a poster moment. */
-.work-feature--hero {
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto;
-  min-height: min(94vh, 900px);
-  padding-top: clamp(80px, 10vw, 160px);
-}
-.work-feature--hero .work-feature-media {
-  grid-row: 1;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-}
-.work-feature--hero .work-feature-info {
-  grid-row: 2;
-  align-self: start;
-  margin-top: clamp(20px, 2.4vw, 36px);
-  max-width: 720px;
-}
-
-/* ---- Sided patterns ----
-   Two-column layout: video takes the larger column, info the
-   smaller. Alternates left/right to give the page rhythm. */
-.work-feature--side-left,
-.work-feature--side-right {
-  grid-template-columns: 1.55fr 1fr;
-}
-.work-feature--side-left .work-feature-media  { grid-column: 1; }
-.work-feature--side-left .work-feature-info   { grid-column: 2; }
-.work-feature--side-right .work-feature-media { grid-column: 2; }
-.work-feature--side-right .work-feature-info  {
-  grid-column: 1;
-  text-align: right;
-  align-items: flex-end;
-}
-
-/* Media element: the actual click target. Cursor + subtle hover
-   warmth on the frame edge to signal interactivity without
-   adding visual weight. */
-.work-feature-media {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background: var(--bg-2);
-  overflow: hidden;
-  display: block;
-  text-decoration: none;
-  cursor: pointer;
-}
-.work-feature-media video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.work-feature-media::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0);
-  transition: background 320ms cubic-bezier(.22,.61,.36,1);
-  pointer-events: none;
-}
-.work-feature-media:hover::after {
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* Info column: number, title, role. Stacked vertically with
-   relaxed spacing so each line breathes. */
-.work-feature-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: clamp(14px, 1.2vw, 22px);
-  font-family: 'Inter', sans-serif;
-}
-
-/* Two-digit project index. Small, wide-tracked, subtle. Reads as
-   curation — "this is item 02 in a chosen sequence." */
-.work-feature-num {
-  font-size: clamp(11px, 0.85vw, 13px);
-  font-weight: 500;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--muted);
-  line-height: 1;
-}
-
-/* The project title is the typographic event of the section.
-   Large, opsz-tuned for display, slight negative tracking. */
-.work-feature-title {
-  font-variation-settings: "opsz" 32;
-  font-weight: 500;
-  font-size: clamp(32px, 4.4vw, 68px);
-  letter-spacing: -0.012em;
-  line-height: 1.02;
-  text-transform: uppercase;
-  color: var(--fg);
-  margin: 0;
-}
-
-/* Role credit: small caps, wide tracking. Quiet, honest, metadata. */
-.work-feature-role {
-  font-size: clamp(12px, 0.95vw, 15px);
-  font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--fg-dim);
-  line-height: 1;
-}
-
-@media (max-width: 820px) {
-  .work-feature,
-  .work-feature--hero,
-  .work-feature--side-left,
-  .work-feature--side-right {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding: clamp(36px, 8vw, 64px) var(--edge);
-    gap: clamp(20px, 4vw, 32px);
-  }
-  .work-feature--side-left .work-feature-media,
-  .work-feature--side-left .work-feature-info,
-  .work-feature--side-right .work-feature-media,
-  .work-feature--side-right .work-feature-info {
-    grid-column: 1;
-  }
-  .work-feature--side-right .work-feature-info {
-    text-align: left;
-    align-items: flex-start;
-  }
-  .work-feature-title {
-    font-size: clamp(28px, 8vw, 44px);
-  }
-}
-
-/* Page cover: opaque overlay that fades out on load. */
 .page-cover {
   position: fixed;
   inset: 0;
@@ -1048,75 +164,271 @@ body.lightbox-open { overflow: hidden; }
   z-index: 400;
   pointer-events: none;
   opacity: 1;
-  transition: opacity 600ms cubic-bezier(.22,.61,.36,1);
+  transition: opacity 520ms cubic-bezier(.22,.61,.36,1);
 }
-.page-cover.gone {
+.page-cover.gone { opacity: 0; }
+
+/* ======================================================
+   WORK PAGE
+   Grid of project thumbnails, grouped into sections by role.
+   Each section has a label band (a small horizontal space
+   slightly taller than the tile gap) with the section name
+   set in small caps, alternating left and right alignment
+   for visual rhythm.
+
+   Within each section, tiles default to 16:9 standard tiles
+   that pair 2-up. Tiles marked WIDE=true in site.txt span
+   the full width of the section as a 2.39:1 cinemascope
+   frame. The user curates the rhythm by deciding which
+   tiles are wide.
+====================================================== */
+.work-main {
+  padding-top: var(--nav-h);
+  padding-bottom: clamp(60px, 8vw, 120px);
+}
+
+.work-section {
+  /* Each section is its own container. Sections only render
+     when at least one project has the matching role. */
+}
+
+.work-section-head {
+  padding: clamp(20px, 2.5vw, 36px) var(--edge);
+}
+.work-section-head[data-align="right"] {
+  text-align: right;
+}
+.work-section-head[data-align="left"] {
+  text-align: left;
+}
+.work-section-label {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(11px, 0.85vw, 13px);
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1;
+  display: inline-block;
+}
+
+/* The grid within a section. Two columns on desktop; tiles
+   marked .is-wide span both columns and use a cinemascope
+   aspect ratio instead. The first tile in a section with
+   only one tile also auto-spans (no orphan single column). */
+.work-grid {
+  display: grid;
+  gap: var(--edge);
+  padding: 0 var(--edge);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 760px) {
+  .work-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.work-grid .tile {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  background: var(--bg-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.work-grid .tile-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+/* Wide tiles: full row, cinemascope aspect ratio. Used for
+   hero and closer positions within a section. */
+.work-grid .tile.is-wide { grid-column: 1 / -1; }
+@media (min-width: 760px) {
+  .work-grid .tile.is-wide .tile-media { aspect-ratio: 2.39 / 1; }
+}
+
+/* A section with only one tile auto-promotes that tile to wide
+   so it doesn't sit alone in column 1 with empty column 2. */
+@media (min-width: 760px) {
+  .work-grid:has(.tile:only-child) .tile {
+    grid-column: 1 / -1;
+  }
+  .work-grid:has(.tile:only-child) .tile .tile-media {
+    aspect-ratio: 2.39 / 1;
+  }
+}
+
+/* Tile video / placeholder behavior — same as homepage. The
+   video starts paused, autoplays muted on hover. Slight scale
+   transform on the placeholder for a gentle hover-bloom. */
+.tile-media video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: scale(1.02);
+  transition: transform 700ms cubic-bezier(.22,.61,.36,1);
+}
+.tile:hover .tile-media video {
+  transform: scale(1.0);
+}
+
+/* Tile overlay — title text floating over the lower portion of
+   the tile, set in premium display typography. Drop shadow only,
+   no mix-blend-mode (which can look murky on dark videos). */
+.tile-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2vw, 28px);
+  background: linear-gradient(to top, rgba(12,11,9,0.55) 0%, rgba(12,11,9,0) 100%);
+  pointer-events: none;
+}
+.tile-overlay-title {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 28;
+  font-weight: 500;
+  font-size: clamp(16px, 1.6vw, 24px);
+  letter-spacing: -0.005em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* ======================================================
+   LIGHTBOX — full-screen project player. Same DOM and
+   behavior as the homepage so the click-into-project
+   experience is identical across the site.
+====================================================== */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(8, 7, 6, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   opacity: 0;
+  pointer-events: none;
+  transition: opacity 320ms cubic-bezier(.22,.61,.36,1);
+}
+.lightbox[aria-hidden="false"] {
+  opacity: 1;
+  pointer-events: auto;
 }
 
-</style>
-</head>
-<body class="work-page">
+.lightbox-frame {
+  width: min(94vw, 1400px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 1.6vw, 24px);
+}
+.lightbox-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+}
+.lightbox-title {
+  margin: 0;
+  font-variation-settings: "opsz" 32;
+  font-weight: 500;
+  font-size: clamp(18px, 1.8vw, 26px);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.lightbox-player {
+  position: relative;
+  width: 100%;
+  background: #000;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.lightbox-player video {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+.lightbox-role {
+  position: absolute;
+  right: clamp(12px, 1.4vw, 22px);
+  bottom: clamp(12px, 1.4vw, 22px);
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(10px, 0.8vw, 12px);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.78);
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 999px;
+  pointer-events: none;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
 
-<!-- Smooth fade-in cover. Removed by JS once content is ready. -->
+.lightbox-close {
+  position: absolute;
+  top: clamp(14px, 1.6vw, 22px);
+  right: clamp(14px, 1.6vw, 22px);
+  width: 36px; height: 36px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.lightbox-close-line {
+  position: absolute;
+  top: 50%; left: 6px; right: 6px;
+  height: 1.5px;
+  background: rgba(255,255,255,0.85);
+  transform-origin: center;
+}
+.lightbox-close-line:nth-child(1) { transform: rotate(45deg); }
+.lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
+</style>
+
+</head>
+<body>
+
 <div class="page-cover" id="pageCover" aria-hidden="true"></div>
 
-<div class="grain" aria-hidden="true"></div>
-
 <!-- ====== NAV ====== -->
-<nav class="nav">
+<nav class="nav" aria-label="Primary">
   <a href="index.html" class="brand" aria-label="Home">
-    <span class="brand-name" data-cfg="name">Mike Becker</span>
+    <span class="brand-name">Mike Becker</span>
     <span class="brand-sub" aria-hidden="true">
-      <span class="brand-sub-item brand-sub-bracket">[</span>
-      <span class="brand-sub-item">Director</span>
-      <span class="brand-sub-item brand-sub-dot">·</span>
-      <span class="brand-sub-item">Cinematographer</span>
-      <span class="brand-sub-item brand-sub-bracket">]</span>
+      <span class="brand-sub-bracket">[</span>
+      <span>Director</span>
+      <span class="brand-sub-dot">·</span>
+      <span>Specialty Camera</span>
+      <span class="brand-sub-bracket">]</span>
     </span>
   </a>
 
-  <div class="menu-wrap" id="menuWrap">
-    <div class="menu-stack">
-      <nav class="menu" aria-label="Primary">
-        <a href="index.html" data-text="Home">Home</a>
-        <span class="sep">/</span>
-        <a href="work.html" data-text="Work">Work</a>
-        <span class="sep">/</span>
-        <a href="about.html" data-text="About">About</a>
-        <span class="sep">/</span>
-        <a href="mailto:hello@example.com" data-text="Contact" data-cfg-email>Contact</a>
-      </nav>
-    </div>
-    <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span>
-      <span></span>
-    </button>
+  <div class="menu-flat">
+    <a class="menu-flat-link" href="index.html">Home</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link is-current" href="work.html">Work</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="about.html">About</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" id="contactLink" href="mailto:hello@mikebecker.com">Contact</a>
   </div>
 </nav>
 
-<!-- ====== WORK PAGE MAIN ====== -->
-<main class="work-main">
-
-  <!-- ====== WORK SHOWCASE ======
-       Rendered by JS from WORK_N_* blocks in content/site.txt.
-       Each project becomes a near-full-viewport "feature" section
-       with a video, a two-digit index (01, 02…), a display title,
-       and a role credit. The layout alternates side-left and
-       side-right starting from the second project; the first
-       project is the full-width hero. Videos autoplay when their
-       section scrolls into view. -->
-  <section class="work-showcase" id="workGrid" aria-label="Selected work">
-    <!-- Features inserted here by JS. -->
-  </section>
-
+<!-- ====== WORK MAIN ====== -->
+<main class="work-main" id="workMain">
+  <!-- Sections inserted by JS, one per role group with at least one project.
+       Each section has a label band (alternating left/right alignment) and
+       a grid of tiles below it. -->
 </main>
 
-
-<!-- ====== PROJECT LIGHTBOX ======
-     Opens when a tile is clicked. Plays the full project video from
-     the matching media/tile-N/ folder. Closes on Escape, click outside
-     the player, or the close button. -->
+<!-- ====== LIGHTBOX ====== -->
 <div class="lightbox" id="lightbox" aria-hidden="true" role="dialog">
   <button class="lightbox-close" id="lightboxClose" aria-label="Close">
     <span class="lightbox-close-line"></span>
@@ -1133,310 +445,231 @@ body.lightbox-open { overflow: hidden; }
   </div>
 </div>
 
-
 <script>
-  // ====== CONTENT LOADER ======
-  // Reads content/site.txt and populates the page:
-  // - identity (name, email)
-  // - reels (DIRECTING_REEL_FILE, OPERATING_REEL_FILE)
-  // - work projects (WORK_N_FILE, WORK_N_FULL, WORK_N_TITLE, WORK_N_ROLE)
-  //
-  // The work grid is rendered from scratch by JS based on whatever
-  // WORK_N_* blocks exist in site.txt. Empty / missing blocks are
-  // skipped, so the page only shows projects that are fully filled in.
+/* ============================================================
+   WORK PAGE
+   Loads content/site.txt, builds role-grouped sections of tiles,
+   and wires up tile hover (preview) and click (lightbox) behavior.
 
-  function parseConfig(text) {
-    const cfg = {};
-    text.split(/\r?\n/).forEach(line => {
-      const t = line.trim();
-      if (!t || t.startsWith('#')) return;
-      let i = t.indexOf('=');
-      if (i === -1) i = t.indexOf(':');
-      if (i === -1) return;
-      const key = t.slice(0, i).trim().toUpperCase();
-      const val = t.slice(i + 1).trim();
-      if (key) cfg[key] = val;
-    });
-    return cfg;
+   The order of sections is fixed: Director, Cinematographer,
+   Specialty Camera. Sections only render when at least one
+   project has the matching role; an empty section renders nothing.
+   ============================================================ */
+(function() {
+
+  const ROLE_ORDER = ['Director', 'Cinematographer', 'Specialty Camera'];
+
+  // Section label alignment alternates by index in the rendered order.
+  // First rendered section: right. Next: left. Next: right. And so on.
+  function alignmentFor(i) {
+    return i % 2 === 0 ? 'right' : 'left';
   }
 
-  // Resolve a file value to a usable src path.
-  // - If the value contains a slash, treat it as a path from site root.
-  // - Otherwise, the value is a filename inside the given folder.
-  function resolveSrc(value, folder) {
+  // Read site.txt and parse into a flat key/value map.
+  async function loadConfig() {
+    try {
+      const res = await fetch('content/site.txt', { cache: 'no-cache' });
+      if (!res.ok) return {};
+      const text = await res.text();
+      const cfg = {};
+      text.split(/\r?\n/).forEach(line => {
+        const trimmed = line.split('#')[0].trim();
+        if (!trimmed) return;
+        const idx = trimmed.indexOf('=');
+        if (idx === -1) return;
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim();
+        cfg[key] = val;
+      });
+      return cfg;
+    } catch (e) {
+      console.warn('site.txt load failed', e);
+      return {};
+    }
+  }
+
+  // Resolve a file value into a usable src. If the value contains a
+  // slash, treat it as a full path from root. Otherwise, look for it
+  // inside media/work-N/.
+  function resolveSrc(value, defaultFolder) {
     if (!value) return '';
-    if (value.indexOf('/') !== -1) return value.split('/').map(encodeURIComponent).join('/');
-    return folder.replace(/\/$/, '') + '/' + encodeURIComponent(value);
+    if (value.indexOf('/') !== -1) return value;
+    return defaultFolder + '/' + value;
   }
 
-  // Build the work showcase. Vertical scrolling editorial format:
-  // first project = full-width hero, rest alternate side-left and
-  // side-right. Each project becomes a near-full-viewport section
-  // numbered 01, 02, 03... so the page reads as a curated sequence.
-  function buildWorkGrid(cfg) {
-    const container = document.getElementById('workGrid');
-    if (!container) return;
-
-    // Collect available WORK_N projects. Numeric scan, stop after a
-    // run of empty slots so we don't loop forever.
+  // Collect all configured WORK projects, in numeric order.
+  function collectProjects(cfg) {
     const projects = [];
     let missCount = 0;
-    for (let n = 1; n < 200 && missCount < 10; n++) {
-      const file  = cfg[`WORK_${n}_FILE`];
-      const full  = cfg[`WORK_${n}_FULL`];
-      const title = cfg[`WORK_${n}_TITLE`];
-      const role  = cfg[`WORK_${n}_ROLE`];
+    for (let n = 1; n < 200 && missCount < 12; n++) {
+      const file  = cfg['WORK_' + n + '_FILE'];
+      const full  = cfg['WORK_' + n + '_FULL'];
+      const title = cfg['WORK_' + n + '_TITLE'];
+      const role  = cfg['WORK_' + n + '_ROLE'];
+      const wide  = (cfg['WORK_' + n + '_WIDE'] || '').toLowerCase() === 'true';
       if (file && full && title && role) {
-        projects.push({ n, file, full, title, role });
+        projects.push({ n, file, full, title, role, wide });
         missCount = 0;
       } else {
         missCount++;
       }
     }
+    return projects;
+  }
 
-    if (!projects.length) return;
+  // Group projects by role, in the canonical order. Only roles that
+  // have at least one project end up with a section.
+  function groupByRole(projects) {
+    const groups = [];
+    ROLE_ORDER.forEach(role => {
+      const matches = projects.filter(p => p.role === role);
+      if (matches.length > 0) groups.push({ role, projects: matches });
+    });
+    return groups;
+  }
 
-    container.innerHTML = '';
-    projects.forEach((p, i) => {
-      // Pattern selection:
-      //   index 0  => hero (full-width video, info below)
-      //   odd      => side-left (video left, info right)
-      //   even     => side-right (video right, info left)
-      let pattern;
-      if (i === 0) pattern = 'work-feature--hero';
-      else if (i % 2 === 1) pattern = 'work-feature--side-left';
-      else pattern = 'work-feature--side-right';
+  // Build the DOM: a sequence of <section> elements, each with a
+  // section-head label and a tile grid.
+  function buildPage(groups) {
+    const main = document.getElementById('workMain');
+    if (!main) return;
+    main.innerHTML = '';
 
-      const num = String(i + 1).padStart(2, '0');
-      const fileSrc = resolveSrc(p.file, 'media/work-' + p.n);
-      const fullSrc = resolveSrc(p.full, 'media/work-' + p.n);
-
+    groups.forEach((group, i) => {
       const section = document.createElement('section');
-      section.className = 'work-feature ' + pattern;
+      section.className = 'work-section';
+      section.setAttribute('data-role', group.role);
 
-      section.innerHTML =
-        '<a class="work-feature-media tile" href="#" ' +
-            'data-slot="work-' + p.n + '" ' +
-            'data-full="' + fullSrc + '" ' +
-            'data-role="' + p.role + '">' +
-          '<video preload="metadata" muted loop playsinline disablepictureinpicture>' +
-            '<source src="' + fileSrc + '" type="video/mp4">' +
-          '</video>' +
-        '</a>' +
-        '<div class="work-feature-info">' +
-          '<span class="work-feature-num">' + num + '</span>' +
-          '<h2 class="work-feature-title tile-overlay-title">' + p.title + '</h2>' +
-          '<span class="work-feature-role">' + p.role + '</span>' +
-        '</div>';
+      // Section label band. Alternating alignment, set on the band itself.
+      const head = document.createElement('header');
+      head.className = 'work-section-head';
+      head.setAttribute('data-align', alignmentFor(i));
+      head.innerHTML = '<span class="work-section-label">' + group.role + '</span>';
+      section.appendChild(head);
 
-      container.appendChild(section);
-    });
+      // Grid of tiles for this section.
+      const grid = document.createElement('div');
+      grid.className = 'work-grid';
 
-    // Autoplay videos when scrolled into view; pause when out.
-    // Reduces battery hit on long pages and makes each project come
-    // alive as the viewer arrives at it.
-    setupScrollPlay();
-  }
+      group.projects.forEach(p => {
+        const fileSrc = resolveSrc(p.file, 'media/work-' + p.n);
+        const fullSrc = resolveSrc(p.full, 'media/work-' + p.n);
 
-  // Use IntersectionObserver to play/pause feature videos as the
-  // user scrolls. Threshold of 0.35 means the video starts playing
-  // once about a third of it is visible.
-  function setupScrollPlay() {
-    const videos = document.querySelectorAll('.work-feature-media video');
-    if (!videos.length) return;
+        const tile = document.createElement('a');
+        tile.className = 'tile' + (p.wide ? ' is-wide' : '');
+        tile.href = '#';
+        tile.setAttribute('data-slot', 'work-' + p.n);
+        tile.setAttribute('data-full', fullSrc);
+        tile.setAttribute('data-title', p.title);
+        tile.setAttribute('data-role', p.role);
 
-    // Seek each video to its first real frame so it has a visible
-    // poster image at rest (before scroll triggers play).
-    videos.forEach(v => {
-      const seek = () => { try { v.currentTime = 0.001; } catch (e) {} };
-      if (v.readyState >= 1) seek();
-      else v.addEventListener('loadedmetadata', seek, { once: true });
-    });
+        tile.innerHTML =
+          '<div class="tile-media">' +
+            '<video preload="metadata" muted loop playsinline disablepictureinpicture>' +
+              '<source src="' + fileSrc + '" type="video/mp4">' +
+            '</video>' +
+          '</div>' +
+          '<div class="tile-overlay">' +
+            '<span class="tile-overlay-title">' + p.title + '</span>' +
+          '</div>';
 
-    if (!('IntersectionObserver' in window)) {
-      // Older browsers: just attempt to play all.
-      videos.forEach(v => v.play().catch(() => {}));
-      return;
-    }
-
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        const v = entry.target;
-        if (entry.isIntersecting) {
-          v.play().catch(() => {});
-        } else {
-          v.pause();
-        }
+        grid.appendChild(tile);
       });
-    }, { threshold: 0.35 });
 
-    videos.forEach(v => io.observe(v));
+      section.appendChild(grid);
+      main.appendChild(section);
+    });
   }
 
-  // Main initialization.
-  (async function init() {
-    let text = null;
-    try {
-      const r = await fetch('content/site.txt', { cache: 'no-cache' });
-      if (r.ok) text = await r.text();
-    } catch (e) {}
+  // Hover play/pause for tile videos. On mouseenter, play. On
+  // mouseleave, pause and reset to first frame for a clean idle state.
+  function wireTileHover() {
+    document.querySelectorAll('.work-grid .tile').forEach(tile => {
+      const video = tile.querySelector('video');
+      if (!video) return;
+      tile.addEventListener('mouseenter', () => {
+        video.play().catch(() => {});
+      });
+      tile.addEventListener('mouseleave', () => {
+        video.pause();
+        try { video.currentTime = 0; } catch (e) {}
+      });
+    });
+  }
 
-    if (text) {
-      const cfg = parseConfig(text);
-      window.__cfg = cfg;
+  // Lightbox open/close and content swap.
+  function wireLightbox() {
+    const lightbox      = document.getElementById('lightbox');
+    const lightboxVideo = document.getElementById('lightboxVideo');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxRole  = document.getElementById('lightboxRole');
+    const closeBtn      = document.getElementById('lightboxClose');
 
-      // Identity (brand name + contact email link)
-      if (cfg.NAME) {
-        document.querySelectorAll('[data-cfg="name"]').forEach(el => el.textContent = cfg.NAME);
-      }
-      if (cfg.EMAIL) {
-        document.querySelectorAll('[data-cfg-email]').forEach(el => {
-          el.setAttribute('href', 'mailto:' + cfg.EMAIL);
-        });
-      }
-
-      // Work grid
-      buildWorkGrid(cfg);
+    function openLightbox(src, title, role) {
+      lightboxVideo.src = src;
+      lightboxTitle.textContent = title || '';
+      lightboxRole.textContent = role || '';
+      lightbox.setAttribute('aria-hidden', 'false');
+      lightboxVideo.play().catch(() => {});
+    }
+    function closeLightbox() {
+      lightbox.setAttribute('aria-hidden', 'true');
+      lightboxVideo.pause();
+      lightboxVideo.src = '';
     }
 
-    // Fade out the page cover once content is rendered.
+    document.querySelectorAll('.work-grid .tile').forEach(tile => {
+      tile.addEventListener('click', (e) => {
+        e.preventDefault();
+        openLightbox(
+          tile.getAttribute('data-full'),
+          tile.getAttribute('data-title'),
+          tile.getAttribute('data-role')
+        );
+      });
+    });
+    closeBtn.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeLightbox();
+    });
+  }
+
+  // Wire the contact link from site.txt EMAIL (with fallback).
+  function wireContact(cfg) {
+    const email = cfg.EMAIL;
+    if (!email) return;
+    const link = document.getElementById('contactLink');
+    if (link) link.href = 'mailto:' + email;
+  }
+
+  // Fade out the page cover after content is built.
+  function revealPage() {
     requestAnimationFrame(() => {
       const cover = document.getElementById('pageCover');
       if (cover) cover.classList.add('gone');
-      // Remove after the transition completes.
-      setTimeout(() => { if (cover && cover.parentNode) cover.remove(); }, 700);
-    });
-
-    // Wire tile click -> lightbox. Hover-play is replaced by scroll
-    // play, which is set up inside buildWorkGrid via IntersectionObserver.
-    wireTileClicks();
-  })();
-
-  // ====== LIGHTBOX ======
-  (function setupLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    const lightboxVideo = document.getElementById('lightboxVideo');
-    const lightboxTitle = document.getElementById('lightboxTitle');
-    const lightboxRole = document.getElementById('lightboxRole');
-    const lightboxClose = document.getElementById('lightboxClose');
-    if (!lightbox || !lightboxVideo) return;
-
-    window.__openLightbox = function (fullSrc, title, role) {
-      if (!fullSrc) return;
-      lightboxVideo.src = fullSrc;
-      lightboxTitle.textContent = title || '';
-      if (lightboxRole) lightboxRole.textContent = role || '';
-      lightbox.classList.add('open');
-      document.body.classList.add('lightbox-open');
-      lightbox.setAttribute('aria-hidden', 'false');
-      setTimeout(() => { lightboxVideo.play().catch(() => {}); }, 100);
-    };
-
-    function close() {
-      lightbox.classList.remove('open');
-      document.body.classList.remove('lightbox-open');
-      lightbox.setAttribute('aria-hidden', 'true');
-      lightboxVideo.pause();
-      setTimeout(() => {
-        lightboxVideo.removeAttribute('src');
-        lightboxVideo.load();
-      }, 400);
-    }
-
-    lightboxClose.addEventListener('click', close);
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) close();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && lightbox.classList.contains('open')) close();
-    });
-  })();
-
-  function wireTileClicks() {
-    document.querySelectorAll('.tile[data-slot]').forEach(tile => {
-      // Avoid double-binding if init is called twice.
-      if (tile.__wired) return;
-      tile.__wired = true;
-      tile.addEventListener('click', (e) => {
-        e.preventDefault();
-        const fullSrc = tile.getAttribute('data-full');
-        const titleEl = tile.querySelector('.tile-overlay-title');
-        const title = titleEl ? titleEl.textContent.trim() : '';
-        const role = tile.getAttribute('data-role') || '';
-        if (fullSrc && window.__openLightbox) window.__openLightbox(fullSrc, title, role);
-      });
     });
   }
 
-  function wireTileHover() {
-    const tileVideos = document.querySelectorAll('.tile-media video');
-    tileVideos.forEach(v => {
-      if (v.__hoverWired) return;
-      v.__hoverWired = true;
-      v.removeAttribute('autoplay');
-      v.loop = true;
-      v.muted = true;
-      const seekFirstFrame = () => { try { v.currentTime = 0.001; } catch (e) {} };
-      if (v.readyState >= 1) seekFirstFrame();
-      else v.addEventListener('loadedmetadata', seekFirstFrame, { once: true });
-
-      const tile = v.closest('.tile');
-      if (!tile) return;
-      tile.addEventListener('mouseenter', () => {
-        try { v.currentTime = 0.001; } catch (e) {}
-        v.play().catch(() => {});
-      });
-      tile.addEventListener('mouseleave', () => {
-        v.pause();
-        try { v.currentTime = 0.001; } catch (e) {}
-      });
-    });
+  async function init() {
+    const cfg = await loadConfig();
+    const projects = collectProjects(cfg);
+    const groups = groupByRole(projects);
+    buildPage(groups);
+    wireTileHover();
+    wireLightbox();
+    wireContact(cfg);
+    revealPage();
   }
 
-  // ====== MENU TOGGLE ======
-  (function setupMenu() {
-    const wrap = document.getElementById('menuWrap');
-    const burger = document.getElementById('burger');
-    if (!burger || !wrap) return;
-
-    function setMenu(open) {
-      wrap.classList.toggle('open', open);
-      document.body.classList.toggle('menu-open', open);
-      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-    burger.addEventListener('click', () => {
-      setMenu(!wrap.classList.contains('open'));
-    });
-    wrap.querySelectorAll('.menu a').forEach(a =>
-      a.addEventListener('click', () => setMenu(false))
-    );
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && wrap.classList.contains('open')) {
-        setMenu(false);
-      }
-    });
-  })();
-
-  // ====== NAV SCROLL STATE ======
-  // The nav adds a .scrolled class once the user scrolls past a
-  // threshold so it can pick up a background tint for legibility
-  // (the same .scrolled rule from index.html applies).
-  (function setupNavScroll() {
-    const navEl = document.querySelector('.nav');
-    if (!navEl) return;
-    let ticking = false;
-    function update() {
-      const y = window.scrollY || window.pageYOffset || 0;
-      navEl.classList.toggle('scrolled', y > 40);
-      ticking = false;
-    }
-    function onScroll() {
-      if (!ticking) { requestAnimationFrame(update); ticking = true; }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    update();
-  })();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
 </script>
 
 </body>

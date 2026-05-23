@@ -161,7 +161,43 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 
 /* ======================================================
-   MENU
+   MENU — flat horizontal nav
+   Always-visible nav in the upper right. Premium small-caps
+   typography with slash separators echoing the bracketed
+   brand-sub treatment. No toggle, no burger; functional
+   navigation should not be hidden behind a click on desktop.
+====================================================== */
+.menu-flat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
+}
+.menu-flat-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: rgba(255,255,255,0.72);
+  transition: color 240ms cubic-bezier(.22,.61,.36,1);
+  padding: 4px 2px;
+}
+.menu-flat-link:hover { color: #fff; }
+.menu-flat-link.is-current { color: #fff; }
+.menu-flat-sep {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  line-height: 1;
+}
+
+/* ======================================================
+   MENU — legacy collapsible (kept for now in case any
+   transition timing references it; deprecated)
 ====================================================== */
 .menu-wrap { display: flex; align-items: center; gap: 14px; }
 
@@ -689,15 +725,17 @@ body.intro-active .hero-inner {
 /* Brand and menu are held hidden during the intro (both .intro-active
    and the handoff window). They fade/slide into place after the large
    wordmark has dissolved. */
-.brand, .menu-wrap {
+.brand, .menu-wrap, .menu-flat {
   transition:
     opacity 700ms cubic-bezier(.22,.61,.36,1),
     transform 800ms cubic-bezier(.22,.61,.36,1);
 }
 body.intro-active .brand,
 body.intro-active .menu-wrap,
+body.intro-active .menu-flat,
 body.intro-handoff .brand,
-body.intro-handoff .menu-wrap {
+body.intro-handoff .menu-wrap,
+body.intro-handoff .menu-flat {
   opacity: 0;
   transform: translateY(-28px);
   pointer-events: none;
@@ -707,7 +745,8 @@ body.intro-handoff .menu-wrap {
   * { animation: none !important; transition: none !important; }
   .intro-mark { display: none !important; }
   body.intro-active .brand,
-  body.intro-active .menu-wrap {
+  body.intro-active .menu-wrap,
+  body.intro-active .menu-flat {
     opacity: 1 !important;
     transform: none !important;
   }
@@ -847,27 +886,19 @@ body.lightbox-open { overflow: hidden; }
       <span class="brand-sub-item brand-sub-bracket">[</span>
       <span class="brand-sub-item">Director</span>
       <span class="brand-sub-item brand-sub-dot">·</span>
-      <span class="brand-sub-item">Cinematographer</span>
+      <span class="brand-sub-item">Specialty Camera</span>
       <span class="brand-sub-item brand-sub-bracket">]</span>
     </span>
   </a>
 
-  <div class="menu-wrap" id="menuWrap">
-    <div class="menu-stack">
-      <nav class="menu" aria-label="Primary">
-        <a href="index.html" data-text="Home">Home</a>
-        <span class="sep">/</span>
-        <a href="work.html" data-text="Work">Work</a>
-        <span class="sep">/</span>
-        <a href="about.html" data-text="About">About</a>
-        <span class="sep">/</span>
-        <a href="mailto:hello@example.com" data-text="Contact" data-cfg-email>Contact</a>
-      </nav>
-    </div>
-    <button class="burger" id="burger" aria-label="Toggle menu" aria-expanded="false">
-      <span></span>
-      <span></span>
-    </button>
+  <div class="menu-flat">
+    <a class="menu-flat-link is-current" href="index.html">Home</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="work.html">Work</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="about.html">About</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="mailto:hello@mikebecker.com" data-cfg-email>Contact</a>
   </div>
 </nav>
 
@@ -892,73 +923,11 @@ body.lightbox-open { overflow: hidden; }
   </div>
 </section>
 
-<!-- ====== OVERLAY ====== -->
-<main class="overlay">
-
-  <section class="grid" id="work">
-
-    <!-- 2 + 2 + 1 layout:
-         Row 1: asymmetric (landscape + portrait) — opens the work
-         Row 2: two equal 16:9 tiles — the body
-         Row 3: full-width closer — the punctuation. -->
-
-    <div class="grid-row row-2 row-asym">
-      <a class="tile t1" href="#" data-slot="1" data-role="Director">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="1" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-1/tile-1.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="1">Night Bloom</span></span></div>
-      </a>
-      <a class="tile t2" href="#" data-slot="2" data-role="Director">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="2" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-2/tile-2.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="2">Wide Open</span></span></div>
-      </a>
-    </div>
-
-    <div class="grid-row row-2">
-      <a class="tile t3" href="#" data-slot="3" data-role="Operator">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="3" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-3/tile-3.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="3">East Side</span></span></div>
-      </a>
-      <a class="tile t4" href="#" data-slot="4" data-role="Operator">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="4" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-4/tile-4.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="4">Blue Hour</span></span></div>
-      </a>
-    </div>
-
-    <div class="grid-row row-1">
-      <a class="tile t5 t-wide" href="#" data-slot="5" data-role="Operator">
-        <div class="tile-media">
-          <div class="tile-ph" aria-hidden="true"></div>
-          <video data-cfg-video="5" preload="metadata" muted loop playsinline disablepictureinpicture>
-            <source src="media/tile-5/tile-5.mp4" type="video/mp4">
-          </video>
-        </div>
-        <div class="tile-overlay"><span class="tile-overlay-line"><span class="tile-overlay-title" data-cfg-project="5">The Long Take</span></span></div>
-      </a>
-    </div>
-
-  </section>
-
-</main>
+<!-- ====== HOMEPAGE BODY ======
+     The homepage is now a single hero reel. Selected Work lives
+     on /work.html as the canonical project index, properly
+     organized into Director / Cinematographer / Specialty Camera
+     sections so credits read honestly. -->
 
 <!-- ====== PROJECT LIGHTBOX ======
      Opens when a tile is clicked. Plays the full project video from
@@ -1342,34 +1311,8 @@ body.lightbox-open { overflow: hidden; }
     });
   })();
 
-  // Menu toggle
-  const wrap = document.getElementById('menuWrap');
-  const burger = document.getElementById('burger');
-  const backdrop = document.getElementById('menuBackdrop');
-
-  function setMenu(open) {
-    if (!wrap || !burger) return;
-    wrap.classList.toggle('open', open);
-    document.body.classList.toggle('menu-open', open);
-    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-  }
-
-  if (burger && wrap) {
-    burger.addEventListener('click', () => {
-      setMenu(!wrap.classList.contains('open'));
-    });
-    wrap.querySelectorAll('.menu a').forEach(a =>
-      a.addEventListener('click', () => setMenu(false))
-    );
-  }
-  if (backdrop) {
-    backdrop.addEventListener('click', () => setMenu(false));
-  }
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && wrap && wrap.classList.contains('open')) {
-      setMenu(false);
-    }
-  });
+  // Menu — flat horizontal nav; no toggle behavior needed. The
+  // menu items are visible at all times and behave as plain links.
 
   // Scroll-driven effects:
   // 1) Nav background swap (transparent over the reel, semi-opaque

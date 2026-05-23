@@ -87,13 +87,23 @@ TILE_5_ROLE  = Operator
 ============================================================
 
 # Each project on the Work page has its own block below.
-# Only blocks with all four fields filled in render on the page.
+# Only blocks with all four required fields filled in render on the page.
 # Empty / commented-out blocks are skipped entirely (no empty tiles).
 #
 # WORK_N_FILE  = hover loop video
 # WORK_N_FULL  = full project video (lightbox)
 # WORK_N_TITLE = project name
-# WORK_N_ROLE  = your credit (Director / Operator / DP / etc.)
+# WORK_N_ROLE  = your credit on this project. Must be one of:
+#                  Director
+#                  Cinematographer
+#                  Specialty Camera
+#                Projects are grouped into sections on the work page
+#                by role, in the order above.
+# WORK_N_WIDE  = optional. Set to "true" to make this tile span the
+#                full width of its section (2.39:1 cinemascope frame
+#                instead of the standard 16:9 paired tile). Use this
+#                sparingly — usually for hero / closer projects in a
+#                section. Default is false (standard tile).
 #
 # PATH CONVENTION:
 #   - If the value contains a slash, it's a full path from site root
@@ -108,6 +118,7 @@ WORK_1_FILE  = media/tile-1/tile-1.mp4
 WORK_1_FULL  = media/tile-1/tile-1-full.mp4
 WORK_1_TITLE = Smoke
 WORK_1_ROLE  = Director
+WORK_1_WIDE  = true
 
 WORK_2_FILE  = media/tile-2/tile-2.mp4
 WORK_2_FULL  = media/tile-2/tile-2-full.mp4
@@ -117,17 +128,18 @@ WORK_2_ROLE  = Director
 WORK_3_FILE  = media/tile-3/tile-3.mp4
 WORK_3_FULL  = media/tile-3/tile-3-full.mp4
 WORK_3_TITLE = Rab — NetPlus x Microlight
-WORK_3_ROLE  = Operator
+WORK_3_ROLE  = Specialty Camera
 
 WORK_4_FILE  = media/tile-4/tile-4.mp4
 WORK_4_FULL  = media/tile-4/tile-4-full.mp4
 WORK_4_TITLE = CRACKED
-WORK_4_ROLE  = Operator
+WORK_4_ROLE  = Specialty Camera
 
 WORK_5_FILE  = media/tile-5/tile-5.mp4
 WORK_5_FULL  = media/tile-5/tile-5-full.mp4
 WORK_5_TITLE = Ford Bronco – Dust is Gold
-WORK_5_ROLE  = Operator
+WORK_5_ROLE  = Specialty Camera
+WORK_5_WIDE  = true
 
 # WORK_6_FILE  =
 # WORK_6_FULL  =
