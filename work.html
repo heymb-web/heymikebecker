@@ -199,56 +199,64 @@ a { color: inherit; text-decoration: none; }
 
 .work-section {
   position: relative;
-  margin-top: clamp(28px, 4vw, 56px);
-}
-.work-section:first-child {
-  margin-top: clamp(8px, 1vw, 14px);
-}
-
-/* The sticky label, vertically centered on the viewport.
-
-   How it works:
-   - position:sticky with top:50vh sticks the label's top edge at
-     the vertical center of the viewport
-   - transform:translateY(-50%) shifts the label up by half its
-     own height so its CENTER aligns with viewport center
-   - As you scroll into a section, the label appears at viewport
-     center and stays there (sticky)
-   - As the section ends, sticky releases and the label is pushed
-     up with the section's bottom edge, scrolling up out of view
-   - Meanwhile the next section's label is approaching from below
-     toward viewport center
-   - JS applies blur and opacity to each label based on its
-     distance from viewport center: sharp and opaque at center,
-     blurred and transparent at the edges. This produces the
-     crossfade-in-place feel where one label dissolves up as the
-     next un-blurs into focus.
-   - Pointer-events:none so the label is visual only and never
-     blocks tile interactions. */
-.work-section-sticky {
-  position: sticky;
-  top: 50vh;
-  transform: translateY(-50%);
-  z-index: 5;
-  padding: 0 var(--edge);
-  pointer-events: none;
-  margin-bottom: clamp(14px, 1.8vw, 22px);
+  margin-top: var(--edge);
+  /* No isolation, no z-index. The section stays in the root
+     stacking context so that the labels (appended in a sibling
+     layer after all sections) can blend with this section's
+     tiles via mix-blend-mode. */
 }
 
+/* The labels layer is a non-positioned wrapper inserted as the
+   LAST child of <main>, after every section. Because it isn't
+   positioned and has no isolation, it does NOT create a stacking
+   context, and its children share the root stacking context with
+   the section tiles. This is the property that makes
+   mix-blend-mode actually invert tile pixels behind the text. */
+.work-labels-layer {
+  /* Intentionally empty — no positioning, no isolation. */
+}
+
+/* Each label is positioned against the VIEWPORT (position: fixed)
+   with its top set per scroll frame by JS. The label is appended
+   to the end of <main>, after every section, so in tree order it
+   paints LAST in the root stacking context's step 6 — on top of
+   every tile, regardless of section structure. There is no
+   z-index, no isolation, and no stacking-context-creating ancestor
+   above it, so mix-blend-mode: difference blends the white text
+   against the composited tile pixels in the root context's
+   backdrop. The result: legible white-on-dark, dark-on-light text
+   that adapts continuously over varied imagery, never hidden
+   behind a tile.
+
+   JS positions the label so that:
+   - When the section's bounds contain the viewport center, the
+     label is centered vertically on 50vh.
+   - When the section is leaving up top, the label tracks the
+     section's bottom edge (label bottom = section bottom), so it
+     never dips below the section.
+   - When the section is entering from below, the label sits at
+     the section's top edge.
+   - When the section is fully out of viewport, opacity drops to 0. */
 .work-section-label {
+  position: fixed;
+  left: var(--nav-edge);
+  /* top is set by JS each frame */
   display: inline-block;
   font-family: 'Inter', sans-serif;
-  font-size: clamp(14px, 1.4vw, 20px);
+  font-size: clamp(18px, 2vw, 28px);
   font-weight: 500;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 2px 18px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.5);
+  color: #fff;
   line-height: 1;
-  /* opacity and filter are set by JS based on distance from
-     viewport center. will-change hints the compositor for smooth
-     scroll-driven updates. */
-  will-change: opacity, filter;
+  white-space: nowrap;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  opacity: 0;
+  filter: blur(8px);
+  transition: opacity 220ms cubic-bezier(.22,.61,.36,1),
+              filter 320ms cubic-bezier(.22,.61,.36,1);
+  will-change: opacity, filter, top;
 }
 
 /* The grid within a section. Two columns on desktop; tiles
@@ -583,16 +591,10 @@ a { color: inherit; text-decoration: none; }
       section.className = 'work-section';
       section.setAttribute('data-role', group.role);
 
-      // Sticky label wrapper. Sits at top of section in normal flow
-      // until scrolled past, then sticks below the nav in the upper
-      // right of the viewport. Travels back up with the section as
-      // it leaves view, while the next section's label fades in.
-      const labelWrap = document.createElement('div');
-      labelWrap.className = 'work-section-sticky';
-      labelWrap.innerHTML = '<span class="work-section-label">' + group.role + '</span>';
-      section.appendChild(labelWrap);
-
-      // Grid of tiles for this section.
+      // Grid of tiles for this section. No sticky label wrapper
+      // inside the section any more. Labels live in their own
+      // layer appended after all sections (see below), so there is
+      // no chance of a tile painting on top of them.
       const grid = document.createElement('div');
       grid.className = 'work-grid';
 
@@ -624,6 +626,28 @@ a { color: inherit; text-decoration: none; }
       section.appendChild(grid);
       main.appendChild(section);
     });
+
+    // Labels layer. Appended AFTER all sections so that, in the
+    // root stacking context's tree-order traversal, labels are
+    // painted LAST, on top of every tile. The layer itself is a
+    // non-positioned <div> with no isolation, so it does NOT
+    // create a stacking context. Each label inside is position:
+    // fixed (positioned against the viewport, controlled by JS)
+    // and uses mix-blend-mode: difference. Because the layer
+    // doesn't create a stacking context, the labels share the
+    // root stacking context with the section tiles, which is
+    // exactly what mix-blend-mode needs in order to blend against
+    // the tile pixels behind it.
+    const labelsLayer = document.createElement('div');
+    labelsLayer.className = 'work-labels-layer';
+    groups.forEach((group) => {
+      const label = document.createElement('span');
+      label.className = 'work-section-label';
+      label.setAttribute('data-role', group.role);
+      label.textContent = group.role;
+      labelsLayer.appendChild(label);
+    });
+    main.appendChild(labelsLayer);
   }
 
   // Hover play/pause for tile videos. On mouseenter, play. On
@@ -642,61 +666,135 @@ a { color: inherit; text-decoration: none; }
     });
   }
 
-  // Wire the sticky role labels with scroll-driven blur and opacity.
+  // Wire the labels.
   //
-  // The CSS handles the spatial behavior: each label is position:sticky
-  // top:50vh with a -50% Y translate, so its center aligns with the
-  // vertical center of the viewport while in its section.
+  // Labels are NOT inside their sections any more. They live in a
+  // sibling .work-labels-layer container appended after every
+  // section, with position: fixed. This guarantees they paint
+  // after every tile in the root stacking context and can never
+  // be hidden behind a thumbnail.
   //
-  // This function handles the visual handoff between sections. On every
-  // scroll frame, each label's distance from viewport center is measured.
-  // Within the sharp zone (close to center), the label is opaque and
-  // unblurred. Beyond that, opacity falls off and blur ramps up until
-  // the fade-end distance, where the label is fully transparent and
-  // heavily blurred. The crossfade at the section boundary happens
-  // automatically: as the outgoing label is pushed up away from center
-  // (blurring out), the incoming label arrives at center (sharpening in).
+  // For each frame this function:
+  //   1. Finds the section's current bounding rect in viewport.
+  //   2. Decides where the corresponding label should sit:
+  //      - Section fully out of viewport: hidden.
+  //      - Section's top is below viewport center: label tracks
+  //        the section's top edge plus an inset (so the label
+  //        sits a little below the top, breathing room from the
+  //        gap line above).
+  //      - Section's bottom is above viewport center: label
+  //        tracks the section's bottom edge minus an inset (so
+  //        the label sits a little above the bottom, equal
+  //        breathing room to the gap line below).
+  //      - Section straddles viewport center with enough room:
+  //        label is centered on 50vh.
+  //   3. Decides the label's blur state:
+  //      - Section contains viewport center: filter: none (sharp).
+  //      - In viewport but does NOT contain center: filter: blur(8px).
+  //      - Out of viewport: hidden (opacity 0).
+  //
+  // The thresholds that switch the label between "tracking an
+  // edge" and "centered on 50vh" are shifted by the same inset
+  // value, so the label's position is continuous (no jump) at
+  // those transitions.
+  //
+  // Two adjacent labels are visible at the same time during a
+  // boundary crossing — one sharp, one blurred — and the cross-fade
+  // happens via the CSS transition on filter. They are never both
+  // sharp simultaneously.
   function wireStickyLabels() {
-    const labels = document.querySelectorAll('.work-section-label');
-    if (!labels.length) return;
+    const sections = document.querySelectorAll('.work-section');
+    if (!sections.length) return;
+
+    // Pair each section with its corresponding label, matched by
+    // the data-role attribute.
+    const pairs = [];
+    sections.forEach(section => {
+      const role = section.getAttribute('data-role');
+      if (!role) return;
+      const label = document.querySelector(
+        '.work-section-label[data-role="' + role + '"]'
+      );
+      if (label) pairs.push({ section: section, label: label });
+    });
+    if (!pairs.length) return;
+
+    // labelH: the label's rendered height. Needed to clamp its
+    // position to the section's bounds.
+    // labelPad: breathing room between the label and the section's
+    // top or bottom edge, kept equal at both ends so the label
+    // reads as having the same gap above the next-section line
+    // as the next section's label has below it.
+    let labelH = 24;
+    let labelPad = 16;
+    function measureLayout() {
+      labelH = pairs[0].label.offsetHeight || 24;
+      labelPad = Math.max(14, Math.min(22, Math.round(window.innerWidth * 0.013)));
+    }
 
     function update() {
-      const vc = window.innerHeight / 2;
-      // Sharp zone: within 8% of viewport height of center, label is
-      // fully sharp. Beyond fade-end (32% of viewport height), label
-      // is fully blurred and transparent. Between, linear interpolation.
-      const sharpZone = window.innerHeight * 0.08;
-      const fadeEnd  = window.innerHeight * 0.32;
+      const vh = window.innerHeight;
+      const vc = vh / 2;
+      const halfLabel = labelH / 2;
+      const PAD = labelPad;
 
-      labels.forEach(label => {
-        const rect = label.getBoundingClientRect();
-        const center = rect.top + rect.height / 2;
-        const distance = Math.abs(center - vc);
+      pairs.forEach(function (pair) {
+        const section = pair.section;
+        const label = pair.label;
+        const rect = section.getBoundingClientRect();
 
-        let t = 0; // 0 = sharp, 1 = fully faded
-        if (distance > sharpZone) {
-          t = Math.min((distance - sharpZone) / (fadeEnd - sharpZone), 1);
+        const inViewport = rect.top < vh && rect.bottom > 0;
+
+        if (!inViewport) {
+          label.style.opacity = '0';
+          label.style.filter = 'blur(8px)';
+          return;
         }
 
-        const opacity = 1 - t;
-        const blur = t * 14;
+        // Clamp the label's top so it stays inside the section
+        // bounds with equal inset at top and bottom, and centers
+        // on the viewport when the section has enough room. The
+        // thresholds below are shifted by PAD so the position is
+        // continuous across mode transitions.
+        let labelTop;
+        if (rect.top > vc - halfLabel - PAD) {
+          // Section top sits below the centering threshold. Label
+          // tracks the section's top edge, offset down by PAD.
+          labelTop = rect.top + PAD;
+        } else if (rect.bottom < vc + halfLabel + PAD) {
+          // Section bottom sits above the centering threshold.
+          // Label tracks the section's bottom edge, offset up by
+          // PAD (label bottom = section bottom minus PAD).
+          labelTop = rect.bottom - labelH - PAD;
+        } else {
+          // Section has enough room to center the label on the
+          // viewport's vertical middle.
+          labelTop = vc - halfLabel;
+        }
 
-        label.style.opacity = opacity.toFixed(3);
-        label.style.filter = blur > 0.1 ? 'blur(' + blur.toFixed(1) + 'px)' : 'none';
+        label.style.top = labelTop + 'px';
+        label.style.opacity = '1';
+
+        const containsCenter = rect.top < vc && rect.bottom > vc;
+        label.style.filter = containsCenter ? 'none' : 'blur(8px)';
       });
     }
 
     let ticking = false;
     function schedule() {
       if (!ticking) {
-        requestAnimationFrame(() => { update(); ticking = false; });
+        requestAnimationFrame(function () { update(); ticking = false; });
         ticking = true;
       }
     }
 
-    window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
+    measureLayout();
     update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', function () {
+      measureLayout();
+      schedule();
+    });
   }
 
   // Lightbox open/close and content swap.
