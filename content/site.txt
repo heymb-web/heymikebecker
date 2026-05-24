@@ -95,8 +95,8 @@ TILE_5_ROLE  = Operator
 # WORK_N_TITLE = project name
 # WORK_N_ROLE  = your credit on this project. Must be one of:
 #                  Director
-#                  Cinematographer
 #                  Specialty Camera
+#                  Operator
 #                Projects are grouped into sections on the work page
 #                by role, in the order above.
 # WORK_N_WIDE  = optional. Set to "true" to make this tile span the

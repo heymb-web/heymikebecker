@@ -200,18 +200,32 @@ a { color: inherit; text-decoration: none; }
   margin-top: clamp(8px, 1vw, 14px);
 }
 
-/* The sticky label band. Sits at the top of its section in
-   normal flow until scrolled past its top:N threshold, at which
-   point it sticks below the nav. When the section's bottom edge
-   passes upward through this position, the sticky behavior
-   releases and the label scrolls up naturally with the rest of
-   the section content. */
+/* The sticky label, vertically centered on the viewport.
+
+   How it works:
+   - position:sticky with top:50vh sticks the label's top edge at
+     the vertical center of the viewport
+   - transform:translateY(-50%) shifts the label up by half its
+     own height so its CENTER aligns with viewport center
+   - As you scroll into a section, the label appears at viewport
+     center and stays there (sticky)
+   - As the section ends, sticky releases and the label is pushed
+     up with the section's bottom edge, scrolling up out of view
+   - Meanwhile the next section's label is approaching from below
+     toward viewport center
+   - JS applies blur and opacity to each label based on its
+     distance from viewport center: sharp and opaque at center,
+     blurred and transparent at the edges. This produces the
+     crossfade-in-place feel where one label dissolves up as the
+     next un-blurs into focus.
+   - Pointer-events:none so the label is visual only and never
+     blocks tile interactions. */
 .work-section-sticky {
   position: sticky;
-  top: calc(var(--nav-h) + clamp(14px, 1.6vw, 22px));
+  top: 50vh;
+  transform: translateY(-50%);
   z-index: 5;
   padding: 0 var(--edge);
-  text-align: right;
   pointer-events: none;
   margin-bottom: clamp(14px, 1.8vw, 22px);
 }
@@ -219,21 +233,17 @@ a { color: inherit; text-decoration: none; }
 .work-section-label {
   display: inline-block;
   font-family: 'Inter', sans-serif;
-  font-size: clamp(11px, 0.9vw, 13px);
+  font-size: clamp(14px, 1.4vw, 20px);
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 1px 14px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45);
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 2px 18px rgba(0,0,0,0.75), 0 1px 4px rgba(0,0,0,0.5);
   line-height: 1;
-  /* Fade tied to the parent section's .is-active state (toggled
-     by IntersectionObserver in JS). Section is "active" while
-     intersecting the visible viewport area. */
-  opacity: 0;
-  transition: opacity 480ms cubic-bezier(.22,.61,.36,1);
-}
-.work-section.is-active .work-section-label {
-  opacity: 1;
+  /* opacity and filter are set by JS based on distance from
+     viewport center. will-change hints the compositor for smooth
+     scroll-driven updates. */
+  will-change: opacity, filter;
 }
 
 /* The grid within a section. Two columns on desktop; tiles
@@ -491,7 +501,7 @@ a { color: inherit; text-decoration: none; }
    ============================================================ */
 (function() {
 
-  const ROLE_ORDER = ['Director', 'Cinematographer', 'Specialty Camera'];
+  const ROLE_ORDER = ['Director', 'Specialty Camera', 'Operator'];
 
   // Read site.txt and parse into a flat key/value map.
   async function loadConfig() {
@@ -627,39 +637,61 @@ a { color: inherit; text-decoration: none; }
     });
   }
 
-  // Wire the sticky role labels: each section's label fades in
-  // as the section enters the viewport and fades out as it leaves.
-  // Combined with CSS position:sticky on the label wrapper, this
-  // produces the "label travels with its section, hands off to the
-  // next section's label" pattern. rootMargin shrinks the effective
-  // viewport so the fade timing happens just inside the visible
-  // area, not at the very edge. The -nav offset at top accounts for
-  // the fixed nav covering the upper portion of the page.
+  // Wire the sticky role labels with scroll-driven blur and opacity.
+  //
+  // The CSS handles the spatial behavior: each label is position:sticky
+  // top:50vh with a -50% Y translate, so its center aligns with the
+  // vertical center of the viewport while in its section.
+  //
+  // This function handles the visual handoff between sections. On every
+  // scroll frame, each label's distance from viewport center is measured.
+  // Within the sharp zone (close to center), the label is opaque and
+  // unblurred. Beyond that, opacity falls off and blur ramps up until
+  // the fade-end distance, where the label is fully transparent and
+  // heavily blurred. The crossfade at the section boundary happens
+  // automatically: as the outgoing label is pushed up away from center
+  // (blurring out), the incoming label arrives at center (sharpening in).
   function wireStickyLabels() {
-    const sections = document.querySelectorAll('.work-section');
-    if (!sections.length) return;
+    const labels = document.querySelectorAll('.work-section-label');
+    if (!labels.length) return;
 
-    if (!('IntersectionObserver' in window)) {
-      // No IO support: just show every label always.
-      sections.forEach(s => s.classList.add('is-active'));
-      return;
+    function update() {
+      const vc = window.innerHeight / 2;
+      // Sharp zone: within 8% of viewport height of center, label is
+      // fully sharp. Beyond fade-end (32% of viewport height), label
+      // is fully blurred and transparent. Between, linear interpolation.
+      const sharpZone = window.innerHeight * 0.08;
+      const fadeEnd  = window.innerHeight * 0.32;
+
+      labels.forEach(label => {
+        const rect = label.getBoundingClientRect();
+        const center = rect.top + rect.height / 2;
+        const distance = Math.abs(center - vc);
+
+        let t = 0; // 0 = sharp, 1 = fully faded
+        if (distance > sharpZone) {
+          t = Math.min((distance - sharpZone) / (fadeEnd - sharpZone), 1);
+        }
+
+        const opacity = 1 - t;
+        const blur = t * 14;
+
+        label.style.opacity = opacity.toFixed(3);
+        label.style.filter = blur > 0.1 ? 'blur(' + blur.toFixed(1) + 'px)' : 'none';
+      });
     }
 
-    // Compute the top inset from CSS variables so the fade trigger
-    // line matches the sticky resting position of the label.
-    const navH = 64;
-    const topInset = navH + 14;
+    let ticking = false;
+    function schedule() {
+      if (!ticking) {
+        requestAnimationFrame(() => { update(); ticking = false; });
+        ticking = true;
+      }
+    }
 
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        entry.target.classList.toggle('is-active', entry.isIntersecting);
-      });
-    }, {
-      rootMargin: '-' + topInset + 'px 0px -8% 0px',
-      threshold: 0
-    });
-
-    sections.forEach(s => io.observe(s));
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    update();
   }
 
   // Lightbox open/close and content swap.
