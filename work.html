@@ -46,7 +46,12 @@ html, body {
   font-feature-settings: "ss01", "cv11";
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /* No overflow-x:hidden here. That CSS property creates a new
+     scroll context on the root, which silently breaks
+     position:sticky against the page scroll. If horizontal
+     overflow ever needs to be tamed, do it on a non-ancestor
+     wrapper of the sticky elements, or use overflow-x:clip
+     (which doesn't break sticky). */
 }
 
 body {
