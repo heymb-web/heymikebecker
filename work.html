@@ -253,10 +253,26 @@ a { color: inherit; text-decoration: none; }
   mix-blend-mode: difference;
   pointer-events: none;
   opacity: 0;
+  /* Default state: blurred. When .is-active is added by JS, the
+     filter transitions to none; when it is removed, the filter
+     transitions back to blur(8px). The transition durations are
+     asymmetric so that the incoming focal label sharpens in fast
+     (80ms) while the outgoing label fades to blurred slowly
+     (260ms). This avoids the "both partially blurred at the same
+     moment" feel of a symmetric crossfade. The new focal point is
+     established almost immediately; the old one recedes gracefully. */
   filter: blur(8px);
   transition: opacity 220ms cubic-bezier(.22,.61,.36,1),
-              filter 320ms cubic-bezier(.22,.61,.36,1);
+              top 0s,
+              filter 260ms cubic-bezier(.22,.61,.36,1);
   will-change: opacity, filter, top;
+}
+
+.work-section-label.is-active {
+  filter: none;
+  transition: opacity 220ms cubic-bezier(.22,.61,.36,1),
+              top 0s,
+              filter 80ms cubic-bezier(.22,.61,.36,1);
 }
 
 /* The grid within a section. Two columns on desktop; tiles
@@ -738,6 +754,33 @@ a { color: inherit; text-decoration: none; }
       const halfLabel = labelH / 2;
       const PAD = labelPad;
 
+      // Decide which section is the focal point. The active section
+      // is the one closest to the viewport center; if center is
+      // inside a section, that section is active with distance 0.
+      // This guarantees exactly one active section at any scroll
+      // position, including when the center is in the gap between
+      // two sections (one is always nearer than the other). When
+      // ties happen exactly at a gap's midpoint, the earlier section
+      // keeps active for one frame and the later section takes over
+      // the next frame.
+      let activeSection = null;
+      let minDist = Infinity;
+      pairs.forEach(function (pair) {
+        const rect = pair.section.getBoundingClientRect();
+        let dist;
+        if (rect.top <= vc && rect.bottom >= vc) {
+          dist = 0;
+        } else if (rect.bottom < vc) {
+          dist = vc - rect.bottom;
+        } else {
+          dist = rect.top - vc;
+        }
+        if (dist < minDist) {
+          minDist = dist;
+          activeSection = pair.section;
+        }
+      });
+
       pairs.forEach(function (pair) {
         const section = pair.section;
         const label = pair.label;
@@ -747,7 +790,7 @@ a { color: inherit; text-decoration: none; }
 
         if (!inViewport) {
           label.style.opacity = '0';
-          label.style.filter = 'blur(8px)';
+          label.classList.remove('is-active');
           return;
         }
 
@@ -758,25 +801,23 @@ a { color: inherit; text-decoration: none; }
         // continuous across mode transitions.
         let labelTop;
         if (rect.top > vc - halfLabel - PAD) {
-          // Section top sits below the centering threshold. Label
-          // tracks the section's top edge, offset down by PAD.
           labelTop = rect.top + PAD;
         } else if (rect.bottom < vc + halfLabel + PAD) {
-          // Section bottom sits above the centering threshold.
-          // Label tracks the section's bottom edge, offset up by
-          // PAD (label bottom = section bottom minus PAD).
           labelTop = rect.bottom - labelH - PAD;
         } else {
-          // Section has enough room to center the label on the
-          // viewport's vertical middle.
           labelTop = vc - halfLabel;
         }
 
         label.style.top = labelTop + 'px';
         label.style.opacity = '1';
 
-        const containsCenter = rect.top < vc && rect.bottom > vc;
-        label.style.filter = containsCenter ? 'none' : 'blur(8px)';
+        // Sharp vs blurred is controlled by a class so the CSS
+        // can apply asymmetric transitions (fast in, slow out).
+        if (section === activeSection) {
+          label.classList.add('is-active');
+        } else {
+          label.classList.remove('is-active');
+        }
       });
     }
 
