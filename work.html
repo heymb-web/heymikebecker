@@ -171,16 +171,21 @@ a { color: inherit; text-decoration: none; }
 /* ======================================================
    WORK PAGE
    Grid of project thumbnails, grouped into sections by role.
-   Each section has a label band (a small horizontal space
-   slightly taller than the tile gap) with the section name
-   set in small caps, alternating left and right alignment
-   for visual rhythm.
 
-   Within each section, tiles default to 16:9 standard tiles
-   that pair 2-up. Tiles marked WIDE=true in site.txt span
-   the full width of the section as a 2.39:1 cinemascope
-   frame. The user curates the rhythm by deciding which
-   tiles are wide.
+   Each section has a sticky role label (Director, Cinematographer,
+   Specialty Camera) that sits in the upper-right of the viewport,
+   below the nav. The label appears as you scroll into a section,
+   stays sticky over that section's tiles, then fades out and
+   travels up with the section as it leaves the viewport. The next
+   section's label fades in as that section enters. Pattern adapted
+   from director / commercial roster sites (Park Pictures and
+   similar) where the persistent label tells the viewer what role
+   was played across everything currently in view.
+
+   Within each section, tiles default to 16:9 standard tiles that
+   pair 2-up. Tiles marked WIDE=true in site.txt span the full
+   width of the section as a 2.39:1 cinemascope frame. The user
+   curates the rhythm by deciding which tiles are wide.
 ====================================================== */
 .work-main {
   padding-top: var(--nav-h);
@@ -188,28 +193,47 @@ a { color: inherit; text-decoration: none; }
 }
 
 .work-section {
-  /* Each section is its own container. Sections only render
-     when at least one project has the matching role. */
+  position: relative;
+  margin-top: clamp(28px, 4vw, 56px);
+}
+.work-section:first-child {
+  margin-top: clamp(8px, 1vw, 14px);
 }
 
-.work-section-head {
-  padding: clamp(20px, 2.5vw, 36px) var(--edge);
-}
-.work-section-head[data-align="right"] {
+/* The sticky label band. Sits at the top of its section in
+   normal flow until scrolled past its top:N threshold, at which
+   point it sticks below the nav. When the section's bottom edge
+   passes upward through this position, the sticky behavior
+   releases and the label scrolls up naturally with the rest of
+   the section content. */
+.work-section-sticky {
+  position: sticky;
+  top: calc(var(--nav-h) + clamp(14px, 1.6vw, 22px));
+  z-index: 5;
+  padding: 0 var(--edge);
   text-align: right;
+  pointer-events: none;
+  margin-bottom: clamp(14px, 1.8vw, 22px);
 }
-.work-section-head[data-align="left"] {
-  text-align: left;
-}
+
 .work-section-label {
+  display: inline-block;
   font-family: 'Inter', sans-serif;
-  font-size: clamp(11px, 0.85vw, 13px);
+  font-size: clamp(11px, 0.9vw, 13px);
   font-weight: 500;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 14px rgba(0,0,0,0.55), 0 1px 3px rgba(0,0,0,0.45);
   line-height: 1;
-  display: inline-block;
+  /* Fade tied to the parent section's .is-active state (toggled
+     by IntersectionObserver in JS). Section is "active" while
+     intersecting the visible viewport area. */
+  opacity: 0;
+  transition: opacity 480ms cubic-bezier(.22,.61,.36,1);
+}
+.work-section.is-active .work-section-label {
+  opacity: 1;
 }
 
 /* The grid within a section. Two columns on desktop; tiles
@@ -274,15 +298,25 @@ a { color: inherit; text-decoration: none; }
   transform: scale(1.0);
 }
 
-/* Tile overlay — title text floating over the lower portion of
-   the tile, set in premium display typography. Drop shadow only,
-   no mix-blend-mode (which can look murky on dark videos). */
+/* Tile overlay - title text floating over the lower-right of the
+   tile, hidden by default and revealed on hover. The whole overlay
+   (gradient scrim + title text) cross-fades together so when no
+   tile is hovered the page is pure imagery; hovering any tile
+   reveals that one project's title with its scrim. Position is
+   lower-right per your direction, so it doesn't compete with the
+   sticky section label in the upper-right corner. */
 .tile-overlay {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2vw, 28px);
   background: linear-gradient(to top, rgba(12,11,9,0.55) 0%, rgba(12,11,9,0) 100%);
   pointer-events: none;
+  text-align: right;
+  opacity: 0;
+  transition: opacity 320ms cubic-bezier(.22,.61,.36,1);
+}
+.tile:hover .tile-overlay {
+  opacity: 1;
 }
 .tile-overlay-title {
   display: inline-block;
@@ -459,12 +493,6 @@ a { color: inherit; text-decoration: none; }
 
   const ROLE_ORDER = ['Director', 'Cinematographer', 'Specialty Camera'];
 
-  // Section label alignment alternates by index in the rendered order.
-  // First rendered section: right. Next: left. Next: right. And so on.
-  function alignmentFor(i) {
-    return i % 2 === 0 ? 'right' : 'left';
-  }
-
   // Read site.txt and parse into a flat key/value map.
   async function loadConfig() {
     try {
@@ -535,17 +563,19 @@ a { color: inherit; text-decoration: none; }
     if (!main) return;
     main.innerHTML = '';
 
-    groups.forEach((group, i) => {
+    groups.forEach((group) => {
       const section = document.createElement('section');
       section.className = 'work-section';
       section.setAttribute('data-role', group.role);
 
-      // Section label band. Alternating alignment, set on the band itself.
-      const head = document.createElement('header');
-      head.className = 'work-section-head';
-      head.setAttribute('data-align', alignmentFor(i));
-      head.innerHTML = '<span class="work-section-label">' + group.role + '</span>';
-      section.appendChild(head);
+      // Sticky label wrapper. Sits at top of section in normal flow
+      // until scrolled past, then sticks below the nav in the upper
+      // right of the viewport. Travels back up with the section as
+      // it leaves view, while the next section's label fades in.
+      const labelWrap = document.createElement('div');
+      labelWrap.className = 'work-section-sticky';
+      labelWrap.innerHTML = '<span class="work-section-label">' + group.role + '</span>';
+      section.appendChild(labelWrap);
 
       // Grid of tiles for this section.
       const grid = document.createElement('div');
@@ -595,6 +625,41 @@ a { color: inherit; text-decoration: none; }
         try { video.currentTime = 0; } catch (e) {}
       });
     });
+  }
+
+  // Wire the sticky role labels: each section's label fades in
+  // as the section enters the viewport and fades out as it leaves.
+  // Combined with CSS position:sticky on the label wrapper, this
+  // produces the "label travels with its section, hands off to the
+  // next section's label" pattern. rootMargin shrinks the effective
+  // viewport so the fade timing happens just inside the visible
+  // area, not at the very edge. The -nav offset at top accounts for
+  // the fixed nav covering the upper portion of the page.
+  function wireStickyLabels() {
+    const sections = document.querySelectorAll('.work-section');
+    if (!sections.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      // No IO support: just show every label always.
+      sections.forEach(s => s.classList.add('is-active'));
+      return;
+    }
+
+    // Compute the top inset from CSS variables so the fade trigger
+    // line matches the sticky resting position of the label.
+    const navH = 64;
+    const topInset = navH + 14;
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        entry.target.classList.toggle('is-active', entry.isIntersecting);
+      });
+    }, {
+      rootMargin: '-' + topInset + 'px 0px -8% 0px',
+      threshold: 0
+    });
+
+    sections.forEach(s => io.observe(s));
   }
 
   // Lightbox open/close and content swap.
@@ -659,6 +724,7 @@ a { color: inherit; text-decoration: none; }
     const groups = groupByRole(projects);
     buildPage(groups);
     wireTileHover();
+    wireStickyLabels();
     wireLightbox();
     wireContact(cfg);
     revealPage();
