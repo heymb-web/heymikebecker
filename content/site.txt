@@ -99,11 +99,39 @@ TILE_5_ROLE  = Operator
 #                  Operator
 #                Projects are grouped into sections on the work page
 #                by role, in the order above.
-# WORK_N_WIDE  = optional. Set to "true" to make this tile span the
-#                full width of its section (2.39:1 cinemascope frame
-#                instead of the standard 16:9 paired tile). Use this
-#                sparingly — usually for hero / closer projects in a
-#                section. Default is false (standard tile).
+# WORK_N_WIDE  = optional. Set to "true" to make this tile the
+#                section's HERO — the cinematic full-width tile.
+#                Use it on your strongest piece per section. If no
+#                WIDE flag is set in a section, the first project
+#                listed in that section becomes the hero by default.
+#
+# SECTION LAYOUT (4 tiles per section, every row filled with no
+# whitespace — creative variation comes from tile size + aspect):
+#
+#   Director           tile 1: hero (cinematic 2.39:1 opener)
+#                      tile 2: major (2/3 width, 16:9 landscape)
+#                              The wider half of an asymmetric pair.
+#                              Your strongest non-hero piece goes here.
+#                      tile 3: minor (1/3 width, 8:9 framed crop)
+#                              The narrower half of the pair. The
+#                              16:9 video crops to a slightly-taller
+#                              than-square frame, so heights match
+#                              tile 2 exactly with no whitespace.
+#                              Best for shots with centered action
+#                              or tight compositions (the sides crop).
+#                      tile 4: banner closer (3:1, same width as the
+#                              hero but visibly shorter, so it reads
+#                              as the less-prominent closing piece)
+#
+#   Specialty Camera   tile 1: hero (cinematic opener)
+#                      tile 2: third (4-wide trio tile)
+#                      tile 3: third
+#                      tile 4: third
+#
+#   Operator           tile 1: third (4-wide trio tile)
+#                      tile 2: third
+#                      tile 3: third
+#                      tile 4: hero (cinematic closer)
 #
 # PATH CONVENTION:
 #   - If the value contains a slash, it's a full path from site root
@@ -125,6 +153,19 @@ WORK_2_FULL  = media/tile-2/tile-2-full.mp4
 WORK_2_TITLE = Born in Baltimore
 WORK_2_ROLE  = Director
 
+# --- PLACEHOLDER: Director slot 3 (minor tile, 1/3 width, 8:9 framed).
+#     Replace title and file paths when you have the project ready.
+WORK_6_FILE  = media/tile-1/tile-1.mp4
+WORK_6_FULL  = media/tile-1/tile-1-full.mp4
+WORK_6_TITLE = Project 6
+WORK_6_ROLE  = Director
+
+# --- PLACEHOLDER: Director slot 4 (banner closer — less prominent).
+WORK_7_FILE  = media/tile-2/tile-2.mp4
+WORK_7_FULL  = media/tile-2/tile-2-full.mp4
+WORK_7_TITLE = Project 7
+WORK_7_ROLE  = Director
+
 WORK_3_FILE  = media/tile-3/tile-3.mp4
 WORK_3_FULL  = media/tile-3/tile-3-full.mp4
 WORK_3_TITLE = Rab — NetPlus x Microlight
@@ -141,17 +182,33 @@ WORK_5_TITLE = Ford Bronco – Dust is Gold
 WORK_5_ROLE  = Specialty Camera
 WORK_5_WIDE  = true
 
-# WORK_6_FILE  =
-# WORK_6_FULL  =
-# WORK_6_TITLE =
-# WORK_6_ROLE  =
+# --- PLACEHOLDER: Specialty Camera slot 4 (trio tile).
+WORK_8_FILE  = media/tile-3/tile-3.mp4
+WORK_8_FULL  = media/tile-3/tile-3-full.mp4
+WORK_8_TITLE = Project 8
+WORK_8_ROLE  = Specialty Camera
 
-# WORK_7_FILE  =
-# WORK_7_FULL  =
-# WORK_7_TITLE =
-# WORK_7_ROLE  =
+# --- PLACEHOLDERS: Operator section (currently all four are placeholders).
+#     The first three are the trio across the top, the fourth is
+#     the closing hero. Mark the strongest piece with WIDE=true to
+#     make it the hero closer.
+WORK_9_FILE  = media/tile-4/tile-4.mp4
+WORK_9_FULL  = media/tile-4/tile-4-full.mp4
+WORK_9_TITLE = Project 9
+WORK_9_ROLE  = Operator
 
-# WORK_8_FILE  =
-# WORK_8_FULL  =
-# WORK_8_TITLE =
-# WORK_8_ROLE  =
+WORK_10_FILE  = media/tile-3/tile-3.mp4
+WORK_10_FULL  = media/tile-3/tile-3-full.mp4
+WORK_10_TITLE = Project 10
+WORK_10_ROLE  = Operator
+
+WORK_11_FILE  = media/tile-2/tile-2.mp4
+WORK_11_FULL  = media/tile-2/tile-2-full.mp4
+WORK_11_TITLE = Project 11
+WORK_11_ROLE  = Operator
+
+WORK_12_FILE  = media/tile-5/tile-5.mp4
+WORK_12_FULL  = media/tile-5/tile-5-full.mp4
+WORK_12_TITLE = Project 12
+WORK_12_ROLE  = Operator
+WORK_12_WIDE  = true
