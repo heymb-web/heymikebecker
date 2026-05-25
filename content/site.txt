@@ -190,7 +190,7 @@ WORK_6_ROLE  = Director
 #     tile of the Director section).
 WORK_7_FILE  = string-out-7.mp4
 WORK_7_FULL  = string-out-7-full.mp4
-WORK_7_TITLE = String Out 7
+WORK_7_TITLE = CHANGE IS HERE
 WORK_7_ROLE  = Director
 
 # WORK_3 (Rab) lives in Operator — first non-WIDE project in
@@ -220,6 +220,12 @@ WORK_8_FULL  = media/tile-3/tile-3-full.mp4
 WORK_8_TITLE = Project 8
 WORK_8_ROLE  = Specialty Camera
 
+# --- PLACEHOLDER: Specialty Camera fourth tile.
+WORK_13_FILE  = media/tile-4/tile-4.mp4
+WORK_13_FULL  = media/tile-4/tile-4-full.mp4
+WORK_13_TITLE = Project 13
+WORK_13_ROLE  = Specialty Camera
+
 # --- PLACEHOLDERS: Operator section. Rab (WORK_3 above) is the
 #     hero opener. Projects 9, 10, 11 fill the cluster middle row
 #     (small + small + half). Project 12 is the hero closer at
@@ -238,8 +244,3 @@ WORK_11_FILE  = media/tile-2/tile-2.mp4
 WORK_11_FULL  = media/tile-2/tile-2-full.mp4
 WORK_11_TITLE = Project 11
 WORK_11_ROLE  = Operator
-
-WORK_12_FILE  = media/tile-5/tile-5.mp4
-WORK_12_FULL  = media/tile-5/tile-5-full.mp4
-WORK_12_TITLE = Project 12
-WORK_12_ROLE  = Operator
