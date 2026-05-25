@@ -723,7 +723,7 @@ a { color: inherit; text-decoration: none; }
   const LAYOUT_BY_ROLE = {
     'Director':         ['is-hero', 'is-three-quarter', 'is-quarter', 'is-hero'],
     'Specialty Camera': ['is-hero', 'is-small', 'is-half', 'is-small'],
-    'Operator':         ['is-hero', 'is-small', 'is-small', 'is-half']
+    'Operator':         ['is-hero', 'is-small', 'is-small', 'is-half', 'is-hero']
   };
 
   function buildPage(groups) {
@@ -760,8 +760,18 @@ a { color: inherit; text-decoration: none; }
       } else if (count === 3) {
         // Hero opener, then a paired row of two halves below.
         layout = ['is-hero', 'is-half', 'is-half'];
-      } else {
+      } else if (count === 4) {
         layout = LAYOUT_BY_ROLE[group.role] || [];
+      } else {
+        // 5+ tiles: take the role's standard 4-tile layout and
+        // extend it by appending hero slots for the remaining
+        // projects. Adds one extra row per extra tile (each new
+        // hero is a full-width cinematic closer). Used when a
+        // section has more projects than the standard layout
+        // accommodates.
+        const base = LAYOUT_BY_ROLE[group.role] || [];
+        const extras = new Array(Math.max(0, count - base.length)).fill('is-hero');
+        layout = base.concat(extras);
       }
       // Find the slot that receives the WIDE-flagged project. Most
       // layouts use 'is-hero' for that slot, but the 2-tile asym

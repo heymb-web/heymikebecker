@@ -188,8 +188,8 @@ WORK_6_ROLE  = Director
 
 # --- Director slot 4 (hero closer, 12 wide, 2.39:1 — second large
 #     tile of the Director section).
-WORK_7_FILE  = _String_Out_7.mp4
-WORK_7_FULL  = JALMRR_FINAL.mp4
+WORK_7_FILE  = string-out-7.mp4
+WORK_7_FULL  = string-out-7-full.mp4
 WORK_7_TITLE = String Out 7
 WORK_7_ROLE  = Director
 
@@ -212,17 +212,18 @@ WORK_5_TITLE = Ford Bronco – Dust is Gold
 WORK_5_ROLE  = Specialty Camera
 WORK_5_WIDE  = true
 
-# Specialty Camera currently has only 2 populated projects
-# (Ford Bronco WIDE = hero, CRACKED). With 2 tiles the section
-# renders as two stacked cinemascope heroes — both full width.
-# Adding a 3rd or 4th SC project will switch the section into
-# its larger layout (hero + cluster) automatically.
+# --- PLACEHOLDER: Specialty Camera. With Ford (hero) + CRACKED
+#     (real footage) plus this placeholder, SC has 3 tiles total.
+#     3-tile layout renders as hero + paired halves below.
+WORK_8_FILE  = media/tile-3/tile-3.mp4
+WORK_8_FULL  = media/tile-3/tile-3-full.mp4
+WORK_8_TITLE = Project 8
+WORK_8_ROLE  = Specialty Camera
 
-# --- PLACEHOLDERS: Operator section. With WORK_3 (Rab) above,
-#     Operator has 4 tiles (Rab + 9 + 10 + 12). Rab is first by
-#     N-order, so it lands in slot 1 (the hero). The placeholders
-#     fill slots 2 and 3 (small accents, sides crop ~50%) and
-#     slot 4 (the cluster anchor — half tile, full 16:9).
+# --- PLACEHOLDERS: Operator section. Rab (WORK_3 above) is the
+#     hero opener. Projects 9, 10, 11 fill the cluster middle row
+#     (small + small + half). Project 12 is the hero closer at
+#     the bottom of the section. 5 tiles total, 3 rows.
 WORK_9_FILE  = media/tile-4/tile-4.mp4
 WORK_9_FULL  = media/tile-4/tile-4-full.mp4
 WORK_9_TITLE = Project 9
@@ -232,6 +233,11 @@ WORK_10_FILE  = media/tile-3/tile-3.mp4
 WORK_10_FULL  = media/tile-3/tile-3-full.mp4
 WORK_10_TITLE = Project 10
 WORK_10_ROLE  = Operator
+
+WORK_11_FILE  = media/tile-2/tile-2.mp4
+WORK_11_FULL  = media/tile-2/tile-2-full.mp4
+WORK_11_TITLE = Project 11
+WORK_11_ROLE  = Operator
 
 WORK_12_FILE  = media/tile-5/tile-5.mp4
 WORK_12_FULL  = media/tile-5/tile-5-full.mp4
