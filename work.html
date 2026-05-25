@@ -350,6 +350,24 @@ a { color: inherit; text-decoration: none; }
     aspect-ratio: 8 / 9;
   }
 
+  /* 2/3 + 1/3 asymmetric pair. Used in single-row layouts where
+     two pieces sit beside each other at varied sizes. Heights
+     match exactly: 8 cols at 9/16 aspect = 4 cols at 9/8 aspect.
+     The 4-col tile's 16:9 source video crops to roughly the
+     center 50% horizontally via object-fit: cover. */
+  .work-grid .tile.is-major {
+    grid-column: span 8;
+  }
+  .work-grid .tile.is-major .tile-media {
+    aspect-ratio: 16 / 9;
+  }
+  .work-grid .tile.is-minor {
+    grid-column: span 4;
+  }
+  .work-grid .tile.is-minor .tile-media {
+    aspect-ratio: 8 / 9;
+  }
+
   /* 3/4 + 1/4 asymmetric pair used in the Director section.
      The 9-col tile keeps a full 16:9 landscape frame. The 3-col
      companion uses a 16:27 aspect (about 0.59, clearly taller
@@ -732,16 +750,25 @@ a { color: inherit; text-decoration: none; }
       if (count === 1) {
         layout = ['is-hero'];
       } else if (count === 2) {
-        // Two stacked cinemascope heroes — both full width.
-        // Used when a section has only its two strongest pieces.
-        layout = ['is-hero', 'is-hero'];
+        // Asymmetric pair in a single row. The WIDE project goes
+        // to the major slot (8 cols, 16:9 landscape). The other
+        // project goes to the minor slot (4 cols, 8:9 — 16:9
+        // source crops to ~50% center horizontally). Picked over
+        // two stacked heroes because two full-width tiles in a row
+        // read as repetitive at the same scale.
+        layout = ['is-major', 'is-minor'];
       } else if (count === 3) {
         // Hero opener, then a paired row of two halves below.
         layout = ['is-hero', 'is-half', 'is-half'];
       } else {
         layout = LAYOUT_BY_ROLE[group.role] || [];
       }
-      const heroIdx = layout.indexOf('is-hero');
+      // Find the slot that receives the WIDE-flagged project. Most
+      // layouts use 'is-hero' for that slot, but the 2-tile asym
+      // pair uses 'is-major'. Fall back to position 0 for any
+      // layout that doesn't include 'is-hero'.
+      let heroIdx = layout.indexOf('is-hero');
+      if (heroIdx === -1 && layout.length > 0) heroIdx = 0;
 
       // A tile marked WIDE in site.txt becomes this section's hero.
       // Other tiles fill the remaining slots in numeric order.

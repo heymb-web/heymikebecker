@@ -137,12 +137,13 @@ TILE_5_ROLE  = Operator
 #     This is an intentional design choice for Director only.
 #
 #   Specialty Camera (currently only 2 populated tiles)
-#     tile 1: hero (Ford Bronco, 12 wide, 2.39:1)
-#     tile 2: hero (CRACKED, 12 wide, 2.39:1)
+#     tile 1: major (Ford Bronco, 8 wide, 16:9 — dominant
+#             landscape with WIDE flag)
+#     tile 2: minor (CRACKED, 4 wide, 8:9 — supporting tile
+#             beside Ford, 16:9 source crops to center ~50%)
 #
-#     With 2 tiles the section renders as two stacked cinemascope
-#     heroes. Adding a 3rd or 4th SC project switches it to the
-#     larger cluster layout automatically.
+#     Single-row asymmetric pair. Adding a 3rd or 4th SC project
+#     switches it to a larger layout automatically.
 #
 #   Operator (cluster anchor RIGHT — 4 tiles)
 #     tile 1: hero (Rab — NetPlus x Microlight, 12 wide, 2.39:1)
