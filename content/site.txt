@@ -218,10 +218,10 @@ WORK_8_FULL  = bmw-leave-no-trace-full.mp4
 WORK_8_TITLE = BMW- leave no trace
 WORK_8_ROLE  = Specialty Camera
 
-# --- PLACEHOLDER: Specialty Camera fourth tile.
-WORK_13_FILE  = media/tile-4/tile-4.mp4
-WORK_13_FULL  = media/tile-4/tile-4-full.mp4
-WORK_13_TITLE = Project 13
+# --- Specialty Camera: OFRENDA.
+WORK_13_FILE  = ofrenda.mp4
+WORK_13_FULL  = ofrenda-full.mp4
+WORK_13_TITLE = OFRENDA
 WORK_13_ROLE  = Specialty Camera
 
 # --- PLACEHOLDERS: Operator section. Rab (WORK_3 above) is the
@@ -233,9 +233,10 @@ WORK_9_FULL  = media/tile-4/tile-4-full.mp4
 WORK_9_TITLE = Project 9
 WORK_9_ROLE  = Operator
 
-WORK_10_FILE  = media/tile-3/tile-3.mp4
-WORK_10_FULL  = media/tile-3/tile-3-full.mp4
-WORK_10_TITLE = Project 10
+# --- Operator: Westholme Nancy Silverton.
+WORK_10_FILE  = westholme-nancy-silverton.mp4
+WORK_10_FULL  = westholme-nancy-silverton-full.mp4
+WORK_10_TITLE = Westholme Nancy Silverton
 WORK_10_ROLE  = Operator
 
 WORK_11_FILE  = media/tile-2/tile-2.mp4
