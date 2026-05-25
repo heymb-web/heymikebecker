@@ -212,12 +212,10 @@ WORK_5_TITLE = Ford Bronco – Dust is Gold
 WORK_5_ROLE  = Specialty Camera
 WORK_5_WIDE  = true
 
-# --- PLACEHOLDER: Specialty Camera. With Ford (hero) + CRACKED
-#     (real footage) plus this placeholder, SC has 3 tiles total.
-#     3-tile layout renders as hero + paired halves below.
-WORK_8_FILE  = media/tile-3/tile-3.mp4
-WORK_8_FULL  = media/tile-3/tile-3-full.mp4
-WORK_8_TITLE = Project 8
+# --- Specialty Camera: BMW – Leave No Trace.
+WORK_8_FILE  = bmw-leave-no-trace.mp4
+WORK_8_FULL  = bmw-leave-no-trace-full.mp4
+WORK_8_TITLE = BMW- leave no trace
 WORK_8_ROLE  = Specialty Camera
 
 # --- PLACEHOLDER: Specialty Camera fourth tile.
