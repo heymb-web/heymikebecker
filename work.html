@@ -306,10 +306,13 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (min-width: 760px) {
-  /* Default tile: half-width pair tile, 16:9 */
+  /* Default tile (no class): half-width, 16:9. Same as is-half;
+     declared so legacy markup keeps rendering correctly. */
   .work-grid .tile { grid-column: span 6; }
 
-  /* Hero: full row, 2.39:1 cinemascope */
+  /* Hero: full row, 2.39:1 cinemascope.
+     The single largest piece in a section. First tile of every
+     section is a hero. Sets up the dramatic anchor. */
   .work-grid .tile.is-hero,
   .work-grid .tile.is-wide {
     grid-column: 1 / -1;
@@ -319,41 +322,57 @@ a { color: inherit; text-decoration: none; }
     aspect-ratio: 2.39 / 1;
   }
 
-  /* Third: 4 wide, used in trios of three across one row */
-  .work-grid .tile.is-third { grid-column: span 4; }
+  /* Cluster system. Below the hero, every section has one row of
+     three tiles forming a [half + small + small] cluster, with the
+     half tile positioned differently per section so each section's
+     row 2 has a distinct silhouette. Heights match exactly because
+     a 6-col tile at 16:9 and a 3-col tile at 8:9 produce the same
+     rendered height (0.281 of the grid width).
 
-  /* Asymmetric pair: 2/3 + 1/3 split.
-     The dominant tile is 8/12 wide at 16:9 (standard landscape).
-     The minor tile is 4/12 wide with aspect 8:9 — slightly taller
-     than square — chosen specifically so its rendered HEIGHT
-     equals the dominant tile's height. This means the row fills
-     completely with no whitespace below the smaller tile.
-
-     Math: dominant height = 8/12 * gw * 9/16 = 0.375 * gw.
-           minor height (must match)         = 0.375 * gw.
-           minor width = 4/12 * gw           = 0.333 * gw.
-           minor aspect (width / height)     = 0.333 / 0.375 = 8/9.
-
-     The 16:9 video inside the minor tile crops via object-fit:
-     cover. This is intentional editorial framing — the narrower
-     tile reads as a tighter, more composed shot next to its
-     wider landscape partner. Top portfolio sites use this pattern
-     to create visual rhythm rather than rows of identical tiles. */
-  .work-grid .tile.is-major { grid-column: span 8; }
-  .work-grid .tile.is-minor { grid-column: span 4; }
-  .work-grid .tile.is-minor .tile-media {
+       is-half:  6 cols, 16:9 — the anchor of the cluster row.
+                 Full 16:9 frame, no cropping. Goes to the strongest
+                 non-hero piece in the section.
+       is-small: 3 cols, 8:9 — supporting accent tiles. The 16:9
+                 source video crops to roughly the center 50%
+                 horizontally via object-fit: cover. Best suited
+                 to centered subjects, close-ups, or compositions
+                 that don't need the full frame to read. */
+  .work-grid .tile.is-half {
+    grid-column: span 6;
+  }
+  .work-grid .tile.is-half .tile-media {
+    aspect-ratio: 16 / 9;
+  }
+  .work-grid .tile.is-small {
+    grid-column: span 3;
+  }
+  .work-grid .tile.is-small .tile-media {
     aspect-ratio: 8 / 9;
   }
 
-  /* Banner: full row but a wider/shorter aspect (3:1) than the hero.
-     Used as the closing tile of the Director section — same width
-     as the hero but visibly less tall, which is what reads as
-     "less prominent" without leaving any empty grid space. */
-  .work-grid .tile.is-banner {
-    grid-column: 1 / -1;
+  /* 3/4 + 1/4 asymmetric pair used in the Director section.
+     The 9-col tile keeps a full 16:9 landscape frame. The 3-col
+     companion uses a 16:27 aspect (about 0.59, clearly taller
+     than wide) so its rendered height matches the 9-col tile's
+     height exactly — math: 9 cols at 9/16 = 3 cols at 27/16,
+     so the row fills with no whitespace.
+
+     The 3-col tile's 16:9 source video crops to roughly the
+     center 33% horizontally via object-fit: cover. Pick content
+     for the quarter slot accordingly: centered subjects or
+     compositions that don't need their full horizontal frame
+     to read. Wide landscapes lose most of their information. */
+  .work-grid .tile.is-three-quarter {
+    grid-column: span 9;
   }
-  .work-grid .tile.is-banner .tile-media {
-    aspect-ratio: 3 / 1;
+  .work-grid .tile.is-three-quarter .tile-media {
+    aspect-ratio: 16 / 9;
+  }
+  .work-grid .tile.is-quarter {
+    grid-column: span 3;
+  }
+  .work-grid .tile.is-quarter .tile-media {
+    aspect-ratio: 16 / 27;
   }
 }
 
@@ -643,38 +662,50 @@ a { color: inherit; text-decoration: none; }
 
   // Build the DOM: a sequence of <section> elements, each with a
   // section-head label and a tile grid.
-  // Each section composes its 4 tiles into a curated layout that
-  // always fills every row completely (no whitespace within rows).
-  // The position-layout map below defines the class assigned to
-  // each slot in the section. An empty string means use the
-  // default tile style (half-width pair tile, 16:9).
+  // Specialty Camera and Operator share the cluster macro structure
+  // — one hero opener, then a cluster row of one half + two smalls
+  // at matched heights. The position of the half tile within the
+  // cluster differs by section so each row 2 has a distinct
+  // silhouette and the cluster anchor sweeps left → center →
+  // right down the page.
   //
-  //   Director           tile 1: hero (cinematic full-width opener)
-  //                      tile 2: half (left of pair)
-  //                      tile 3: half (right of pair)
-  //                      tile 4: banner (full-width but shorter 3:1
-  //                              aspect — less prominent than the hero,
-  //                              still fills the row)
+  // Director is the exception: all-large tiles, no smalls. Hero
+  // opener, a paired row of two halves in the middle, and a second
+  // hero at the bottom. The next section (Specialty Camera) also
+  // opens on a hero, so the Director → SC transition has two large
+  // tiles back-to-back. This is an intentional design choice for
+  // Director only.
   //
-  //   Specialty Camera   tile 1: hero (cinematic full-width opener)
-  //                      tile 2: third (4-wide trio)
-  //                      tile 3: third
-  //                      tile 4: third
+  //   Director (all large, 3 rows)
+  //     tile 1: hero (12 wide, 2.39:1 opener)
+  //     tile 2: three-quarter (9 wide, 16:9 — left of middle row,
+  //             takes 3/4 of the row length)
+  //     tile 3: quarter (3 wide, 16:27 — right of middle row,
+  //             portrait-ish frame, video crops to center ~33%
+  //             horizontally)
+  //     tile 4: hero (12 wide, 2.39:1 closer)
   //
-  //   Operator           tile 1: third (4-wide trio)
-  //                      tile 2: third
-  //                      tile 3: third
-  //                      tile 4: hero (full-width closer)
+  //   Specialty Camera (cluster anchor CENTER, 2 rows)
+  //     tile 1: hero
+  //     tile 2: small (left accent, ~8:9 cropped)
+  //     tile 3: half (cluster anchor, full 16:9)
+  //     tile 4: small (right accent, ~8:9 cropped)
   //
-  // A tile marked WORK_N_WIDE=true in site.txt is promoted to
-  // the section's hero slot regardless of where it appears in
-  // numeric order. Non-WIDE tiles fill the remaining slots in
-  // their natural order. This lets the editor pick the hero of a
-  // section without having to renumber projects.
+  //   Operator (cluster anchor RIGHT, 2 rows)
+  //     tile 1: hero
+  //     tile 2: small (left accent)
+  //     tile 3: small (centered accent)
+  //     tile 4: half (cluster anchor on the right, full 16:9)
+  //
+  // WORK_N_WIDE=true promotes a tile to the FIRST is-hero slot of
+  // its section. For Director, that's slot 1 (the opener). Other
+  // tiles fill the remaining slots in N-order, so the second hero
+  // (Director slot 4) lands on whichever non-WIDE Director project
+  // is fourth in site.txt order.
   const LAYOUT_BY_ROLE = {
-    'Director':         ['is-hero',  'is-major', 'is-minor', 'is-banner'],
-    'Specialty Camera': ['is-hero',  'is-third', 'is-third', 'is-third'],
-    'Operator':         ['is-third', 'is-third', 'is-third', 'is-hero']
+    'Director':         ['is-hero', 'is-three-quarter', 'is-quarter', 'is-hero'],
+    'Specialty Camera': ['is-hero', 'is-small', 'is-half', 'is-small'],
+    'Operator':         ['is-hero', 'is-small', 'is-small', 'is-half']
   };
 
   function buildPage(groups) {
@@ -690,7 +721,26 @@ a { color: inherit; text-decoration: none; }
       const grid = document.createElement('div');
       grid.className = 'work-grid';
 
-      const layout = LAYOUT_BY_ROLE[group.role] || [];
+      // Layout selection. Sections with fewer than 4 tiles use a
+      // simpler shape (everything cinemascope or hero + pair) so a
+      // curated section with just 2-3 strong pieces doesn't get
+      // jammed into the 4-tile cluster layout where smaller tiles
+      // would crop their videos. Sections with 4+ tiles use the
+      // role-specific layout from LAYOUT_BY_ROLE above.
+      const count = group.projects.length;
+      let layout;
+      if (count === 1) {
+        layout = ['is-hero'];
+      } else if (count === 2) {
+        // Two stacked cinemascope heroes — both full width.
+        // Used when a section has only its two strongest pieces.
+        layout = ['is-hero', 'is-hero'];
+      } else if (count === 3) {
+        // Hero opener, then a paired row of two halves below.
+        layout = ['is-hero', 'is-half', 'is-half'];
+      } else {
+        layout = LAYOUT_BY_ROLE[group.role] || [];
+      }
       const heroIdx = layout.indexOf('is-hero');
 
       // A tile marked WIDE in site.txt becomes this section's hero.
