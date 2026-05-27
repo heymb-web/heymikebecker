@@ -228,9 +228,10 @@ WORK_13_ROLE  = Specialty Camera
 #     hero opener. Projects 9, 10, 11 fill the cluster middle row
 #     (small + small + half). Project 12 is the hero closer at
 #     the bottom of the section. 5 tiles total, 3 rows.
-WORK_9_FILE  = media/tile-4/tile-4.mp4
-WORK_9_FULL  = media/tile-4/tile-4-full.mp4
-WORK_9_TITLE = Project 9
+# --- Operator: life afloat.
+WORK_9_FILE  = life-afloat.mp4
+WORK_9_FULL  = life-afloat-full.mp4
+WORK_9_TITLE = life afloat
 WORK_9_ROLE  = Operator
 
 # --- Operator: Westholme Nancy Silverton.
@@ -239,7 +240,8 @@ WORK_10_FULL  = westholme-nancy-silverton-full.mp4
 WORK_10_TITLE = Westholme Nancy Silverton
 WORK_10_ROLE  = Operator
 
-WORK_11_FILE  = media/tile-2/tile-2.mp4
-WORK_11_FULL  = media/tile-2/tile-2-full.mp4
-WORK_11_TITLE = Project 11
+# --- Operator: Patagonia – netplus.
+WORK_11_FILE  = patagonia-netplus.mp4
+WORK_11_FULL  = patagonia-netplus-full.mp4
+WORK_11_TITLE = Patagonia – netplus
 WORK_11_ROLE  = Operator
