@@ -959,14 +959,19 @@ a { color: inherit; text-decoration: none; }
       document.querySelectorAll('.work-grid .tile').forEach((tile) => {
         const video = tile.querySelector('video');
         if (!video) return;
-        // Help mobile browsers begin buffering immediately.
+        // Help mobile browsers begin buffering immediately. preload was
+        // 'metadata'; bump to 'auto', mark autoplay, and force a load so
+        // the source actually fetches and the first frame paints even if
+        // autoplay is later blocked.
         video.setAttribute('preload', 'auto');
         video.setAttribute('autoplay', '');
+        video.muted = true;
+        try { video.load(); } catch (e) {}
         if (io) {
           io.observe(tile);
         } else {
           // No IntersectionObserver: just try to play them all.
-          video.play().catch(() => {});
+          video.play().catch(function () {});
         }
       });
       return;
@@ -1224,15 +1229,27 @@ a { color: inherit; text-decoration: none; }
   }
 
   async function init() {
-    const cfg = await loadConfig();
-    const projects = collectProjects(cfg);
-    const groups = groupByRole(projects);
-    buildPage(groups);
-    wireTileHover();
-    wireStickyLabels();
-    wireLightbox();
-    wireContact(cfg);
-    revealPage();
+    // Each step is isolated so that a failure in one (especially the
+    // mobile video wiring on Safari) can never prevent the tiles from
+    // rendering or leave the page stuck behind the cover. revealPage
+    // runs in a finally block so the page ALWAYS becomes visible.
+    function safe(label, fn) {
+      try { fn(); } catch (e) { console.warn(label + ' failed', e); }
+    }
+    try {
+      const cfg = await loadConfig();
+      const projects = collectProjects(cfg);
+      const groups = groupByRole(projects);
+      safe('buildPage', function () { buildPage(groups); });
+      safe('wireTileHover', function () { wireTileHover(); });
+      safe('wireStickyLabels', function () { wireStickyLabels(); });
+      safe('wireLightbox', function () { wireLightbox(); });
+      safe('wireContact', function () { wireContact(cfg); });
+    } catch (e) {
+      console.warn('init failed', e);
+    } finally {
+      revealPage();
+    }
   }
 
   if (document.readyState === 'loading') {

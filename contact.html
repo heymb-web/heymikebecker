@@ -158,33 +158,44 @@ body::after {
   transform: scale(1.04);
 }
 
-/* Bio reveal — hidden until hover. Straddles the portrait's right
-   edge: positioned starting ~52% across the photo and extending
-   right, past the photo edge, into the open dark space. */
+/* Bio reveal — hidden until hover. Positioned in the lower-right
+   region of the portrait (clear of the face), with breathing room
+   from the bottom edge. Uses mix-blend-mode: difference so it reads
+   over the bright photo OR the dark page, exactly like the homepage
+   intro wordmark and the work-page section labels.
+
+   IMPORTANT: the reveal is animated with visibility + transform, NOT
+   opacity. An element with opacity < 1 creates an isolated stacking
+   context that BREAKS mix-blend-mode (the text can't blend with the
+   photo behind it and renders solid white = invisible over white).
+   Animating visibility/transform keeps the blend live the whole time. */
 .bio-reveal {
   position: absolute;
-  top: 50%;
-  left: 52%;
-  width: clamp(300px, 30vw, 380px);
-  transform: translateY(-50%) translateX(8px);
+  right: clamp(-40px, -3vw, -16px);
+  bottom: clamp(40px, 6vw, 72px);
+  left: auto; top: auto;
+  width: clamp(280px, 26vw, 340px);
   z-index: 4;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity 520ms cubic-bezier(.22,.61,.36,1),
-              transform 620ms cubic-bezier(.22,.61,.36,1);
+  visibility: hidden;
+  transform: translateX(14px);
+  transition: transform 620ms cubic-bezier(.22,.61,.36,1),
+              visibility 0s linear 620ms;
 }
 .figure:hover .bio-reveal,
 .figure.is-near .bio-reveal {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
+  visibility: visible;
+  transform: translateX(0);
+  transition: transform 620ms cubic-bezier(.22,.61,.36,1),
+              visibility 0s;
 }
 .bio-reveal p {
   margin: 0;
   font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: clamp(16px, 1.5vw, 21px);
-  line-height: 1.4;
-  letter-spacing: 0.005em;
+  font-weight: 600;
+  font-size: clamp(15px, 1.4vw, 19px);
+  line-height: 1.45;
+  letter-spacing: 0.01em;
   color: #fff;
   mix-blend-mode: difference;
 }
@@ -236,12 +247,15 @@ body::after {
 .reach-status.show { opacity: 1; }
 .reach-status.error { color: #E0A89A; }
 
-/* Load-in. */
-.figure, .panel { opacity: 0; transform: translateY(14px); }
+/* Load-in. The PANEL fades/rises in. The FIGURE only rises (no
+   opacity animation) — animating opacity on the figure would create
+   a stacking context that breaks the bio's mix-blend-mode against
+   the portrait. So the figure uses transform only. */
+.panel { opacity: 0; transform: translateY(14px); }
+.figure { transform: translateY(14px); }
 .is-loaded .figure {
-  opacity: 1; transform: translateY(0);
-  transition: opacity 800ms cubic-bezier(.22,.61,.36,1) 80ms,
-              transform 900ms cubic-bezier(.22,.61,.36,1) 80ms;
+  transform: translateY(0);
+  transition: transform 900ms cubic-bezier(.22,.61,.36,1) 80ms;
 }
 .is-loaded .panel {
   opacity: 1; transform: translateY(0);
@@ -261,8 +275,9 @@ body::after {
   .figure { justify-self: center; max-width: 340px; }
   .figure-frame img { filter: grayscale(0) contrast(1) brightness(1); transform: none; }
   .bio-reveal {
-    position: static; opacity: 1; pointer-events: auto;
+    position: static; visibility: visible; pointer-events: auto;
     transform: none; width: auto; margin-top: 1.6em;
+    right: auto; bottom: auto;
   }
   .bio-reveal p {
     mix-blend-mode: normal;

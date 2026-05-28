@@ -898,7 +898,7 @@ body.lightbox-open { overflow: hidden; }
            is ready, JS fades the poster out to reveal motion. -->
       <img id="heroPoster" class="hero-poster" src="media/reel/poster.jpg" alt="" aria-hidden="true">
       <video id="heroVideo" preload="auto" muted loop playsinline disablepictureinpicture disableremoteplayback poster="media/reel/poster.jpg">
-        <source src="media/reel/reel.mp4" type="video/mp4">
+        <source id="heroSource" src="media/reel/reel.mp4" type="video/mp4">
       </video>
     </div>
   </div>
@@ -931,6 +931,23 @@ body.lightbox-open { overflow: hidden; }
 </div>
 
 <script>
+  // ====== MOBILE REEL ======
+  // On phones/tablets, swap the hero reel to a lightweight 720p version
+  // (~17MB vs ~98MB) so it actually loads on cellular. Must run before
+  // the video begins buffering. Detect by viewport width OR touch.
+  (function swapMobileReel() {
+    try {
+      var isSmall = window.matchMedia &&
+        (window.matchMedia('(max-width: 820px)').matches ||
+         window.matchMedia('(hover: none), (pointer: coarse)').matches);
+      if (!isSmall) return;
+      var src = document.getElementById('heroSource');
+      var hero = document.getElementById('heroVideo');
+      if (src) src.setAttribute('src', 'media/reel/reel-mobile.mp4');
+      if (hero) { try { hero.load(); } catch (e) {} }
+    } catch (e) {}
+  })();
+
   // ====== CONTENT LOADER ======
   // Reads one file: content/videos.txt
   //
@@ -1003,9 +1020,14 @@ body.lightbox-open { overflow: hidden; }
         });
       }
 
-      // Hero reel
+      // Hero reel — but do NOT override a mobile reel that was already
+      // swapped in by swapMobileReel() at the top of the script.
       const reelFile = cfg.REEL_FILE || cfg.reel;
-      if (reelFile) {
+      const onMobileReel = (() => {
+        const s = document.getElementById('heroSource');
+        return s && /reel-mobile\.mp4/.test(s.getAttribute('src') || '');
+      })();
+      if (reelFile && !onMobileReel) {
         const hero = document.getElementById('heroVideo');
         if (hero) {
           const src = 'media/reel/' + encodeURI(reelFile);
@@ -1165,8 +1187,21 @@ body.lightbox-open { overflow: hidden; }
     ]);
 
     // === Play ===
-    if (heroVideo) heroVideo.play().catch(() => {});
-    if (heroPoster) heroPoster.classList.add('gone');
+    // Only fade the poster out once the video GENUINELY starts playing.
+    // If the reel fails to load (e.g. large file on cellular), the poster
+    // stays visible as a fallback instead of leaving a blank screen.
+    if (heroVideo) {
+      heroVideo.play().catch(function () {});
+      var hidePoster = function () {
+        if (heroPoster) heroPoster.classList.add('gone');
+      };
+      if (!heroVideo.paused && heroVideo.currentTime > 0) {
+        hidePoster();
+      } else {
+        heroVideo.addEventListener('playing', hidePoster, { once: true });
+        // If playback never starts, the poster simply remains — no blank.
+      }
+    }
 
     // === Arm interaction listeners + fallback ===
     // Hold state: reel plays, big wordmark stays. Interaction (or
@@ -1190,7 +1225,12 @@ body.lightbox-open { overflow: hidden; }
       }, 350);
       setTimeout(() => {
         if (introMark && introMark.parentNode) introMark.remove();
-        if (heroPoster && heroPoster.parentNode) heroPoster.remove();
+        // Only remove the poster if the video is actually playing; if it
+        // never loaded (cellular), keep the poster so the hero is never blank.
+        if (heroPoster && heroPoster.parentNode && heroVideo &&
+            !heroVideo.paused && heroVideo.currentTime > 0) {
+          heroPoster.remove();
+        }
       }, 1200);
 
       events.forEach(e => window.removeEventListener(e, handoff, true));
