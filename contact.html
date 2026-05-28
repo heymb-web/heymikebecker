@@ -158,44 +158,42 @@ body::after {
   transform: scale(1.04);
 }
 
-/* Bio reveal — hidden until hover. Positioned in the lower-right
-   region of the portrait (clear of the face), with breathing room
-   from the bottom edge. Uses mix-blend-mode: difference so it reads
-   over the bright photo OR the dark page, exactly like the homepage
-   intro wordmark and the work-page section labels.
+/* Bio reveal — now lives INSIDE .figure-frame, sharing the same layer
+   as the portrait image. This is what makes mix-blend-mode: difference
+   actually work: the white text composites against the photo's pixels,
+   so it turns dark over the bright background and stays light over the
+   dark shirt — readable everywhere, exactly like the homepage wordmark.
 
-   IMPORTANT: the reveal is animated with visibility + transform, NOT
-   opacity. An element with opacity < 1 creates an isolated stacking
-   context that BREAKS mix-blend-mode (the text can't blend with the
-   photo behind it and renders solid white = invisible over white).
-   Animating visibility/transform keeps the blend live the whole time. */
+   Positioned in the lower-right of the photo with breathing room from
+   the bottom edge. Hidden until hover; revealed via visibility +
+   transform (never opacity, which would isolate and break the blend). */
 .bio-reveal {
   position: absolute;
-  right: clamp(-40px, -3vw, -16px);
-  bottom: clamp(40px, 6vw, 72px);
-  left: auto; top: auto;
-  width: clamp(280px, 26vw, 340px);
-  z-index: 4;
+  right: clamp(14px, 4%, 28px);
+  bottom: clamp(20px, 5%, 40px);
+  left: clamp(24px, 12%, 60px);
+  z-index: 2;
   pointer-events: none;
   visibility: hidden;
-  transform: translateX(14px);
-  transition: transform 620ms cubic-bezier(.22,.61,.36,1),
-              visibility 0s linear 620ms;
+  transform: translateY(10px);
+  transition: transform 560ms cubic-bezier(.22,.61,.36,1),
+              visibility 0s linear 560ms;
 }
 .figure:hover .bio-reveal,
 .figure.is-near .bio-reveal {
   visibility: visible;
-  transform: translateX(0);
-  transition: transform 620ms cubic-bezier(.22,.61,.36,1),
+  transform: translateY(0);
+  transition: transform 560ms cubic-bezier(.22,.61,.36,1),
               visibility 0s;
 }
 .bio-reveal p {
   margin: 0;
   font-family: 'Inter', sans-serif;
   font-weight: 600;
-  font-size: clamp(15px, 1.4vw, 19px);
-  line-height: 1.45;
-  letter-spacing: 0.01em;
+  font-size: clamp(13px, 1.15vw, 17px);
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+  text-align: right;
   color: #fff;
   mix-blend-mode: difference;
 }
@@ -273,16 +271,18 @@ body::after {
 ====================================================== */
 @media (max-width: 859px) {
   .figure { justify-self: center; max-width: 340px; }
+  .figure-frame { overflow: visible; }
   .figure-frame img { filter: grayscale(0) contrast(1) brightness(1); transform: none; }
   .bio-reveal {
     position: static; visibility: visible; pointer-events: auto;
     transform: none; width: auto; margin-top: 1.6em;
-    right: auto; bottom: auto;
+    right: auto; bottom: auto; left: auto;
   }
   .bio-reveal p {
     mix-blend-mode: normal;
     color: var(--fg-dim);
     font-weight: 400;
+    text-align: left;
     font-size: clamp(15px, 4vw, 17px);
     line-height: 1.6;
   }
@@ -343,9 +343,9 @@ body::after {
     <div class="figure" id="figure">
       <div class="figure-frame">
         <img src="media/about/portrait.jpg" alt="Mike Becker" />
-      </div>
-      <div class="bio-reveal">
-        <p>I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
+        <div class="bio-reveal">
+          <p>I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
+        </div>
       </div>
     </div>
 
