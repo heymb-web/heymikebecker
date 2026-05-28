@@ -235,13 +235,13 @@ WORK_9_TITLE = life afloat
 WORK_9_ROLE  = Operator
 
 # --- Operator: Westholme Nancy Silverton.
-WORK_10_FILE  = patagonia-netplus.mp4
-WORK_10_FULL  = patagonia-netplus-full.mp4
+WORK_10_FILE  = media/work-11/patagonia-netplus.mp4
+WORK_10_FULL  = media/work-11/patagonia-netplus-full.mp4
 WORK_10_TITLE = Patagonia – netplus
 WORK_10_ROLE  = Operator
 
 # --- Operator: Patagonia – netplus.
-WORK_11_FILE  = westholme-nancy-silverton.mp4
-WORK_11_FULL  = westholme-nancy-silverton-full.mp4
+WORK_11_FILE  = media/work-10/westholme-nancy-silverton.mp4
+WORK_11_FULL  = media/work-10/westholme-nancy-silverton-full.mp4
 WORK_11_TITLE = Westholme Nancy Silverton
 WORK_11_ROLE  = Operator
