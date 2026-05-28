@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C0B09">
+<title>Contact — Mike Becker</title>
+<meta name="description" content="Contact Mike Becker. Director and cinematographer based in Los Angeles." />
+<link rel="preconnect" href="https://rsms.me/">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+
+<style>
+:root {
+  --bg:           #0C0B09;
+  --bg-2:         #161513;
+  --fg:           #F4F1EB;
+  --fg-dim:       #D9D5CC;
+  --muted:        #8A867D;
+  --edge:         clamp(8px, 1vw, 14px);
+  --nav-edge:     clamp(16px, 1.8vw, 28px);
+  --nav-h:        64px;
+}
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "ss01", "cv11";
+  margin: 0; padding: 0;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+a { color: inherit; text-decoration: none; }
+
+/* NAV — same flat horizontal nav as the other pages. */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--nav-h); z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--nav-edge);
+  pointer-events: none;
+}
+.nav > * { pointer-events: auto; }
+.brand {
+  display: inline-flex; align-items: baseline; gap: 12px;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
+}
+.brand-name {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: clamp(18px, 1.4vw, 22px);
+  letter-spacing: -0.005em; line-height: 1; text-transform: uppercase;
+}
+/* brand-sub hidden — no hover reveal next to the wordmark. */
+.brand-sub { display: none; }
+
+.menu-flat {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
+}
+.menu-flat-link {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(16px, 1.25vw, 19px); font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; line-height: 1;
+  color: rgba(255,255,255,0.72);
+  transition: color 240ms cubic-bezier(.22,.61,.36,1);
+  padding: 4px 2px;
+}
+.menu-flat-link:hover, .menu-flat-link.is-current { color: #fff; }
+.menu-flat-sep {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(16px, 1.25vw, 19px); font-weight: 400;
+  color: rgba(255,255,255,0.4); line-height: 1;
+}
+
+/* PAGE BODY — two-column layout: portrait on the left, bio + contact
+   on the right. The portrait is a cutout on a transparent/white
+   background; we let it sit directly on the dark page so Mike appears
+   to stand in the space rather than inside a white box. On narrow
+   screens the columns stack (portrait on top). */
+.contact-main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding: calc(var(--nav-h) + clamp(32px, 5vw, 64px))
+           clamp(24px, 5vw, 80px)
+           clamp(40px, 6vw, 80px);
+}
+.contact-grid {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+@media (min-width: 820px) {
+  .contact-grid {
+    grid-template-columns: 0.85fr 1fr;
+  }
+}
+
+/* Portrait. The source is a B&W cutout of Mike on a white
+   background. Rather than fight the white (knockout/blend tricks
+   distort B&W photography), we frame it on a clean white plate so
+   the white background reads as an intentional photographic card
+   against the dark page. */
+.contact-portrait {
+  position: relative;
+  justify-self: center;
+  width: 100%;
+  max-width: 420px;
+  background: var(--fg);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.contact-portrait img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.contact-block {
+  max-width: 560px;
+}
+.contact-eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 1.2em;
+}
+.contact-headline {
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 32;
+  font-weight: 500;
+  font-size: clamp(26px, 3vw, 40px);
+  letter-spacing: -0.012em;
+  line-height: 1.06;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin: 0 0 1em;
+}
+.contact-body {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(15px, 1.05vw, 17px);
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--fg-dim);
+  margin: 0 0 1em;
+}
+.contact-reach {
+  margin-top: 2.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+}
+.contact-reach-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.contact-email {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(18px, 1.6vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--fg);
+  width: fit-content;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  padding-bottom: 3px;
+  transition: border-color 240ms;
+}
+.contact-email:hover { border-bottom-color: var(--fg); }
+</style>
+
+</head>
+<body>
+
+<nav class="nav" aria-label="Primary">
+  <a href="index.html" class="brand" aria-label="Home">
+    <span class="brand-name">Mike Becker</span>
+  </a>
+  <div class="menu-flat">
+    <a class="menu-flat-link" href="index.html">Home</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="work.html">Work</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link is-current" href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<main class="contact-main">
+  <div class="contact-grid">
+    <div class="contact-portrait">
+      <img src="media/about/portrait.jpg" alt="Mike Becker" />
+    </div>
+    <div class="contact-block">
+      <p class="contact-eyebrow">Contact</p>
+      <h1 class="contact-headline">Director and cinematographer based in Los Angeles.</h1>
+      <p class="contact-body">I'm a documentary director and cinematographer based in Los Angeles. Over the last 13 years I've worked across five continents, directing documentary and commercial projects and shooting for major networks and brands.</p>
+      <p class="contact-body">My approach is built on access, trust, and patience. The best moments rarely happen on cue, so I take the time to earn my way into a story and let it surface on its own terms rather than forcing it.</p>
+      <p class="contact-body">That instinct shapes everything I make, on set and in the field. I hold wildland fire training that lets me work safely alongside the crews at the center of the stories I'm drawn to, close enough to capture the work as it actually happens.</p>
+      <div class="contact-reach">
+        <p class="contact-reach-label">Get in touch</p>
+        <a class="contact-email" id="contactEmail" href="mailto:hello@mikebecker.com">hello@mikebecker.com</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+// Wire email from content/site.txt EMAIL.
+(async function() {
+  try {
+    const res = await fetch('content/site.txt', { cache: 'no-cache' });
+    if (!res.ok) return;
+    const text = await res.text();
+    const m = text.match(/^\s*EMAIL\s*=\s*(.+)\s*$/m);
+    if (!m) return;
+    const email = m[1].trim();
+    const a = document.getElementById('contactEmail');
+    if (a) { a.href = 'mailto:' + email; a.textContent = email; }
+  } catch (e) {}
+})();
+</script>
+
+</body>
+</html>
