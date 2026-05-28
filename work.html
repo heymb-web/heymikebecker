@@ -396,6 +396,29 @@ a { color: inherit; text-decoration: none; }
   .work-grid .tile.is-quarter .tile-media {
     aspect-ratio: 16 / 27;
   }
+
+  /* Square-pair row: a wide tile (8 cols) beside a true square
+     (4 cols, 1:1). To keep the row filled with matched heights and
+     no whitespace, the wide tile's height is locked to the square's
+     height. A 4-col square is 4 column-units tall. An 8-col tile is
+     8 column-units wide, so to be 4 units tall its media must use an
+     aspect ratio of 8/4 = 2/1 (slightly wider/shorter than 16:9).
+     The wide tile's 16:9 source video crops a little off the top and
+     bottom via object-fit: cover; the square's source crops on the
+     sides. Used for the Camera section's bottom row (Life Afloat +
+     Already Famous). */
+  .work-grid .tile.is-wide-mate {
+    grid-column: span 8;
+  }
+  .work-grid .tile.is-wide-mate .tile-media {
+    aspect-ratio: 2 / 1;
+  }
+  .work-grid .tile.is-square {
+    grid-column: span 4;
+  }
+  .work-grid .tile.is-square .tile-media {
+    aspect-ratio: 1 / 1;
+  }
 }
 
 /* A section with only one tile auto-promotes that tile to a hero
@@ -790,11 +813,11 @@ a { color: inherit; text-decoration: none; }
         layout = LAYOUT_BY_ROLE[group.role] || [];
       } else if (count === 5 && group.role === 'Operator') {
         // Camera section with 5 projects: hero opener, then a row
-        // of paired halves, then a 3/4 + 1/4 asymmetric bottom row.
+        // of paired halves, then a wide-mate + square bottom row.
         //   row 1: hero
         //   row 2: half + half
-        //   row 3: three-quarter + quarter
-        layout = ['is-hero', 'is-half', 'is-half', 'is-three-quarter', 'is-quarter'];
+        //   row 3: wide-mate (8 cols, 2:1) + square (4 cols, 1:1)
+        layout = ['is-hero', 'is-half', 'is-half', 'is-wide-mate', 'is-square'];
       } else if (count === 6 && group.role === 'Specialty Camera') {
         // Specialty section with 6 projects: the standard 4-tile
         // layout (hero, then small + half + small) plus a new
