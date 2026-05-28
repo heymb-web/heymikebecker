@@ -380,12 +380,11 @@ a { color: inherit; text-decoration: none; }
   .work-grid .tile.is-quarter .tile-media {
     aspect-ratio: 16 / 27;
   }
-  /* The quarter tile crops a 16:9 source to a narrow 16:27 portrait
-     window. By default object-fit: cover shows the horizontal center,
-     but Dark Virgin's subject sits right-of-center in frame, so we
-     shift the crop rightward to keep the person centered in the tile. */
+  /* The quarter tile is 16:27 portrait. Dark Virgin's thumbnail is
+     pre-cropped to exactly 16:27, centered on the subject, so it fits
+     the tile with no further cropping and the person stays centered. */
   .work-grid .tile.is-quarter .tile-media video {
-    object-position: 68% 50%;
+    object-position: 50% 50%;
   }
 
   /* Square-pair row: a wide tile (8 cols) beside a near-square tile
