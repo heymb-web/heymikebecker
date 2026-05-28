@@ -887,6 +887,22 @@ body.lightbox-open { overflow: hidden; }
 .lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
 .lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
+/* ===================================================================
+   GLOBAL SEE-THROUGH TEXT — every piece of text on the site uses the
+   same readable-over-anything treatment: white + mix-blend-mode:
+   difference. This inverts the text against whatever is behind it, so
+   it stays legible over video, images, light or dark backgrounds —
+   identical to the homepage intro wordmark. Applied site-wide.
+=================================================================== */
+.brand-name, .brand-sub-dot,
+.menu-flat, .menu-flat-link, .menu-flat-link:hover, .menu-flat-link.is-current,
+.menu-flat-sep, .menu, .menu .sep, .menu a, .menu-label,
+.hero-caption, .hero-caption .role-primary, .hero-caption .role-sep,
+.hero-caption .role-secondary, .section-title h2,
+.tile-overlay-title, .lightbox-title, .lightbox-role {
+  color: #fff !important;
+  mix-blend-mode: difference !important;
+}
 </style>
 </head>
 <body class="intro-active">

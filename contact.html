@@ -305,6 +305,26 @@ body::after {
     line-height: 1.6;
   }
 }
+/* ===================================================================
+   GLOBAL SEE-THROUGH TEXT — every piece of text uses white +
+   mix-blend-mode: difference so it reads over any background,
+   identical to the homepage intro wordmark. Applied site-wide,
+   including the contact details and form fields.
+=================================================================== */
+.brand, .brand-name,
+.menu-flat, .menu-flat-link, .menu-flat-link:hover, .menu-flat-link.is-current,
+.menu-flat-sep,
+.panel-role, .details a, .details span,
+.reach-label, .reach-field input, .reach-field textarea,
+.reach-send, .reach-status {
+  color: #fff !important;
+  mix-blend-mode: difference !important;
+}
+.reach-field input::placeholder,
+.reach-field textarea::placeholder {
+  color: #fff !important;
+  opacity: 0.55 !important;
+}
 </style>
 
 </head>

@@ -605,6 +605,18 @@ a { color: inherit; text-decoration: none; }
 }
 .lightbox-close-line:nth-child(1) { transform: rotate(45deg); }
 .lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
+/* ===================================================================
+   GLOBAL SEE-THROUGH TEXT — every piece of text uses white +
+   mix-blend-mode: difference so it reads over any background,
+   identical to the homepage intro wordmark. Applied site-wide.
+=================================================================== */
+.brand, .brand-name,
+.menu-flat, .menu-flat-link, .menu-flat-link:hover, .menu-flat-link.is-current,
+.menu-flat-sep, .tile-overlay-title,
+.lightbox-meta, .lightbox-title, .lightbox-role {
+  color: #fff !important;
+  mix-blend-mode: difference !important;
+}
 </style>
 
 </head>
