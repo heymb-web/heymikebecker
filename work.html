@@ -672,8 +672,15 @@ a { color: inherit; text-decoration: none; }
       const title = cfg['WORK_' + n + '_TITLE'];
       const role  = cfg['WORK_' + n + '_ROLE'];
       const wide  = (cfg['WORK_' + n + '_WIDE'] || '').toLowerCase() === 'true';
+      // Optional explicit order within the section. If unset, falls
+      // back to the project's slot number N. Useful when projects
+      // need to appear in a different order than their slot numbers
+      // (e.g. you want a project with a higher slot number to
+      // appear before one with a lower number in the same section).
+      const orderRaw = cfg['WORK_' + n + '_ORDER'];
+      const order = orderRaw ? parseInt(orderRaw, 10) : n;
       if (file && full && title && role) {
-        projects.push({ n, file, full, title, role, wide });
+        projects.push({ n, file, full, title, role, wide, order });
         missCount = 0;
       } else {
         missCount++;
@@ -682,12 +689,16 @@ a { color: inherit; text-decoration: none; }
     return projects;
   }
 
-  // Group projects by role, in the canonical order. Only roles that
-  // have at least one project end up with a section.
+  // Group projects by role, in the canonical order. Within each
+  // group, projects are sorted by their ORDER value (which falls
+  // back to N if no explicit order was set). Only roles that have
+  // at least one project end up with a section.
   function groupByRole(projects) {
     const groups = [];
     ROLE_ORDER.forEach(role => {
-      const matches = projects.filter(p => p.role === role);
+      const matches = projects
+        .filter(p => p.role === role)
+        .sort((a, b) => a.order - b.order);
       if (matches.length > 0) groups.push({ role, projects: matches });
     });
     return groups;
@@ -738,7 +749,7 @@ a { color: inherit; text-decoration: none; }
   const LAYOUT_BY_ROLE = {
     'Director':         ['is-hero', 'is-three-quarter', 'is-quarter', 'is-hero'],
     'Specialty Camera': ['is-hero', 'is-small', 'is-half', 'is-small'],
-    'Operator':         ['is-hero', 'is-small', 'is-small', 'is-half']
+    'Operator':         ['is-hero', 'is-half', 'is-half', 'is-hero']
   };
 
   function buildPage(groups) {
@@ -823,8 +834,17 @@ a { color: inherit; text-decoration: none; }
       slotted.forEach((entry) => {
         const p = entry.project;
         const cls = entry.cls;
-        const fileSrc = resolveSrc(p.file, 'media/work-' + p.n);
-        const fullSrc = resolveSrc(p.full, 'media/work-' + p.n);
+        // Folder name includes the section suffix so it's clear at
+        // a glance which section each project belongs to. Director
+        // → 'director', Specialty Camera → 'specialty', Operator → 'camera'.
+        const sectionSlug = {
+          'Director':         'director',
+          'Specialty Camera': 'specialty',
+          'Operator':         'camera'
+        }[p.role] || 'unknown';
+        const folder = 'media/work-' + p.n + '-' + sectionSlug;
+        const fileSrc = resolveSrc(p.file, folder);
+        const fullSrc = resolveSrc(p.full, folder);
 
         const tile = document.createElement('a');
         tile.className = 'tile' + (cls ? ' ' + cls : '');

@@ -6,7 +6,7 @@ Every editable thing on the site lives in this file.
 Edit the values, save, commit. Site updates in ~1 minute.
 
 Format: each line is "FIELD = VALUE". Anything after a # is
-a comment. Blank lines are ignored. Order doesn't matter.
+a comment. Blank lines are ignored.
 
 
 ============================================================
@@ -21,227 +21,172 @@ EMAIL   = hello@mikebecker.com
   HERO REEL
 ============================================================
 
-# The video that autoplays at the top of the site.
-# Drop the file into media/reel/ and write its filename here.
+# The video that autoplays at the top of the homepage.
+# File lives at media/reel/reel.mp4.
 
 REEL_FILE = reel.mp4
-
-
-============================================================
-  TILE 1  (landscape — opens the work)
-============================================================
-
-# TILE_N_FILE  = the short hover loop (3-5 seconds, plays on hover)
-# TILE_N_FULL  = the full project video (plays in the lightbox on click)
-# TILE_N_TITLE = the project name
-# TILE_N_ROLE  = your role on the project (Director, Operator, DP, etc.)
-
-TILE_1_FILE  = tile-1.mp4
-TILE_1_FULL  = tile-1-full.mp4
-TILE_1_TITLE = Smoke
-TILE_1_ROLE  = Director
-
-
-============================================================
-  TILE 2  (portrait — paired with tile 1)
-============================================================
-
-TILE_2_FILE  = tile-2.mp4
-TILE_2_FULL  = tile-2-full.mp4
-TILE_2_TITLE = Born in Baltimore
-TILE_2_ROLE  = Director
-
-
-============================================================
-  TILE 3
-============================================================
-
-TILE_3_FILE  = tile-3.mp4
-TILE_3_FULL  = tile-3-full.mp4
-TILE_3_TITLE = Rab — NetPlus x Microlight
-TILE_3_ROLE  = Operator
-
-
-============================================================
-  TILE 4
-============================================================
-
-TILE_4_FILE  = tile-4.mp4
-TILE_4_FULL  = tile-4-full.mp4
-TILE_4_TITLE = CRACKED
-TILE_4_ROLE  = Operator
-
-
-============================================================
-  TILE 5  (full-width closer — strongest piece goes here)
-============================================================
-
-TILE_5_FILE  = tile-5.mp4
-TILE_5_FULL  = tile-5-full.mp4
-TILE_5_TITLE = Ford Bronco – Dust is Gold
-TILE_5_ROLE  = Operator
 
 
 ============================================================
   WORK PAGE — PROJECTS
 ============================================================
 
-# Each project on the Work page has its own block below.
-# Only blocks with all four required fields filled in render on the page.
-# Empty / commented-out blocks are skipped entirely (no empty tiles).
+# Each project has its own block below. The fields per block are:
 #
-# WORK_N_FILE  = hover loop video
-# WORK_N_FULL  = full project video (lightbox)
-# WORK_N_TITLE = project name
-# WORK_N_ROLE  = your credit on this project. Must be one of:
-#                  Director
-#                  Specialty Camera
-#                  Operator
-#                Projects are grouped into sections on the work page
-#                by role, in the order above.
-# WORK_N_WIDE  = optional. Set to "true" to make this tile the
-#                section's HERO — the cinematic full-width tile.
-#                Use it on your strongest piece per section. If no
-#                WIDE flag is set in a section, the first project
-#                listed in that section becomes the hero by default.
+#   WORK_N_FILE  = hover-loop video filename (3-5 seconds)
+#   WORK_N_FULL  = full project video filename (plays in lightbox)
+#   WORK_N_TITLE = project name (shown on the tile)
+#   WORK_N_ROLE  = section the project belongs to. Must be exactly one of:
+#                    Director           (label on the site: "Director")
+#                    Specialty Camera   (label on the site: "Specialty")
+#                    Operator           (label on the site: "Camera")
+#   WORK_N_WIDE  = optional. "true" makes this project the hero of its
+#                  section. Only one project per section should be WIDE.
+#   WORK_N_ORDER = optional integer. Controls position within section.
+#                  Lower numbers appear first. If unset, defaults to N
+#                  (the slot number), giving the legacy behavior of
+#                  numeric ordering. Useful when you want projects to
+#                  appear in a different order than their slot numbers.
 #
-# SECTION LAYOUT (4 tiles per section)
+# FOLDER RULE:
+#   Project N's video files live in media/work-N-SECTION/
+#   where SECTION is "director", "specialty", or "camera"
+#   matching the project's ROLE field above.
 #
-# Specialty Camera and Operator share the same macro structure:
-# one cinematic hero opener, then a single cluster row with three
-# tiles at smaller scale. The cluster is one HALF (6/12 width,
-# full 16:9 frame) + two SMALL tiles (3/12 width, ~8:9 cropped).
-# Heights match exactly so the row fills with no whitespace.
+#   Examples:
+#     WORK_1_ROLE = Director           → folder is media/work-1-director/
+#     WORK_4_ROLE = Specialty Camera   → folder is media/work-4-specialty/
+#     WORK_9_ROLE = Operator           → folder is media/work-9-camera/
 #
-# Director is the exception. Director uses all-large tiles —
-# hero opener, a pair of halves in the middle, and a second hero
-# closer at the bottom. No small accents in Director.
+#   FILE and FULL values are just the filename (no slashes, no path).
 #
-# The position of the cluster's half tile in SC and Operator
-# differs by section so each section's row 2 has a distinct
-# silhouette:
+# TO ADD A NEW PROJECT:
+#   1. Pick the next available slot number (next free N).
+#   2. Decide its section (Director / Specialty Camera / Operator).
+#   3. Make folder: media/work-N-SECTION/ matching the section slug.
+#   4. Put two .mp4 files in that folder.
+#   5. Add a WORK_N block here with all four required fields.
+#   6. Commit and push.
 #
-#   Director (large opener + asymmetric pair + large closer)
-#     tile 1: hero (12 wide, 2.39:1 cinemascope opener)
-#     tile 2: three-quarter (9 wide, full 16:9 — takes 3/4 of
-#             the middle row's length)
-#     tile 3: quarter (3 wide, 16:27 portrait-ish — takes the
-#             remaining 1/4 of the middle row; the 16:9 video
-#             crops to roughly the center 33% horizontally)
-#     tile 4: hero closer (12 wide, 2.39:1 — second cinematic
-#             anchor at the bottom of the section)
+# TO MOVE A PROJECT TO A DIFFERENT SECTION:
+#   1. Change WORK_N_ROLE to the new section value.
+#   2. Rename media/work-N-OLD/ to media/work-N-NEW/ so the suffix matches.
+#   3. Commit and push.
 #
-#     Director deliberately uses all-large tiles. The next section
-#     (Specialty Camera) also opens on a hero, so the transition
-#     between sections will have two large tiles back-to-back.
-#     This is an intentional design choice for Director only.
+# TO REMOVE A PROJECT:
+#   Delete or comment out its block here. The folder can stay or be
+#   removed.
 #
-#   Specialty Camera (currently only 2 populated tiles)
-#     tile 1: major (Ford Bronco, 8 wide, 16:9 — dominant
-#             landscape with WIDE flag)
-#     tile 2: minor (CRACKED, 4 wide, 8:9 — supporting tile
-#             beside Ford, 16:9 source crops to center ~50%)
+# SECTION LAYOUTS (4 projects per section, all sections currently full)
 #
-#     Single-row asymmetric pair. Adding a 3rd or 4th SC project
-#     switches it to a larger layout automatically.
+#   Director (4 projects, 3 rows of varying size):
+#     1st: hero (12 wide, 2.39:1 cinemascope opener)
+#     2nd: three-quarter (9 wide, full 16:9)
+#     3rd: quarter (3 wide, 16:27 — sides crop ~33%)
+#     4th: hero closer (12 wide, 2.39:1)
 #
-#   Operator (cluster anchor RIGHT — 4 tiles)
-#     tile 1: hero (Rab — NetPlus x Microlight, 12 wide, 2.39:1)
-#     tile 2: small (3 wide, ~8:9 — accent, sides crop ~50%)
-#     tile 3: small (3 wide, ~8:9 — accent, sides crop ~50%)
-#     tile 4: half (6 wide, full 16:9 — strongest non-hero piece)
+#   Specialty (4 projects, 2 rows):
+#     1st: hero (12 wide, 2.39:1)
+#     2nd: small (3 wide, ~8:9 — sides crop ~50%)
+#     3rd: half (6 wide, full 16:9)
+#     4th: small (3 wide, ~8:9 — sides crop ~50%)
 #
-# The small tiles crop their video to roughly the center 50%
-# horizontally. Put centered subjects, close-ups, or tightly-
-# framed shots in the small slots. Put wide landscapes and full
-# ensemble shots in the hero or half slots where the full frame
-# is preserved.
+#   Camera (4 projects, 3 rows):
+#     1st: hero (12 wide, 2.39:1)
+#     2nd: half (6 wide, full 16:9)
+#     3rd: half (6 wide, full 16:9)
+#     4th: hero (12 wide, 2.39:1)
 #
-# PATH CONVENTION:
-#   - If the value contains a slash, it's a full path from site root
-#     (e.g. media/tile-1/tile-1.mp4). Useful for reusing home files.
-#   - Otherwise, the value is just a filename and the page looks in
-#     media/work-N/ for it. Useful for new project folders.
+# The position of each project within its section is determined by:
+#   - Whichever project has WIDE=true becomes the hero (slot 1).
+#   - The remaining projects fill slots 2, 3, 4 in numeric order
+#     (lowest WORK_N first).
 #
-# To add a new project: drop the files into media/work-N/, fill in
-# the four lines below. To remove: delete or comment out the block.
+# Small tiles crop the source video to roughly its center 50%.
+# Put centered subjects, close-ups, or tight compositions in those slots.
+# Put wide landscapes and ensembles in the hero or half slots.
 
-WORK_1_FILE  = media/tile-1/tile-1.mp4
-WORK_1_FULL  = media/tile-1/tile-1-full.mp4
+
+# ============================================================
+# DIRECTOR
+# ============================================================
+
+WORK_1_FILE  = smoke.mp4
+WORK_1_FULL  = smoke-full.mp4
 WORK_1_TITLE = Smoke
 WORK_1_ROLE  = Director
 WORK_1_WIDE  = true
 
-WORK_2_FILE  = media/tile-2/tile-2.mp4
-WORK_2_FULL  = media/tile-2/tile-2-full.mp4
+WORK_2_FILE  = born-in-baltimore.mp4
+WORK_2_FULL  = born-in-baltimore-full.mp4
 WORK_2_TITLE = Born in Baltimore
 WORK_2_ROLE  = Director
 
-# --- Director slot 3 (quarter tile, 3 wide, 16:27 portrait-ish).
-#     Pairs with Born in Baltimore in the middle row. The 16:9
-#     source video crops to roughly the center 33% horizontally
-#     via object-fit: cover.
 WORK_6_FILE  = dark-virgin.mp4
 WORK_6_FULL  = dark-virgin-full.mp4
 WORK_6_TITLE = Dark Virgin
 WORK_6_ROLE  = Director
 
-# --- Director slot 4 (hero closer, 12 wide, 2.39:1 — second large
-#     tile of the Director section).
 WORK_7_FILE  = string-out-7.mp4
 WORK_7_FULL  = string-out-7-full.mp4
 WORK_7_TITLE = CHANGE IS HERE
 WORK_7_ROLE  = Director
 
-# WORK_3 (Rab) lives in Operator — first non-WIDE project in
-# Operator (N=3 < 9 < 10 < 12), so it lands in slot 1 (the hero
-# opener of the Operator section).
-WORK_3_FILE  = media/tile-3/tile-3.mp4
-WORK_3_FULL  = media/tile-3/tile-3-full.mp4
-WORK_3_TITLE = Rab — NetPlus x Microlight
-WORK_3_ROLE  = Operator
 
-WORK_4_FILE  = media/tile-4/tile-4.mp4
-WORK_4_FULL  = media/tile-4/tile-4-full.mp4
-WORK_4_TITLE = CRACKED
-WORK_4_ROLE  = Specialty Camera
+# ============================================================
+# SPECIALTY  (internally stored as "Specialty Camera")
+# ============================================================
 
-WORK_5_FILE  = media/tile-5/tile-5.mp4
-WORK_5_FULL  = media/tile-5/tile-5-full.mp4
+WORK_5_FILE  = ford-bronco.mp4
+WORK_5_FULL  = ford-bronco-full.mp4
 WORK_5_TITLE = Ford Bronco – Dust is Gold
 WORK_5_ROLE  = Specialty Camera
 WORK_5_WIDE  = true
 
-# --- Specialty Camera: BMW – Leave No Trace.
+WORK_4_FILE  = cracked.mp4
+WORK_4_FULL  = cracked-full.mp4
+WORK_4_TITLE = CRACKED
+WORK_4_ROLE  = Specialty Camera
+
 WORK_8_FILE  = bmw-leave-no-trace.mp4
 WORK_8_FULL  = bmw-leave-no-trace-full.mp4
 WORK_8_TITLE = BMW- leave no trace
 WORK_8_ROLE  = Specialty Camera
 
-# --- Specialty Camera: OFRENDA.
-WORK_13_FILE  = ofrenda.mp4
-WORK_13_FULL  = ofrenda-full.mp4
-WORK_13_TITLE = OFRENDA
-WORK_13_ROLE  = Specialty Camera
+WORK_12_FILE  = ofrenda.mp4
+WORK_12_FULL  = ofrenda-full.mp4
+WORK_12_TITLE = OFRENDA
+WORK_12_ROLE  = Specialty Camera
 
-# --- PLACEHOLDERS: Operator section. Rab (WORK_3 above) is the
-#     hero opener. Projects 9, 10, 11 fill the cluster middle row
-#     (small + small + half). Project 12 is the hero closer at
-#     the bottom of the section. 5 tiles total, 3 rows.
-# --- Operator: life afloat.
+
+# ============================================================
+# CAMERA  (internally stored as "Operator")
+# ============================================================
+#
+# Layout: hero (Rab) / Westholme + Patagonia / hero (Life Afloat)
+# Order is set by WORK_N_ORDER fields below, which override the
+# default numeric ordering by slot number.
+
+WORK_3_FILE  = rab-netplus.mp4
+WORK_3_FULL  = rab-netplus-full.mp4
+WORK_3_TITLE = Rab — NetPlus x Microlight
+WORK_3_ROLE  = Operator
+WORK_3_ORDER = 1
+
+WORK_11_FILE  = westholme-nancy-silverton.mp4
+WORK_11_FULL  = westholme-nancy-silverton-full.mp4
+WORK_11_TITLE = Westholme Nancy Silverton
+WORK_11_ROLE  = Operator
+WORK_11_ORDER = 2
+
+WORK_10_FILE  = patagonia-netplus.mp4
+WORK_10_FULL  = patagonia-netplus-full.mp4
+WORK_10_TITLE = Patagonia – netplus
+WORK_10_ROLE  = Operator
+WORK_10_ORDER = 3
+
 WORK_9_FILE  = life-afloat.mp4
 WORK_9_FULL  = life-afloat-full.mp4
 WORK_9_TITLE = life afloat
 WORK_9_ROLE  = Operator
-
-# --- Operator: Westholme Nancy Silverton.
-WORK_10_FILE  = media/work-11/patagonia-netplus.mp4
-WORK_10_FULL  = media/work-11/patagonia-netplus-full.mp4
-WORK_10_TITLE = Patagonia – netplus
-WORK_10_ROLE  = Operator
-
-# --- Operator: Patagonia – netplus.
-WORK_11_FILE  = media/work-10/westholme-nancy-silverton.mp4
-WORK_11_FULL  = media/work-10/westholme-nancy-silverton-full.mp4
-WORK_11_TITLE = Westholme Nancy Silverton
-WORK_11_ROLE  = Operator
+WORK_9_ORDER = 4
