@@ -16,6 +16,7 @@
   --fg:           #F4F1EB;
   --fg-dim:       #D9D5CC;
   --muted:        #8A867D;
+  --line:         rgba(244,241,235,0.16);
   --edge:         clamp(8px, 1vw, 14px);
   --nav-edge:     clamp(16px, 1.8vw, 28px);
   --nav-h:        64px;
@@ -52,7 +53,6 @@ a { color: inherit; text-decoration: none; }
   font-size: clamp(18px, 1.4vw, 22px);
   letter-spacing: -0.005em; line-height: 1; text-transform: uppercase;
 }
-/* brand-sub hidden — no hover reveal next to the wordmark. */
 .brand-sub { display: none; }
 
 .menu-flat {
@@ -75,108 +75,230 @@ a { color: inherit; text-decoration: none; }
   color: rgba(255,255,255,0.4); line-height: 1;
 }
 
-/* PAGE BODY — two-column layout: portrait on the left, bio + contact
-   on the right. The portrait is a cutout on a transparent/white
-   background; we let it sit directly on the dark page so Mike appears
-   to stand in the space rather than inside a white box. On narrow
-   screens the columns stack (portrait on top). */
+/* ======================================================
+   CONTACT — asymmetric editorial split.
+   Left: quiet text column (bio, location, details, form) in
+   generous negative space. Right: oversized cutout portrait
+   bleeding off the right edge, anchored bottom. The portrait
+   sits desaturated/dimmed and resolves to full contrast as the
+   cursor nears it — echoing the resolve-on-attention feeling of
+   the work page's section labels.
+====================================================== */
 .contact-main {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  padding: calc(var(--nav-h) + clamp(32px, 5vw, 64px))
-           clamp(24px, 5vw, 80px)
-           clamp(40px, 6vw, 80px);
-}
-.contact-grid {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(32px, 5vw, 72px);
-  align-items: center;
-}
-@media (min-width: 820px) {
-  .contact-grid {
-    grid-template-columns: 0.85fr 1fr;
-  }
-}
-
-/* Portrait. The source is a B&W cutout of Mike on a white
-   background. Rather than fight the white (knockout/blend tricks
-   distort B&W photography), we frame it on a clean white plate so
-   the white background reads as an intentional photographic card
-   against the dark page. */
-.contact-portrait {
   position: relative;
-  justify-self: center;
+  min-height: 100vh;
   width: 100%;
-  max-width: 420px;
-  background: var(--fg);
-  border-radius: 2px;
   overflow: hidden;
 }
-.contact-portrait img {
+
+.portrait-bleed {
+  position: absolute;
+  right: clamp(-40px, -2vw, 0px);
+  bottom: 0;
+  width: clamp(320px, 42vw, 620px);
+  z-index: 1;
+  pointer-events: auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 86%, transparent 100%);
+}
+.portrait-bleed img {
   display: block;
   width: 100%;
   height: auto;
+  filter: grayscale(1) contrast(0.92) brightness(0.82);
+  opacity: 0.86;
+  transition: filter 600ms cubic-bezier(.22,.61,.36,1),
+              opacity 600ms cubic-bezier(.22,.61,.36,1);
+  mix-blend-mode: luminosity;
+}
+.portrait-bleed:hover img,
+.portrait-bleed.is-near img {
+  filter: grayscale(0) contrast(1) brightness(1);
+  opacity: 1;
+  mix-blend-mode: normal;
 }
 
-.contact-block {
-  max-width: 560px;
+.contact-content {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(28px, 3.5vw, 44px);
+  max-width: 600px;
+  padding: calc(var(--nav-h) + clamp(40px, 7vw, 90px))
+           clamp(24px, 5vw, 80px)
+           clamp(48px, 7vw, 100px);
 }
+
+.contact-intro { max-width: 30ch; }
 .contact-eyebrow {
   font-family: 'Inter', sans-serif;
   font-size: 11px; font-weight: 500;
-  letter-spacing: 0.24em; text-transform: uppercase;
+  letter-spacing: 0.26em; text-transform: uppercase;
   color: var(--muted);
-  margin: 0 0 1.2em;
+  margin: 0 0 1.4em;
 }
 .contact-headline {
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 32;
   font-weight: 500;
-  font-size: clamp(26px, 3vw, 40px);
-  letter-spacing: -0.012em;
-  line-height: 1.06;
+  font-size: clamp(30px, 4vw, 56px);
+  letter-spacing: -0.018em;
+  line-height: 1.0;
   text-transform: uppercase;
   color: var(--fg);
-  margin: 0 0 1em;
+  margin: 0 0 0.7em;
 }
-.contact-body {
+.contact-bio {
   font-family: 'Inter', sans-serif;
   font-size: clamp(15px, 1.05vw, 17px);
   font-weight: 400;
   line-height: 1.6;
   color: var(--fg-dim);
-  margin: 0 0 1em;
+  margin: 0;
+  max-width: 42ch;
 }
-.contact-reach {
-  margin-top: 2.2em;
+
+.contact-details {
   display: flex;
   flex-direction: column;
-  gap: 0.6em;
+  gap: 0.85em;
 }
-.contact-reach-label {
+.detail-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2em;
+}
+.detail-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 10.5px; font-weight: 500;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--muted);
+  width: 5.5em;
+  flex-shrink: 0;
+}
+.detail-value {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(15px, 1.15vw, 18px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--fg);
+}
+a.detail-value {
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 2px;
+  transition: border-color 260ms;
+}
+a.detail-value:hover { border-bottom-color: var(--fg); }
+
+/* REACH-OUT FORM — minimal underlined fields, no boxes. */
+.reach {
+  margin-top: clamp(8px, 1vw, 16px);
+  max-width: 38ch;
+}
+.reach-label {
   font-family: 'Inter', sans-serif;
   font-size: 11px; font-weight: 500;
-  letter-spacing: 0.24em; text-transform: uppercase;
+  letter-spacing: 0.26em; text-transform: uppercase;
   color: var(--muted);
-  margin: 0;
+  margin: 0 0 1.6em;
 }
-.contact-email {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(18px, 1.6vw, 24px);
-  font-weight: 500;
-  letter-spacing: 0;
+.reach-field {
+  position: relative;
+  margin-bottom: 1.7em;
+}
+.reach-field input,
+.reach-field textarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line);
   color: var(--fg);
-  width: fit-content;
-  border-bottom: 1px solid rgba(255,255,255,0.25);
-  padding-bottom: 3px;
-  transition: border-color 240ms;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(15px, 1.1vw, 17px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  padding: 0 0 0.6em;
+  outline: none;
+  transition: border-color 300ms cubic-bezier(.22,.61,.36,1);
+  resize: none;
 }
-.contact-email:hover { border-bottom-color: var(--fg); }
+.reach-field textarea { line-height: 1.5; min-height: 2.2em; }
+.reach-field input::placeholder,
+.reach-field textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+.reach-field input:focus,
+.reach-field textarea:focus {
+  border-bottom-color: var(--fg);
+}
+
+.reach-send {
+  appearance: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--fg);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  transition: opacity 260ms, gap 300ms cubic-bezier(.22,.61,.36,1);
+}
+.reach-send .arrow {
+  display: inline-block;
+  transition: transform 300ms cubic-bezier(.22,.61,.36,1);
+}
+.reach-send:hover { gap: 1.1em; }
+.reach-send:hover .arrow { transform: translateX(3px); }
+.reach-send:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+.reach-status {
+  margin-top: 1.4em;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
+  min-height: 1.2em;
+  color: var(--fg-dim);
+  opacity: 0;
+  transition: opacity 300ms;
+}
+.reach-status.show { opacity: 1; }
+.reach-status.error { color: #E0A89A; }
+
+/* RESPONSIVE — below 880px the portrait stops bleeding and
+   becomes a normal block above the text; everything stacks. */
+@media (max-width: 880px) {
+  .contact-main { overflow: visible; }
+  .portrait-bleed {
+    position: relative;
+    right: auto; bottom: auto;
+    width: min(72vw, 360px);
+    margin: calc(var(--nav-h) + 40px) auto 0;
+    -webkit-mask-image: none; mask-image: none;
+  }
+  .portrait-bleed img {
+    filter: grayscale(0) contrast(1) brightness(1);
+    opacity: 1;
+    mix-blend-mode: normal;
+  }
+  .contact-content {
+    min-height: auto;
+    justify-content: flex-start;
+    padding: clamp(36px, 8vw, 56px) clamp(24px, 7vw, 48px) clamp(56px, 12vw, 88px);
+    max-width: none;
+  }
+}
 </style>
 
 </head>
@@ -196,37 +318,129 @@ a { color: inherit; text-decoration: none; }
 </nav>
 
 <main class="contact-main">
-  <div class="contact-grid">
-    <div class="contact-portrait">
-      <img src="media/about/portrait.jpg" alt="Mike Becker" />
-    </div>
-    <div class="contact-block">
+
+  <div class="portrait-bleed" id="portrait">
+    <img src="media/about/portrait.jpg" alt="Mike Becker" />
+  </div>
+
+  <div class="contact-content">
+    <div class="contact-intro">
       <p class="contact-eyebrow">Contact</p>
-      <h1 class="contact-headline">Director and cinematographer based in Los Angeles.</h1>
-      <p class="contact-body">I'm a documentary director and cinematographer based in Los Angeles. Over the last 13 years I've worked across five continents, directing documentary and commercial projects and shooting for major networks and brands.</p>
-      <p class="contact-body">My approach is built on access, trust, and patience. The best moments rarely happen on cue, so I take the time to earn my way into a story and let it surface on its own terms rather than forcing it.</p>
-      <p class="contact-body">That instinct shapes everything I make, on set and in the field. I hold wildland fire training that lets me work safely alongside the crews at the center of the stories I'm drawn to, close enough to capture the work as it actually happens.</p>
-      <div class="contact-reach">
-        <p class="contact-reach-label">Get in touch</p>
-        <a class="contact-email" id="contactEmail" href="mailto:hello@mikebecker.com">hello@mikebecker.com</a>
+      <h1 class="contact-headline">Let's make<br>something.</h1>
+      <p class="contact-bio">I'm a documentary director and cinematographer with 13 years across five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
+    </div>
+
+    <div class="contact-details">
+      <div class="detail-row">
+        <span class="detail-label">Based in</span>
+        <span class="detail-value">Los Angeles, California</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email</span>
+        <a class="detail-value" href="mailto:heymikebecker@gmail.com">heymikebecker@gmail.com</a>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Phone</span>
+        <a class="detail-value" href="tel:+14107071596">410-707-1596</a>
       </div>
     </div>
+
+    <div class="reach">
+      <p class="reach-label">Reach out</p>
+      <form id="reachForm">
+        <input type="hidden" name="access_key" value="5cbb2f65-1dbf-47d7-88ed-4a7197711492">
+        <input type="hidden" name="subject" value="New message from your website">
+        <input type="hidden" name="from_name" value="Mike Becker Website">
+        <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+        <div class="reach-field">
+          <input type="text" name="name" placeholder="Your name" required autocomplete="name">
+        </div>
+        <div class="reach-field">
+          <input type="email" name="email" placeholder="Your email" required autocomplete="email">
+        </div>
+        <div class="reach-field">
+          <textarea name="message" placeholder="Write something" required rows="1"></textarea>
+        </div>
+
+        <button type="submit" class="reach-send" id="reachSend">
+          <span class="label">Send</span>
+          <span class="arrow">&rarr;</span>
+        </button>
+
+        <p class="reach-status" id="reachStatus" role="status" aria-live="polite"></p>
+      </form>
+    </div>
   </div>
+
 </main>
 
 <script>
-// Wire email from content/site.txt EMAIL.
-(async function() {
-  try {
-    const res = await fetch('content/site.txt', { cache: 'no-cache' });
-    if (!res.ok) return;
-    const text = await res.text();
-    const m = text.match(/^\s*EMAIL\s*=\s*(.+)\s*$/m);
-    if (!m) return;
-    const email = m[1].trim();
-    const a = document.getElementById('contactEmail');
-    if (a) { a.href = 'mailto:' + email; a.textContent = email; }
-  } catch (e) {}
+// ---- Portrait resolve-on-attention (cursor proximity) ----
+(function() {
+  var portrait = document.getElementById('portrait');
+  if (!portrait) return;
+  if (!window.matchMedia || !window.matchMedia('(pointer: fine)').matches) return;
+
+  window.addEventListener('mousemove', function(e) {
+    var r = portrait.getBoundingClientRect();
+    var dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
+    var dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < 220) {
+      portrait.classList.add('is-near');
+    } else {
+      portrait.classList.remove('is-near');
+    }
+  }, { passive: true });
+})();
+
+// ---- Auto-grow the message textarea ----
+(function() {
+  var ta = document.querySelector('#reachForm textarea[name="message"]');
+  if (!ta) return;
+  ta.addEventListener('input', function() {
+    ta.style.height = 'auto';
+    ta.style.height = ta.scrollHeight + 'px';
+  });
+})();
+
+// ---- Reach-out form: submit to Web3Forms, no page reload ----
+(function() {
+  var form = document.getElementById('reachForm');
+  var status = document.getElementById('reachStatus');
+  var sendBtn = document.getElementById('reachSend');
+  if (!form) return;
+
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    status.className = 'reach-status show';
+    status.textContent = 'Sending…';
+    sendBtn.disabled = true;
+
+    try {
+      var data = new FormData(form);
+      var res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: data
+      });
+      var json = await res.json();
+      if (json.success) {
+        status.className = 'reach-status show';
+        status.textContent = "Thanks — your message is on its way. I'll be in touch.";
+        form.reset();
+        var ta = form.querySelector('textarea');
+        if (ta) ta.style.height = 'auto';
+      } else {
+        throw new Error(json.message || 'Submission failed');
+      }
+    } catch (err) {
+      status.className = 'reach-status show error';
+      status.textContent = "Something went wrong. Please email heymikebecker@gmail.com directly.";
+    } finally {
+      sendBtn.disabled = false;
+    }
+  });
 })();
 </script>
 

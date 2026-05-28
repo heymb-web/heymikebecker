@@ -14,7 +14,7 @@ a comment. Blank lines are ignored.
 ============================================================
 
 NAME    = Mike Becker
-EMAIL   = hello@mikebecker.com
+EMAIL   = heymikebecker@gmail.com
 
 
 ============================================================
