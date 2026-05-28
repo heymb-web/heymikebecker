@@ -888,6 +888,130 @@ body.lightbox-open { overflow: hidden; }
 .lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
 /* ===================================================================
+   MOBILE HERO — letterbox the reel at its true 16:9 ratio on a black
+   field instead of cropping a wide frame to a tall slice. A
+   cinematographer's framing IS the work, so it's shown whole; the
+   surrounding black reads as cinema and is on-brand.
+=================================================================== */
+@media (max-width: 720px) {
+  .hero {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: clamp(16px, 4vh, 30px);
+    background: #000;
+  }
+  .hero-media {
+    position: relative;
+    inset: auto;
+    width: 100vw;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    flex: 0 0 auto;
+    border-radius: 0;
+  }
+  .hero-inner { position: absolute; inset: 0; }
+  .hero-poster,
+  .hero-media video,
+  .hero-placeholder {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; /* the box is already 16:9, so cover crops nothing */
+  }
+}
+
+/* ===================================================================
+   MOBILE HEADER — minimal bar + full-screen overlay menu.
+   The full wordmark and horizontal menu are a desktop pattern that
+   crowds a phone. On mobile the bar collapses to an "MB" monogram on
+   the left and a small menu button on the right; tapping opens a
+   full-screen overlay with large links. Reclaims the top so the work
+   and reel breathe. Monogram + burger use the see-through treatment so
+   they read over any background.
+=================================================================== */
+.brand-mono { display: none; }
+.m-burger { display: none; }
+.m-menu { display: none; }
+
+@media (max-width: 720px) {
+  .brand-name { display: none; }
+  .brand-sub { display: none; }
+  .menu-flat { display: none; }
+
+  .brand-mono {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+
+  .m-burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 34px; height: 34px;
+    padding: 0; margin: 0;
+    background: none; border: 0; cursor: pointer;
+    mix-blend-mode: difference;
+  }
+  .m-burger span {
+    display: block; height: 2px; width: 28px; margin-left: auto;
+    background: #fff; border-radius: 2px;
+    transition: transform 280ms cubic-bezier(.22,.61,.36,1),
+                opacity 220ms ease;
+  }
+
+  .m-menu {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 400;
+    background: rgba(10,9,8,0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 380ms cubic-bezier(.22,.61,.36,1),
+                background 380ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-menu.open {
+    opacity: 1; pointer-events: auto;
+    background: rgba(10,9,8,0.97);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .m-menu-close {
+    position: absolute; top: 12px; right: 16px;
+    width: 44px; height: 44px;
+    background: none; border: 0; cursor: pointer;
+    color: #EDE6D8; font-size: 36px; font-weight: 300; line-height: 1;
+  }
+  .m-menu-links {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(24px, 5.5vh, 44px);
+  }
+  .m-menu-links a {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: clamp(32px, 9vw, 48px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #EDE6D8;
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .m-menu-links a:active { color: #fff; }
+}
+
+/* ===================================================================
    GLOBAL SEE-THROUGH TEXT — every piece of text on the site uses the
    same readable-over-anything treatment: white + mix-blend-mode:
    difference. This inverts the text against whatever is behind it, so
@@ -916,6 +1040,7 @@ body.lightbox-open { overflow: hidden; }
 <!-- ====== NAV ====== -->
 <nav class="nav">
   <a href="#top" class="brand" aria-label="Home">
+    <span class="brand-mono" aria-hidden="true">MB</span>
     <span class="brand-name" data-cfg="name">Mike Becker</span>
     <span class="brand-sub" aria-hidden="true">
       <span class="brand-sub-item brand-sub-bracket">[</span>
@@ -933,7 +1058,20 @@ body.lightbox-open { overflow: hidden; }
     <span class="menu-flat-sep">/</span>
     <a class="menu-flat-link" href="contact.html">Contact</a>
   </div>
+
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
 </nav>
+
+<div class="m-menu" id="mMenu" aria-hidden="true">
+  <button class="m-menu-close" aria-label="Close menu">&times;</button>
+  <div class="m-menu-links">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
 
 <!-- ====== HERO ======
      Drop your reel at media/reel.mp4 and it just works.
@@ -1501,6 +1639,35 @@ body.lightbox-open { overflow: hidden; }
   } else if (titleEl) {
     titleEl.classList.add('revealed');
   }
+</script>
+
+<script>
+/* Mobile overlay menu toggle. Opens the full-screen menu from the
+   burger, closes on the ×, on any link tap, or on backdrop tap. */
+(function () {
+  var burger = document.querySelector('.m-burger');
+  var menu = document.getElementById('mMenu');
+  if (!burger || !menu) return;
+  var closeBtn = menu.querySelector('.m-menu-close');
+  function openMenu() {
+    menu.classList.add('open');
+    burger.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  burger.addEventListener('click', openMenu);
+  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
+  var links = menu.querySelectorAll('a');
+  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+})();
 </script>
 
 </body>

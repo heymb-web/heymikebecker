@@ -606,6 +606,150 @@ a { color: inherit; text-decoration: none; }
 .lightbox-close-line:nth-child(1) { transform: rotate(45deg); }
 .lightbox-close-line:nth-child(2) { transform: rotate(-45deg); }
 /* ===================================================================
+   MOBILE WORK PAGE — single-column cinematic feed.
+   On phones the masonry collapses to one column. Rather than every
+   tile autoplaying at once (which buries the work), only the project
+   nearest the vertical centre of the screen plays; the rest rest on
+   their still frame. Focus passes from one piece to the next as you
+   scroll — one subject at a time, the way a reel should read.
+=================================================================== */
+/* Inline section header is mobile-only; on desktop the floating
+   blurred label does this job, so it stays hidden there. (Declared
+   before the mobile block so the mobile override wins by source order.) */
+.work-section-head { display: none; }
+
+@media (hover: none), (pointer: coarse) {
+  .work-grid { gap: clamp(20px, 6vw, 34px); }
+  .work-section { margin-bottom: clamp(18px, 6vw, 36px); }
+
+  /* Each tile's video is hidden until it becomes the active (centred)
+     tile, then crossfades up from the poster beneath it. Paused tiles
+     show their poster still, so the column reads as a set of stills
+     with a single live frame moving through it. */
+  .work-grid .tile-media video {
+    opacity: 0;
+    transition: opacity 500ms cubic-bezier(.22,.61,.36,1);
+  }
+  .work-grid .tile.is-playing .tile-media video { opacity: 1; }
+
+  /* Only the active piece names itself, so the eye always has one
+     clear subject with its title. */
+  .work-grid .tile .tile-overlay {
+    opacity: 0;
+    transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
+  }
+  .work-grid .tile.is-playing .tile-overlay { opacity: 1; }
+
+  /* The floating blurred label is a desktop device; hide it and use
+     inline headers that scroll naturally with the content. */
+  .work-labels-layer { display: none !important; }
+  .work-section-head {
+    display: block;
+    padding: 0 var(--edge);
+    margin: clamp(26px, 8vw, 44px) 0 clamp(12px, 3.5vw, 18px);
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: clamp(20px, 6.4vw, 30px);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+  /* First section header sits tight under the page intro. */
+  .work-section:first-child .work-section-head { margin-top: clamp(8px, 3vw, 16px); }
+}
+
+/* ===================================================================
+   MOBILE HEADER — minimal bar + full-screen overlay menu.
+   The full wordmark and horizontal menu are a desktop pattern that
+   crowds a phone. On mobile the bar collapses to an "MB" monogram on
+   the left and a small menu button on the right; tapping opens a
+   full-screen overlay with large links. Reclaims the top so the work
+   and reel breathe. Monogram + burger use the see-through treatment so
+   they read over any background.
+=================================================================== */
+.brand-mono { display: none; }
+.m-burger { display: none; }
+.m-menu { display: none; }
+
+@media (max-width: 720px) {
+  .brand-name { display: none; }
+  .brand-sub { display: none; }
+  .menu-flat { display: none; }
+
+  .brand-mono {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+
+  .m-burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 34px; height: 34px;
+    padding: 0; margin: 0;
+    background: none; border: 0; cursor: pointer;
+    mix-blend-mode: difference;
+  }
+  .m-burger span {
+    display: block; height: 2px; width: 28px; margin-left: auto;
+    background: #fff; border-radius: 2px;
+    transition: transform 280ms cubic-bezier(.22,.61,.36,1),
+                opacity 220ms ease;
+  }
+
+  .m-menu {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 400;
+    background: rgba(10,9,8,0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 380ms cubic-bezier(.22,.61,.36,1),
+                background 380ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-menu.open {
+    opacity: 1; pointer-events: auto;
+    background: rgba(10,9,8,0.97);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .m-menu-close {
+    position: absolute; top: 12px; right: 16px;
+    width: 44px; height: 44px;
+    background: none; border: 0; cursor: pointer;
+    color: #EDE6D8; font-size: 36px; font-weight: 300; line-height: 1;
+  }
+  .m-menu-links {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(24px, 5.5vh, 44px);
+  }
+  .m-menu-links a {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: clamp(32px, 9vw, 48px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #EDE6D8;
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .m-menu-links a:active { color: #fff; }
+}
+
+/* ===================================================================
    GLOBAL SEE-THROUGH TEXT — every piece of text uses white +
    mix-blend-mode: difference so it reads over any background,
    identical to the homepage intro wordmark. Applied site-wide.
@@ -627,6 +771,7 @@ a { color: inherit; text-decoration: none; }
 <!-- ====== NAV ====== -->
 <nav class="nav" aria-label="Primary">
   <a href="index.html" class="brand" aria-label="Home">
+    <span class="brand-mono" aria-hidden="true">MB</span>
     <span class="brand-name">Mike Becker</span>
     <span class="brand-sub" aria-hidden="true">
       <span class="brand-sub-bracket">[</span>
@@ -640,11 +785,22 @@ a { color: inherit; text-decoration: none; }
   <div class="menu-flat">
     <a class="menu-flat-link" href="index.html">Home</a>
     <span class="menu-flat-sep">/</span>
-    <a class="menu-flat-link is-current" href="work.html">Work</a>
-    <span class="menu-flat-sep">/</span>
     <a class="menu-flat-link" href="contact.html">Contact</a>
   </div>
+
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
 </nav>
+
+<div class="m-menu" id="mMenu" aria-hidden="true">
+  <button class="m-menu-close" aria-label="Close menu">&times;</button>
+  <div class="m-menu-links">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
 
 <!-- ====== WORK MAIN ====== -->
 <main class="work-main" id="workMain">
@@ -827,6 +983,13 @@ a { color: inherit; text-decoration: none; }
       section.className = 'work-section';
       section.setAttribute('data-role', group.role);
 
+      // Inline section header — shown on mobile (the floating blurred
+      // label is hidden there). Scrolls naturally above each group.
+      const head = document.createElement('div');
+      head.className = 'work-section-head';
+      head.textContent = ROLE_LABEL[group.role] || group.role;
+      section.appendChild(head);
+
       const grid = document.createElement('div');
       grid.className = 'work-grid';
 
@@ -993,41 +1156,64 @@ a { color: inherit; text-decoration: none; }
       window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
     if (isTouch) {
-      // Mobile / touch: the IntersectionObserver is the SINGLE controller
-      // of playback. A tile plays only while it is on screen and pauses
-      // when it leaves — so at most a couple of videos are ever decoding
-      // at once (saves data, battery, and avoids jank). We deliberately do
-      // NOT set the autoplay attribute (which would fight the observer and
-      // try to play all 15 at once). The poster image shows instantly under
-      // each video, so a tile is never blank while its clip buffers.
-      const tiles = document.querySelectorAll('.work-grid .tile');
+      // Mobile / touch: exactly ONE tile plays at a time — the one whose
+      // centre is nearest the vertical centre of the screen. Everything
+      // else pauses and rests on its poster still (the video crossfades
+      // out via the .is-playing class in CSS). As you scroll, focus
+      // passes from one piece to the next, so the work reads one subject
+      // at a time instead of fifteen clips competing. Tapping a tile
+      // still opens the full video in the lightbox (wired separately).
+      const tiles = Array.from(document.querySelectorAll('.work-grid .tile'));
+      if (!tiles.length) return;
 
-      if ('IntersectionObserver' in window) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            const video = entry.target.querySelector('video');
-            if (!video) return;
-            if (entry.isIntersecting) {
-              if (video.preload !== 'auto') video.preload = 'auto';
-              video.muted = true;
-              const p = video.play();
-              if (p && p.catch) p.catch(() => {});
-            } else {
-              try { video.pause(); } catch (e) {}
-            }
-          });
-        }, { threshold: 0.4 });
-        tiles.forEach((tile) => io.observe(tile));
-      } else {
-        // Very old browser without IntersectionObserver: just play them.
-        tiles.forEach((tile) => {
-          const video = tile.querySelector('video');
-          if (!video) return;
-          video.muted = true;
-          const p = video.play();
-          if (p && p.catch) p.catch(() => {});
-        });
+      let active = null;
+
+      function setActive(tile) {
+        if (tile === active) return;
+        // Stand down the previous one.
+        if (active) {
+          active.classList.remove('is-playing');
+          const pv = active.querySelector('video');
+          if (pv) { try { pv.pause(); pv.currentTime = 0; } catch (e) {} }
+        }
+        active = tile;
+        if (active) {
+          const v = active.querySelector('video');
+          if (v) {
+            if (v.preload !== 'auto') v.preload = 'auto';
+            v.muted = true;
+            active.classList.add('is-playing');
+            const p = v.play();
+            if (p && p.catch) p.catch(() => {});
+          }
+        }
       }
+
+      function pickCentre() {
+        const mid = window.innerHeight / 2;
+        let best = null, bestDist = Infinity;
+        for (let i = 0; i < tiles.length; i++) {
+          const r = tiles[i].getBoundingClientRect();
+          if (r.bottom <= 0 || r.top >= window.innerHeight) continue; // off-screen
+          const centre = r.top + r.height / 2;
+          const d = Math.abs(centre - mid);
+          if (d < bestDist) { bestDist = d; best = tiles[i]; }
+        }
+        if (best) setActive(best);
+      }
+
+      // Re-evaluate on scroll/resize, throttled to one check per frame.
+      let ticking = false;
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () { pickCentre(); ticking = false; });
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll);
+      // Initial pick (after layout settles).
+      pickCentre();
+      requestAnimationFrame(pickCentre);
       return;
     }
 
@@ -1318,6 +1504,35 @@ a { color: inherit; text-decoration: none; }
   } else {
     init();
   }
+})();
+</script>
+
+<script>
+/* Mobile overlay menu toggle. Opens the full-screen menu from the
+   burger, closes on the ×, on any link tap, or on backdrop tap. */
+(function () {
+  var burger = document.querySelector('.m-burger');
+  var menu = document.getElementById('mMenu');
+  if (!burger || !menu) return;
+  var closeBtn = menu.querySelector('.m-menu-close');
+  function openMenu() {
+    menu.classList.add('open');
+    burger.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  burger.addEventListener('click', openMenu);
+  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
+  var links = menu.querySelectorAll('a');
+  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
 })();
 </script>
 

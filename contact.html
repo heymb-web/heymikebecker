@@ -306,6 +306,95 @@ body::after {
   }
 }
 /* ===================================================================
+   MOBILE HEADER — minimal bar + full-screen overlay menu.
+   The full wordmark and horizontal menu are a desktop pattern that
+   crowds a phone. On mobile the bar collapses to an "MB" monogram on
+   the left and a small menu button on the right; tapping opens a
+   full-screen overlay with large links. Reclaims the top so the work
+   and reel breathe. Monogram + burger use the see-through treatment so
+   they read over any background.
+=================================================================== */
+.brand-mono { display: none; }
+.m-burger { display: none; }
+.m-menu { display: none; }
+
+@media (max-width: 720px) {
+  .brand-name { display: none; }
+  .brand-sub { display: none; }
+  .menu-flat { display: none; }
+
+  .brand-mono {
+    display: inline-block;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #fff;
+    mix-blend-mode: difference;
+  }
+
+  .m-burger {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+    width: 34px; height: 34px;
+    padding: 0; margin: 0;
+    background: none; border: 0; cursor: pointer;
+    mix-blend-mode: difference;
+  }
+  .m-burger span {
+    display: block; height: 2px; width: 28px; margin-left: auto;
+    background: #fff; border-radius: 2px;
+    transition: transform 280ms cubic-bezier(.22,.61,.36,1),
+                opacity 220ms ease;
+  }
+
+  .m-menu {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 400;
+    background: rgba(10,9,8,0);
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 380ms cubic-bezier(.22,.61,.36,1),
+                background 380ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-menu.open {
+    opacity: 1; pointer-events: auto;
+    background: rgba(10,9,8,0.97);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .m-menu-close {
+    position: absolute; top: 12px; right: 16px;
+    width: 44px; height: 44px;
+    background: none; border: 0; cursor: pointer;
+    color: #EDE6D8; font-size: 36px; font-weight: 300; line-height: 1;
+  }
+  .m-menu-links {
+    height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(24px, 5.5vh, 44px);
+  }
+  .m-menu-links a {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: clamp(32px, 9vw, 48px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #EDE6D8;
+    text-decoration: none;
+    transition: color 200ms ease;
+  }
+  .m-menu-links a:active { color: #fff; }
+}
+
+/* ===================================================================
    GLOBAL SEE-THROUGH TEXT — every piece of text uses white +
    mix-blend-mode: difference so it reads over any background,
    identical to the homepage intro wordmark. Applied site-wide,
@@ -332,6 +421,7 @@ body::after {
 
 <nav class="nav" aria-label="Primary">
   <a href="index.html" class="brand" aria-label="Home">
+    <span class="brand-mono" aria-hidden="true">MB</span>
     <span class="brand-name">Mike Becker</span>
   </a>
   <div class="menu-flat">
@@ -341,7 +431,20 @@ body::after {
     <span class="menu-flat-sep">/</span>
     <a class="menu-flat-link is-current" href="contact.html">Contact</a>
   </div>
+
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
 </nav>
+
+<div class="m-menu" id="mMenu" aria-hidden="true">
+  <button class="m-menu-close" aria-label="Close menu">&times;</button>
+  <div class="m-menu-links">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
 
 <main class="contact-main">
   <div class="stage">
@@ -445,6 +548,35 @@ window.addEventListener('DOMContentLoaded', function() {
       status.textContent = "Something went wrong. Please email heymikebecker@gmail.com directly.";
     } finally { sendBtn.disabled = false; }
   });
+})();
+</script>
+
+<script>
+/* Mobile overlay menu toggle. Opens the full-screen menu from the
+   burger, closes on the ×, on any link tap, or on backdrop tap. */
+(function () {
+  var burger = document.querySelector('.m-burger');
+  var menu = document.getElementById('mMenu');
+  if (!burger || !menu) return;
+  var closeBtn = menu.querySelector('.m-menu-close');
+  function openMenu() {
+    menu.classList.add('open');
+    burger.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeMenu() {
+    menu.classList.remove('open');
+    burger.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  burger.addEventListener('click', openMenu);
+  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
+  var links = menu.querySelectorAll('a');
+  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
 })();
 </script>
 
