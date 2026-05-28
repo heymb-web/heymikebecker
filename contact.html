@@ -33,14 +33,10 @@ html, body {
 }
 a { color: inherit; text-decoration: none; }
 
-/* Film grain over the whole page — subtle, fixed, behind content.
-   Gives the "expensive indie studio" texture without clutter. */
+/* Film grain over the whole page. */
 body::after {
   content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
   opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -54,11 +50,8 @@ body::after {
   pointer-events: none;
 }
 .nav > * { pointer-events: auto; }
-.brand {
-  display: inline-flex; align-items: baseline; gap: 12px;
-  color: #fff;
-  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
-}
+.brand { display: inline-flex; align-items: baseline; gap: 12px; color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35); }
 .brand-name {
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 32;
@@ -67,11 +60,8 @@ body::after {
   letter-spacing: 0.01em; line-height: 1; text-transform: uppercase;
 }
 .brand-sub { display: none; }
-.menu-flat {
-  display: inline-flex; align-items: baseline; gap: 8px;
-  color: #fff;
-  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
-}
+.menu-flat { display: inline-flex; align-items: baseline; gap: 8px; color: #fff;
+  text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35); }
 .menu-flat-link {
   font-family: 'Inter', sans-serif;
   font-size: clamp(13px, 1.05vw, 16px); font-weight: 500; letter-spacing: 0.18em;
@@ -88,61 +78,75 @@ body::after {
 }
 
 /* ======================================================
-   CONTACT — overlap composition.
-   The portrait and the oversized name form ONE centered unit:
-   the giant wordmark "MIKE BECKER" sits behind/over the portrait,
-   crossing its edge so type and image lock together instead of
-   floating apart. Beneath: a tight monospace detail block and the
-   reach-out form. One signature interaction: the portrait resolves
-   from grayscale to full contrast on attention, and the headline
-   has a quiet load-in.
+   CONTACT — portrait + panel. The bio is hidden and reveals on
+   hover over the portrait, straddling the photo's right edge
+   (half on the photo, half off onto the dark negative space to
+   the right). It uses mix-blend-mode: difference so it stays
+   legible over the photo OR the dark page — the same readable-
+   over-anything treatment as the work-page section labels.
 ====================================================== */
 .contact-main {
-  position: relative;
-  z-index: 2;
+  position: relative; z-index: 2;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   padding: calc(var(--nav-h) + clamp(28px, 5vw, 56px))
-           clamp(20px, 5vw, 64px)
-           clamp(40px, 6vw, 80px);
+           clamp(20px, 5vw, 64px) clamp(40px, 6vw, 80px);
 }
-
 .stage {
   position: relative;
-  width: 100%;
-  max-width: 1000px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: clamp(36px, 5vw, 64px);
+  width: 100%; max-width: 1040px;
+  display: grid; grid-template-columns: 1fr; gap: clamp(36px, 5vw, 64px);
 }
 @media (min-width: 860px) {
   .stage {
-    grid-template-columns: minmax(280px, 360px) 1fr;
-    align-items: center;
-    gap: clamp(40px, 5vw, 80px);
+    grid-template-columns: 1fr minmax(420px, 1fr);
+    align-items: center; gap: clamp(40px, 5vw, 72px);
   }
 }
 
-/* Portrait block — contained, with the oversized name overlapping
-   its top-left so the two read as one composed object. */
+/* Panel (left): headline, details, form. */
+.panel { position: relative; max-width: 460px; }
+.panel-role {
+  font-family: 'Inter', sans-serif;
+  font-variation-settings: "opsz" 28;
+  font-weight: 500;
+  font-size: clamp(24px, 2.6vw, 38px);
+  letter-spacing: -0.015em; line-height: 1.05;
+  text-transform: uppercase;
+  color: var(--fg);
+  margin: 0 0 1.6em;
+}
+.details {
+  display: flex; flex-direction: column; gap: 0.7em;
+  margin-bottom: 2.4em;
+}
+.details a, .details span {
+  font-family: var(--mono);
+  font-size: clamp(14px, 1.1vw, 16px);
+  font-weight: 400; letter-spacing: 0.02em;
+  color: var(--fg); width: fit-content;
+}
+.details a { position: relative; }
+.details a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
+  height: 1px; background: var(--fg);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 320ms cubic-bezier(.22,.61,.36,1);
+}
+.details a:hover::after { transform: scaleX(1); }
+
+/* Figure (right): portrait, left-aligned in its column so there's
+   open dark space to its right for the bio to bleed into. */
 .figure {
   position: relative;
-  justify-self: center;
-  width: 100%;
-  max-width: 360px;
+  justify-self: start;
+  width: 100%; max-width: 360px;
 }
 .figure-frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 3px;
-  background: var(--bg-2);
+  position: relative; overflow: hidden; border-radius: 3px; background: var(--bg-2);
 }
 .figure-frame img {
-  display: block;
-  width: 100%;
-  height: auto;
+  display: block; width: 100%; height: auto;
   filter: grayscale(1) contrast(0.94) brightness(0.86);
   transform: scale(1.01);
   transition: filter 700ms cubic-bezier(.22,.61,.36,1),
@@ -154,111 +158,39 @@ body::after {
   transform: scale(1.04);
 }
 
-/* The oversized name, crossing in front of the portrait's top edge.
-   This overlap is the whole idea: it ties image and type together. */
-.overname {
+/* Bio reveal — hidden until hover. Straddles the portrait's right
+   edge: positioned starting ~52% across the photo and extending
+   right, past the photo edge, into the open dark space. */
+.bio-reveal {
   position: absolute;
-  top: clamp(-22px, -2.2vw, -14px);
-  left: clamp(-18px, -3vw, -10px);
-  z-index: 3;
-  font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 32;
-  font-weight: 600;
-  font-size: clamp(30px, 4.6vw, 60px);
-  line-height: 0.86;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  color: var(--fg);
+  top: 50%;
+  left: 52%;
+  width: clamp(300px, 30vw, 380px);
+  transform: translateY(-50%) translateX(8px);
+  z-index: 4;
   pointer-events: none;
-  mix-blend-mode: difference;
-  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 520ms cubic-bezier(.22,.61,.36,1),
+              transform 620ms cubic-bezier(.22,.61,.36,1);
 }
-@media (max-width: 859px) {
-  .overname { mix-blend-mode: normal; }
+.figure:hover .bio-reveal,
+.figure.is-near .bio-reveal {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
 }
-
-/* Right column — eyebrow, role line, bio, mono details, form. */
-.panel {
-  position: relative;
-  max-width: 460px;
-}
-.panel-eyebrow {
-  font-family: var(--mono);
-  font-size: 11px; font-weight: 500;
-  letter-spacing: 0.3em; text-transform: uppercase;
-  color: var(--muted);
-  margin: 0 0 1.6em;
-  display: flex; align-items: center; gap: 0.9em;
-}
-.panel-eyebrow::before {
-  content: "";
-  width: clamp(20px, 3vw, 40px);
-  height: 1px;
-  background: var(--line);
-}
-.panel-role {
+.bio-reveal p {
+  margin: 0;
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 28;
   font-weight: 500;
-  font-size: clamp(20px, 2vw, 27px);
-  letter-spacing: -0.01em;
-  line-height: 1.12;
-  color: var(--fg);
-  margin: 0 0 0.85em;
+  font-size: clamp(16px, 1.5vw, 21px);
+  line-height: 1.4;
+  letter-spacing: 0.005em;
+  color: #fff;
+  mix-blend-mode: difference;
 }
-.panel-bio {
-  font-family: 'Inter', sans-serif;
-  font-size: clamp(14px, 1.02vw, 16px);
-  font-weight: 400;
-  line-height: 1.62;
-  color: var(--fg-dim);
-  margin: 0 0 2.2em;
-  max-width: 44ch;
-}
-
-/* Monospace detail rows — location / email / phone. */
-.details {
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid var(--line);
-}
-.drow {
-  display: flex;
-  align-items: baseline;
-  gap: 1.2em;
-  padding: 0.9em 0;
-  border-bottom: 1px solid var(--line);
-}
-.dlabel {
-  font-family: var(--mono);
-  font-size: 10px; font-weight: 500;
-  letter-spacing: 0.24em; text-transform: uppercase;
-  color: var(--muted);
-  width: 4.5em; flex-shrink: 0;
-}
-.dvalue {
-  font-family: var(--mono);
-  font-size: clamp(13px, 1.05vw, 15px);
-  font-weight: 400; letter-spacing: 0.02em;
-  color: var(--fg);
-}
-a.dvalue {
-  position: relative;
-  transition: color 240ms;
-}
-a.dvalue::after {
-  content: "";
-  position: absolute; left: 0; right: 0; bottom: -2px;
-  height: 1px; background: var(--fg);
-  transform: scaleX(0); transform-origin: left;
-  transition: transform 320ms cubic-bezier(.22,.61,.36,1);
-}
-a.dvalue:hover::after { transform: scaleX(1); }
 
 /* Reach-out form. */
-.reach {
-  margin-top: 2.4em;
-}
+.reach { position: relative; }
 .reach-label {
   font-family: var(--mono);
   font-size: 11px; font-weight: 500;
@@ -268,34 +200,25 @@ a.dvalue:hover::after { transform: scaleX(1); }
   display: flex; align-items: center; gap: 0.9em;
 }
 .reach-label::before {
-  content: "";
-  width: clamp(20px, 3vw, 40px); height: 1px; background: var(--line);
+  content: ""; width: clamp(20px, 3vw, 40px); height: 1px; background: var(--line);
 }
 .reach-field { position: relative; margin-bottom: 1.5em; }
-.reach-field input,
-.reach-field textarea {
-  width: 100%;
-  background: transparent; border: none;
+.reach-field input, .reach-field textarea {
+  width: 100%; background: transparent; border: none;
   border-bottom: 1px solid var(--line);
   color: var(--fg);
   font-family: 'Inter', sans-serif;
-  font-size: clamp(14px, 1.05vw, 16px);
-  font-weight: 400; letter-spacing: 0.01em;
+  font-size: clamp(14px, 1.05vw, 16px); font-weight: 400; letter-spacing: 0.01em;
   padding: 0 0 0.55em; outline: none;
-  transition: border-color 300ms cubic-bezier(.22,.61,.36,1);
-  resize: none;
+  transition: border-color 300ms cubic-bezier(.22,.61,.36,1); resize: none;
 }
 .reach-field textarea { line-height: 1.5; min-height: 2.1em; }
-.reach-field input::placeholder,
-.reach-field textarea::placeholder { color: var(--muted); opacity: 1; }
-.reach-field input:focus,
-.reach-field textarea:focus { border-bottom-color: var(--fg); }
-
+.reach-field input::placeholder, .reach-field textarea::placeholder { color: var(--muted); opacity: 1; }
+.reach-field input:focus, .reach-field textarea:focus { border-bottom-color: var(--fg); }
 .reach-send {
   appearance: none; background: transparent; border: none; cursor: pointer;
   font-family: var(--mono);
-  font-size: 12px; font-weight: 600;
-  letter-spacing: 0.24em; text-transform: uppercase;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase;
   color: var(--fg); padding: 0;
   display: inline-flex; align-items: center; gap: 0.7em;
   transition: gap 300ms cubic-bezier(.22,.61,.36,1);
@@ -304,10 +227,8 @@ a.dvalue:hover::after { transform: scaleX(1); }
 .reach-send:hover { gap: 1.1em; }
 .reach-send:hover .arrow { transform: translateX(4px); }
 .reach-send:disabled { color: var(--muted); cursor: default; }
-
 .reach-status {
-  margin-top: 1.4em;
-  font-family: var(--mono);
+  margin-top: 1.4em; font-family: var(--mono);
   font-size: 12px; letter-spacing: 0.02em; line-height: 1.5;
   min-height: 1.2em; color: var(--fg-dim);
   opacity: 0; transition: opacity 300ms;
@@ -315,7 +236,7 @@ a.dvalue:hover::after { transform: scaleX(1); }
 .reach-status.show { opacity: 1; }
 .reach-status.error { color: #E0A89A; }
 
-/* Quiet load-in: figure + panel rise and settle once. */
+/* Load-in. */
 .figure, .panel { opacity: 0; transform: translateY(14px); }
 .is-loaded .figure {
   opacity: 1; transform: translateY(0);
@@ -329,6 +250,27 @@ a.dvalue:hover::after { transform: scaleX(1); }
 }
 @media (prefers-reduced-motion: reduce) {
   .figure, .panel { opacity: 1; transform: none; }
+}
+
+/* ======================================================
+   MOBILE / touch — no hover. The portrait shows in full color and
+   the bio is always visible as normal readable prose below it (no
+   overlap, no blend), since there's no cursor to reveal it.
+====================================================== */
+@media (max-width: 859px) {
+  .figure { justify-self: center; max-width: 340px; }
+  .figure-frame img { filter: grayscale(0) contrast(1) brightness(1); transform: none; }
+  .bio-reveal {
+    position: static; opacity: 1; pointer-events: auto;
+    transform: none; width: auto; margin-top: 1.6em;
+  }
+  .bio-reveal p {
+    mix-blend-mode: normal;
+    color: var(--fg-dim);
+    font-weight: 400;
+    font-size: clamp(15px, 4vw, 17px);
+    line-height: 1.6;
+  }
 }
 </style>
 
@@ -351,33 +293,13 @@ a.dvalue:hover::after { transform: scaleX(1); }
 <main class="contact-main">
   <div class="stage">
 
-    <div class="figure" id="figure">
-      <span class="overname">Mike<br>Becker</span>
-      <div class="figure-frame">
-        <img src="media/about/portrait.jpg" alt="Mike Becker" />
-      </div>
-    </div>
-
     <div class="panel">
-      <p class="panel-eyebrow">Contact</p>
-      <h1 class="panel-role">Documentary director and cinematographer.</h1>
-      <p class="panel-bio">I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
-
+      <h1 class="panel-role">Director and cinematographer.</h1>
       <div class="details">
-        <div class="drow">
-          <span class="dlabel">Based</span>
-          <span class="dvalue">Los Angeles, California</span>
-        </div>
-        <div class="drow">
-          <span class="dlabel">Email</span>
-          <a class="dvalue" href="mailto:heymikebecker@gmail.com">heymikebecker@gmail.com</a>
-        </div>
-        <div class="drow">
-          <span class="dlabel">Phone</span>
-          <a class="dvalue" href="tel:+14107071596">410.707.1596</a>
-        </div>
+        <span>Los Angeles, California</span>
+        <a href="mailto:heymikebecker@gmail.com">heymikebecker@gmail.com</a>
+        <a href="tel:+14107071596">410.707.1596</a>
       </div>
-
       <div class="reach">
         <p class="reach-label">Reach out</p>
         <form id="reachForm">
@@ -385,7 +307,6 @@ a.dvalue:hover::after { transform: scaleX(1); }
           <input type="hidden" name="subject" value="New message from your website">
           <input type="hidden" name="from_name" value="Mike Becker Website">
           <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
-
           <div class="reach-field">
             <input type="text" name="name" placeholder="Your name" required autocomplete="name">
           </div>
@@ -395,14 +316,21 @@ a.dvalue:hover::after { transform: scaleX(1); }
           <div class="reach-field">
             <textarea name="message" placeholder="Write something" required rows="1"></textarea>
           </div>
-
           <button type="submit" class="reach-send" id="reachSend">
             <span class="label">Send</span>
             <span class="arrow">&rarr;</span>
           </button>
-
           <p class="reach-status" id="reachStatus" role="status" aria-live="polite"></p>
         </form>
+      </div>
+    </div>
+
+    <div class="figure" id="figure">
+      <div class="figure-frame">
+        <img src="media/about/portrait.jpg" alt="Mike Becker" />
+      </div>
+      <div class="bio-reveal">
+        <p>I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
       </div>
     </div>
 
@@ -410,14 +338,12 @@ a.dvalue:hover::after { transform: scaleX(1); }
 </main>
 
 <script>
-// ---- Load-in ----
+// Load-in
 window.addEventListener('DOMContentLoaded', function() {
-  requestAnimationFrame(function() {
-    document.body.classList.add('is-loaded');
-  });
+  requestAnimationFrame(function() { document.body.classList.add('is-loaded'); });
 });
 
-// ---- Portrait resolve-on-attention (cursor proximity) ----
+// Portrait + bio reveal on cursor proximity (in addition to :hover)
 (function() {
   var figure = document.getElementById('figure');
   if (!figure) return;
@@ -427,22 +353,21 @@ window.addEventListener('DOMContentLoaded', function() {
     var dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right);
     var dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom);
     var dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 200) figure.classList.add('is-near');
+    if (dist < 160) figure.classList.add('is-near');
     else figure.classList.remove('is-near');
   }, { passive: true });
 })();
 
-// ---- Auto-grow message textarea ----
+// Auto-grow textarea
 (function() {
   var ta = document.querySelector('#reachForm textarea[name="message"]');
   if (!ta) return;
   ta.addEventListener('input', function() {
-    ta.style.height = 'auto';
-    ta.style.height = ta.scrollHeight + 'px';
+    ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px';
   });
 })();
 
-// ---- Form submit to Web3Forms ----
+// Form submit to Web3Forms
 (function() {
   var form = document.getElementById('reachForm');
   var status = document.getElementById('reachStatus');
@@ -450,8 +375,7 @@ window.addEventListener('DOMContentLoaded', function() {
   if (!form) return;
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    status.className = 'reach-status show';
-    status.textContent = 'Sending…';
+    status.className = 'reach-status show'; status.textContent = 'Sending…';
     sendBtn.disabled = true;
     try {
       var data = new FormData(form);
@@ -461,17 +385,12 @@ window.addEventListener('DOMContentLoaded', function() {
         status.className = 'reach-status show';
         status.textContent = "Thanks — your message is on its way. I'll be in touch.";
         form.reset();
-        var ta = form.querySelector('textarea');
-        if (ta) ta.style.height = 'auto';
-      } else {
-        throw new Error(json.message || 'failed');
-      }
+        var ta = form.querySelector('textarea'); if (ta) ta.style.height = 'auto';
+      } else { throw new Error(json.message || 'failed'); }
     } catch (err) {
       status.className = 'reach-status show error';
       status.textContent = "Something went wrong. Please email heymikebecker@gmail.com directly.";
-    } finally {
-      sendBtn.disabled = false;
-    }
+    } finally { sendBtn.disabled = false; }
   });
 })();
 </script>
