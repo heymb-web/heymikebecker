@@ -788,6 +788,21 @@ a { color: inherit; text-decoration: none; }
         layout = ['is-hero', 'is-half', 'is-half'];
       } else if (count === 4) {
         layout = LAYOUT_BY_ROLE[group.role] || [];
+      } else if (count === 5 && group.role === 'Operator') {
+        // Camera section with 5 projects: hero opener, then a row
+        // of paired halves, then a 3/4 + 1/4 asymmetric bottom row.
+        //   row 1: hero
+        //   row 2: half + half
+        //   row 3: three-quarter + quarter
+        layout = ['is-hero', 'is-half', 'is-half', 'is-three-quarter', 'is-quarter'];
+      } else if (count === 6 && group.role === 'Specialty Camera') {
+        // Specialty section with 6 projects: the standard 4-tile
+        // layout (hero, then small + half + small) plus a new
+        // bottom row of two halves.
+        //   row 1: hero
+        //   row 2: small + half + small
+        //   row 3: half + half
+        layout = ['is-hero', 'is-small', 'is-half', 'is-small', 'is-half', 'is-half'];
       } else {
         // 5+ tiles: take the role's standard 4-tile layout and
         // extend it by appending hero slots for the remaining

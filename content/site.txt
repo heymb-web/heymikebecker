@@ -129,7 +129,7 @@ WORK_6_ROLE  = Director
 
 WORK_7_FILE  = string-out-7.mp4
 WORK_7_FULL  = string-out-7-full.mp4
-WORK_7_TITLE = CHANGE IS HERE
+WORK_7_TITLE = Change Is Here
 WORK_7_ROLE  = Director
 
 
@@ -139,24 +139,40 @@ WORK_7_ROLE  = Director
 
 WORK_5_FILE  = ford-bronco.mp4
 WORK_5_FULL  = ford-bronco-full.mp4
-WORK_5_TITLE = Ford Bronco – Dust is Gold
+WORK_5_TITLE = Ford Bronco – Dust Is Gold
 WORK_5_ROLE  = Specialty Camera
 WORK_5_WIDE  = true
+WORK_5_ORDER = 1
 
 WORK_4_FILE  = cracked.mp4
 WORK_4_FULL  = cracked-full.mp4
 WORK_4_TITLE = CRACKED
 WORK_4_ROLE  = Specialty Camera
+WORK_4_ORDER = 2
 
 WORK_8_FILE  = bmw-leave-no-trace.mp4
 WORK_8_FULL  = bmw-leave-no-trace-full.mp4
-WORK_8_TITLE = BMW- leave no trace
+WORK_8_TITLE = BMW – Leave No Trace
 WORK_8_ROLE  = Specialty Camera
+WORK_8_ORDER = 3
 
 WORK_12_FILE  = ofrenda.mp4
 WORK_12_FULL  = ofrenda-full.mp4
-WORK_12_TITLE = OFRENDA
+WORK_12_TITLE = Ofrenda
 WORK_12_ROLE  = Specialty Camera
+WORK_12_ORDER = 4
+
+WORK_14_FILE  = lightscape.mp4
+WORK_14_FULL  = lightscape-full.mp4
+WORK_14_TITLE = Lightscape
+WORK_14_ROLE  = Specialty Camera
+WORK_14_ORDER = 5
+
+WORK_15_FILE  = porsche-hodinkee.mp4
+WORK_15_FULL  = porsche-hodinkee-full.mp4
+WORK_15_TITLE = Porsche Design x Hodinkee
+WORK_15_ROLE  = Specialty Camera
+WORK_15_ORDER = 6
 
 
 # ============================================================
@@ -181,12 +197,18 @@ WORK_11_ORDER = 2
 
 WORK_10_FILE  = patagonia-netplus.mp4
 WORK_10_FULL  = patagonia-netplus-full.mp4
-WORK_10_TITLE = Patagonia – netplus
+WORK_10_TITLE = Patagonia – NetPlus
 WORK_10_ROLE  = Operator
 WORK_10_ORDER = 3
 
 WORK_9_FILE  = life-afloat.mp4
 WORK_9_FULL  = life-afloat-full.mp4
-WORK_9_TITLE = life afloat
+WORK_9_TITLE = Life Afloat
 WORK_9_ROLE  = Operator
 WORK_9_ORDER = 4
+
+WORK_13_FILE  = already-famous.mp4
+WORK_13_FULL  = already-famous-full.mp4
+WORK_13_TITLE = Already Famous – Trey Amani & Brent Faiyaz
+WORK_13_ROLE  = Operator
+WORK_13_ORDER = 5
