@@ -397,27 +397,31 @@ a { color: inherit; text-decoration: none; }
     aspect-ratio: 16 / 27;
   }
 
-  /* Square-pair row: a wide tile (8 cols) beside a true square
-     (4 cols, 1:1). To keep the row filled with matched heights and
-     no whitespace, the wide tile's height is locked to the square's
-     height. A 4-col square is 4 column-units tall. An 8-col tile is
-     8 column-units wide, so to be 4 units tall its media must use an
-     aspect ratio of 8/4 = 2/1 (slightly wider/shorter than 16:9).
-     The wide tile's 16:9 source video crops a little off the top and
-     bottom via object-fit: cover; the square's source crops on the
-     sides. Used for the Camera section's bottom row (Life Afloat +
-     Already Famous). */
+  /* Square-pair row: a wide tile (8 cols) beside a near-square tile
+     (4 cols). The square tile's media is 1.1:1 — 10% wider than a
+     true square, per request. To keep heights matched and the row
+     filled with no whitespace, the wide tile's media aspect is set
+     so its height equals the near-square's height.
+
+     Near-square: 4 col-units wide, aspect 1.1:1 → height = 4 / 1.1
+       = 3.636 col-units.
+     Wide tile: 8 col-units wide. To be 3.636 units tall its aspect
+       must be 8 / 3.636 = 2.2 : 1.
+
+     The wide tile's 16:9 source video crops top/bottom via
+     object-fit: cover; the near-square crops on the sides. Used for
+     the Camera section's bottom row (Life Afloat + Already Famous). */
   .work-grid .tile.is-wide-mate {
     grid-column: span 8;
   }
   .work-grid .tile.is-wide-mate .tile-media {
-    aspect-ratio: 2 / 1;
+    aspect-ratio: 2.2 / 1;
   }
   .work-grid .tile.is-square {
     grid-column: span 4;
   }
   .work-grid .tile.is-square .tile-media {
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1.1 / 1;
   }
 }
 
