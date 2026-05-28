@@ -6,6 +6,42 @@
 <title>MIKE BECKER / DIRECTOR / CINEMATOGRAPHER / LOS ANGELES</title>
 <meta name="description" content="Mike Becker. Director and cinematographer based in Los Angeles." />
 <meta name="theme-color" content="#0C0B09" />
+<link rel="canonical" href="https://heymikebecker.com/" />
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="favicon.svg" />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://heymikebecker.com/" />
+<meta property="og:title" content="Mike Becker — Director / Cinematographer" />
+<meta property="og:description" content="Director and cinematographer based in Los Angeles." />
+<meta property="og:image" content="https://heymikebecker.com/media/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Mike Becker — Director / Cinematographer" />
+<meta name="twitter:description" content="Director and cinematographer based in Los Angeles." />
+<meta name="twitter:image" content="https://heymikebecker.com/media/og-image.jpg" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Mike Becker",
+  "jobTitle": "Director and Cinematographer",
+  "url": "https://heymikebecker.com/",
+  "image": "https://heymikebecker.com/media/og-image.jpg",
+  "email": "mailto:heymikebecker@gmail.com",
+  "telephone": "+1-410-707-1596",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Los Angeles",
+    "addressRegion": "CA",
+    "addressCountry": "US"
+  },
+  "knowsAbout": ["Directing", "Cinematography", "Documentary Film", "Commercial Film", "Camera Operating"]
+}
+</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -1132,10 +1168,17 @@ body.lightbox-open { overflow: hidden; }
     //
     // Each phase has a MIN floor (so the aesthetic beat always reads)
     // and a MAX ceiling (so a slow connection never feels broken).
-    const BLUR_MIN  = 1000;
-    const BLUR_MAX  = 5000;
-    const STILL_MIN = 1000;
-    const STILL_MAX = 5000;
+    //
+    // DESKTOP keeps the original generous ceilings. On TOUCH devices the
+    // ceilings are much tighter so the hero never sits blurry/held for
+    // long on cellular — the page becomes interactive quickly. Desktop
+    // behavior is intentionally left exactly as it was.
+    const isTouchIntro = window.matchMedia &&
+      window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const BLUR_MIN  = isTouchIntro ? 600  : 1000;
+    const BLUR_MAX  = isTouchIntro ? 2200 : 5000;
+    const STILL_MIN = isTouchIntro ? 500  : 1000;
+    const STILL_MAX = isTouchIntro ? 1800 : 5000;
 
     function waitForReadyState(target, maxWait) {
       return new Promise(resolve => {
@@ -1212,7 +1255,7 @@ body.lightbox-open { overflow: hidden; }
     // play() being called — the gap between those two events can be
     // 100-500ms, and counting from play() would shorten the visible
     // hold time.
-    const FALLBACK_MS = 6000;
+    const FALLBACK_MS = isTouchIntro ? 3500 : 6000;
     let triggered = false;
     let fallbackTimer = null;
     function handoff() {

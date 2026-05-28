@@ -5,9 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0C0B09">
 <title>Work — Mike Becker</title>
-<meta name="description" content="Selected work. Mike Becker. Director and Specialty Camera based in Los Angeles." />
-<link rel="preconnect" href="https://rsms.me/">
-<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<meta name="description" content="Selected work. Mike Becker. Director and cinematographer based in Los Angeles." />
+<link rel="canonical" href="https://heymikebecker.com/work.html" />
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="favicon.svg" />
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://heymikebecker.com/work.html" />
+<meta property="og:title" content="Work — Mike Becker" />
+<meta property="og:description" content="Selected work. Director and cinematographer based in Los Angeles." />
+<meta property="og:image" content="https://heymikebecker.com/media/og-image.jpg" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Work — Mike Becker" />
+<meta name="twitter:description" content="Selected work. Director and cinematographer based in Los Angeles." />
+<meta name="twitter:image" content="https://heymikebecker.com/media/og-image.jpg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet" />
 
 <style>
 /* ======================================================
@@ -961,45 +979,46 @@ a { color: inherit; text-decoration: none; }
       window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
     if (isTouch) {
-      // Mobile / touch: autoplay tiles as they enter the viewport.
-      const io = ('IntersectionObserver' in window)
-        ? new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-              const video = entry.target.querySelector('video');
-              if (!video) return;
-              if (entry.isIntersecting) {
-                // Ensure the source actually loads on mobile (preload
-                // was 'metadata'); kick a load then play.
-                video.play().catch(() => {});
-              } else {
-                video.pause();
-              }
-            });
-          }, { threshold: 0.35 })
-        : null;
+      // Mobile / touch: the IntersectionObserver is the SINGLE controller
+      // of playback. A tile plays only while it is on screen and pauses
+      // when it leaves — so at most a couple of videos are ever decoding
+      // at once (saves data, battery, and avoids jank). We deliberately do
+      // NOT set the autoplay attribute (which would fight the observer and
+      // try to play all 15 at once). The poster image shows instantly under
+      // each video, so a tile is never blank while its clip buffers.
+      const tiles = document.querySelectorAll('.work-grid .tile');
 
-      document.querySelectorAll('.work-grid .tile').forEach((tile) => {
-        const video = tile.querySelector('video');
-        if (!video) return;
-        // Help mobile browsers begin buffering immediately. preload was
-        // 'metadata'; bump to 'auto', mark autoplay, and force a load so
-        // the source actually fetches and the first frame paints even if
-        // autoplay is later blocked.
-        video.setAttribute('preload', 'auto');
-        video.setAttribute('autoplay', '');
-        video.muted = true;
-        try { video.load(); } catch (e) {}
-        if (io) {
-          io.observe(tile);
-        } else {
-          // No IntersectionObserver: just try to play them all.
-          video.play().catch(function () {});
-        }
-      });
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            const video = entry.target.querySelector('video');
+            if (!video) return;
+            if (entry.isIntersecting) {
+              if (video.preload !== 'auto') video.preload = 'auto';
+              video.muted = true;
+              const p = video.play();
+              if (p && p.catch) p.catch(() => {});
+            } else {
+              try { video.pause(); } catch (e) {}
+            }
+          });
+        }, { threshold: 0.4 });
+        tiles.forEach((tile) => io.observe(tile));
+      } else {
+        // Very old browser without IntersectionObserver: just play them.
+        tiles.forEach((tile) => {
+          const video = tile.querySelector('video');
+          if (!video) return;
+          video.muted = true;
+          const p = video.play();
+          if (p && p.catch) p.catch(() => {});
+        });
+      }
       return;
     }
 
     // Desktop / pointer: play on hover, pause + reset on leave.
+    // This path is UNCHANGED from the original desktop behavior.
     document.querySelectorAll('.work-grid .tile').forEach(tile => {
       const video = tile.querySelector('video');
       if (!video) return;
@@ -1202,7 +1221,11 @@ a { color: inherit; text-decoration: none; }
     const lightboxRole  = document.getElementById('lightboxRole');
     const closeBtn      = document.getElementById('lightboxClose');
 
-    function openLightbox(src, title, role) {
+    function openLightbox(src, title, role, poster) {
+      // Show the tile's poster still while the full video buffers, so the
+      // player is never a blank black box on open (especially on mobile).
+      if (poster) lightboxVideo.setAttribute('poster', poster);
+      else lightboxVideo.removeAttribute('poster');
       lightboxVideo.src = src;
       lightboxTitle.textContent = title || '';
       lightboxRole.textContent = role || '';
@@ -1218,10 +1241,12 @@ a { color: inherit; text-decoration: none; }
     document.querySelectorAll('.work-grid .tile').forEach(tile => {
       tile.addEventListener('click', (e) => {
         e.preventDefault();
+        const posterEl = tile.querySelector('.tile-poster');
         openLightbox(
           tile.getAttribute('data-full'),
           tile.getAttribute('data-title'),
-          tile.getAttribute('data-role')
+          tile.getAttribute('data-role'),
+          posterEl ? posterEl.getAttribute('src') : null
         );
       });
     });
