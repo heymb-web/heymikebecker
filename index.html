@@ -741,10 +741,29 @@ body.intro-active .hero-inner {
 }
 .intro-mark.gone { opacity: 0; }
 
+/* ===================================================================
+   MOBILE INTRO WORDMARK — the big "MIKE BECKER" starts in the upper-
+   left over the reel (two lines, prominent but not full-bleed). On
+   handoff it shrinks toward the upper-left, where the small nav
+   wordmark settles, so the big mark reads as becoming the small one.
+   Desktop intro is untouched.
+=================================================================== */
+@media (max-width: 720px) {
+  .intro-mark {
+    font-size: clamp(60px, 19vw, 104px);
+    line-height: 0.86;
+    transform-origin: top left;
+    transition: opacity 450ms cubic-bezier(.22,.61,.36,1),
+                transform 620ms cubic-bezier(.22,.61,.36,1);
+  }
+  .intro-mark .im-w { display: block; }
+  .intro-mark.gone { transform: scale(0.26); }
+}
+
 /* Brand and menu are held hidden during the intro (both .intro-active
    and the handoff window). They fade/slide into place after the large
    wordmark has dissolved. */
-.brand, .menu-wrap, .menu-flat {
+.brand, .menu-wrap, .menu-flat, .m-burger {
   transition:
     opacity 700ms cubic-bezier(.22,.61,.36,1),
     transform 800ms cubic-bezier(.22,.61,.36,1);
@@ -752,9 +771,11 @@ body.intro-active .hero-inner {
 body.intro-active .brand,
 body.intro-active .menu-wrap,
 body.intro-active .menu-flat,
+body.intro-active .m-burger,
 body.intro-handoff .brand,
 body.intro-handoff .menu-wrap,
-body.intro-handoff .menu-flat {
+body.intro-handoff .menu-flat,
+body.intro-handoff .m-burger {
   opacity: 0;
   transform: translateY(-28px);
   pointer-events: none;
@@ -934,22 +955,20 @@ body.lightbox-open { overflow: hidden; }
 .brand-mono { display: none; }
 .m-burger { display: none; }
 .m-menu { display: none; }
+.m-veil { display: none; }
 
 @media (max-width: 720px) {
-  .brand-name { display: none; }
+  /* Show the small MIKE BECKER wordmark (not the MB monogram) in the
+     upper-left, so the intro mark reads as shrinking into it. */
+  .brand-name {
+    display: inline-block;
+    font-size: clamp(15px, 4.4vw, 18px);
+    letter-spacing: 0.03em;
+  }
   .brand-sub { display: none; }
   .menu-flat { display: none; }
 
-  .brand-mono {
-    display: inline-block;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 21px;
-    letter-spacing: 0.04em;
-    line-height: 1;
-    color: #fff;
-    mix-blend-mode: difference;
-  }
+  .brand-mono { display: none; }
 
   .m-burger {
     display: inline-flex;
@@ -968,28 +987,44 @@ body.lightbox-open { overflow: hidden; }
                 opacity 220ms ease;
   }
 
+  /* Blurred veil over the still-playing reel. Sits just beneath the menu
+     text layer so the words can blend against the blurred footage. The
+     reel keeps playing underneath, faintly visible through the blur. */
+  .m-veil {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 399;
+    background: rgba(10, 9, 8, 0.40);
+    -webkit-backdrop-filter: blur(22px) saturate(1.05);
+    backdrop-filter: blur(22px) saturate(1.05);
+    opacity: 0; pointer-events: none;
+    transition: opacity 420ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-veil.open { opacity: 1; }
+
+  /* Menu text layer — transparent and difference-blended like the nav,
+     so the words invert against the blurred reel behind them and the
+     video reads through the letterforms. No backdrop-filter here: that
+     would isolate the layer and kill the blend. The veil provides blur. */
   .m-menu {
     display: block;
     position: fixed; inset: 0;
     z-index: 400;
-    background: rgba(10,9,8,0);
-    -webkit-backdrop-filter: blur(0px);
-    backdrop-filter: blur(0px);
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    mix-blend-mode: difference;
     opacity: 0; pointer-events: none;
-    transition: opacity 380ms cubic-bezier(.22,.61,.36,1),
-                background 380ms cubic-bezier(.22,.61,.36,1);
+    transition: opacity 380ms cubic-bezier(.22,.61,.36,1);
   }
   .m-menu.open {
     opacity: 1; pointer-events: auto;
-    background: rgba(10,9,8,0.97);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
   }
   .m-menu-close {
     position: absolute; top: 12px; right: 16px;
     width: 44px; height: 44px;
     background: none; border: 0; cursor: pointer;
-    color: #EDE6D8; font-size: 36px; font-weight: 300; line-height: 1;
+    color: #fff; font-size: 36px; font-weight: 300; line-height: 1;
   }
   .m-menu-links {
     height: 100%;
@@ -1004,7 +1039,7 @@ body.lightbox-open { overflow: hidden; }
     letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
-    color: #EDE6D8;
+    color: #fff;
     text-decoration: none;
     transition: color 200ms ease;
   }
@@ -1064,7 +1099,7 @@ body.lightbox-open { overflow: hidden; }
 
 <!-- Black cover that hides the page until the video has painted its
      first frame. Removed by JS once the frame is ready. -->
-<div class="intro-mark" id="introMark" aria-hidden="true">Mike Becker</div>
+<div class="intro-mark" id="introMark" aria-hidden="true"><span class="im-w">Mike</span> <span class="im-w">Becker</span></div>
 
 <div class="grain" aria-hidden="true"></div>
 
@@ -1647,15 +1682,18 @@ body.lightbox-open { overflow: hidden; }
   var burger = document.querySelector('.m-burger');
   var menu = document.getElementById('mMenu');
   if (!burger || !menu) return;
+  var veil = document.getElementById('mVeil');
   var closeBtn = menu.querySelector('.m-menu-close');
   function openMenu() {
     menu.classList.add('open');
+    if (veil) veil.classList.add('open');
     burger.setAttribute('aria-expanded', 'true');
     menu.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
   }
   function closeMenu() {
     menu.classList.remove('open');
+    if (veil) veil.classList.remove('open');
     burger.setAttribute('aria-expanded', 'false');
     menu.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -1700,6 +1738,7 @@ body.lightbox-open { overflow: hidden; }
     <span></span><span></span>
   </button>
 </nav>
+<div class="m-veil" id="mVeil" aria-hidden="true"></div>
 <div class="m-menu" id="mMenu" aria-hidden="true">
   <button class="m-menu-close" aria-label="Close menu">&times;</button>
   <div class="m-menu-links">
