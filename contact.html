@@ -176,20 +176,21 @@ body::after {
   transform: scale(1.04);
 }
 
-/* Bio reveal — now lives INSIDE .figure-frame, sharing the same layer
-   as the portrait image. This is what makes mix-blend-mode: difference
-   actually work: the white text composites against the photo's pixels,
-   so it turns dark over the bright background and stays light over the
-   dark shirt — readable everywhere, exactly like the homepage wordmark.
+/* Bio reveal — a sibling of .figure-frame (NOT inside it, so the frame's
+   overflow:hidden can't clip it). It straddles the photo's right edge: the
+   left part sits over the lower portion of the portrait, the right part
+   hangs off into the dark negative space beside the photo.
 
-   Positioned in the lower-right of the photo with breathing room from
-   the bottom edge. Hidden until hover; revealed via visibility +
-   transform (never opacity, which would isolate and break the blend). */
+   mix-blend-mode: difference makes it readable on both halves. Over the
+   photo the white text inverts against the image; where it overhangs onto
+   the dark page it reads as near-white on black. Hidden until hover;
+   revealed via visibility + transform (never opacity, which would isolate
+   and break the blend). */
 .bio-reveal {
   position: absolute;
-  right: clamp(14px, 4%, 28px);
-  bottom: clamp(20px, 5%, 40px);
-  left: clamp(24px, 12%, 60px);
+  left: 33%;
+  right: -18%;
+  bottom: clamp(26px, 8%, 56px);
   pointer-events: none;
   visibility: hidden;
   transform: translateY(10px);
@@ -208,9 +209,9 @@ body::after {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: clamp(13px, 1.15vw, 17px);
-  line-height: 1.4;
+  line-height: 1.45;
   letter-spacing: 0.005em;
-  text-align: right;
+  text-align: left;
   color: #fff;
   mix-blend-mode: difference;
 }
@@ -489,9 +490,9 @@ body::after {
     <div class="figure" id="figure">
       <div class="figure-frame">
         <img src="media/about/portrait.jpg" alt="Mike Becker" />
-        <div class="bio-reveal">
-          <p>I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
-        </div>
+      </div>
+      <div class="bio-reveal">
+        <p>I work across documentary and commercial film with 13 years behind the camera on five continents. My work runs on access, trust, and the patience to let a story surface on its own terms.</p>
       </div>
     </div>
 
