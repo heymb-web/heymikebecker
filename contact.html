@@ -190,7 +190,6 @@ body::after {
   right: clamp(14px, 4%, 28px);
   bottom: clamp(20px, 5%, 40px);
   left: clamp(24px, 12%, 60px);
-  z-index: 2;
   pointer-events: none;
   visibility: hidden;
   transform: translateY(10px);
@@ -297,9 +296,9 @@ body::after {
     right: auto; bottom: auto; left: auto;
   }
   .bio-reveal p {
-    mix-blend-mode: normal;
-    color: var(--fg-dim);
-    font-weight: 400;
+    mix-blend-mode: difference;
+    color: #fff;
+    font-weight: 500;
     text-align: left;
     font-size: clamp(15px, 4vw, 17px);
     line-height: 1.6;
@@ -414,37 +413,43 @@ body::after {
   color: #fff !important;
   opacity: 0.55 !important;
 }
+/* ===================================================================
+   BLEND ARCHITECTURE FIX — where mix-blend-mode: difference must be
+   applied to actually invert against the page.
+
+   The see-through effect only works when the blended element is in
+   (or composites against) the ROOT stacking context. Applying it to
+   a child inside an isolated stacking context blends against that
+   parent's background (transparent) instead of the page — so the text
+   just stays white, with no inversion.
+
+   .nav is position:fixed → root stacking context. Applying the blend
+   to .nav itself makes its white content invert against the page.
+   Children inside .nav must be reset to normal so they don't double-blend
+   against the nav's transparent background before the nav composites.
+=================================================================== */
+.nav {
+  mix-blend-mode: difference;
+}
+.nav .brand-name,
+.nav .brand-mono,
+.nav .brand-sub-dot,
+.nav .menu-flat,
+.nav .menu-flat-link,
+.nav .menu-flat-link:hover,
+.nav .menu-flat-link.is-current,
+.nav .menu-flat-sep,
+.nav .m-burger,
+.nav .m-burger span {
+  mix-blend-mode: normal !important;
+}
+
 </style>
 
 </head>
 <body>
 
-<nav class="nav" aria-label="Primary">
-  <a href="index.html" class="brand" aria-label="Home">
-    <span class="brand-mono" aria-hidden="true">MB</span>
-    <span class="brand-name">Mike Becker</span>
-  </a>
-  <div class="menu-flat">
-    <a class="menu-flat-link" href="index.html">Home</a>
-    <span class="menu-flat-sep">/</span>
-    <a class="menu-flat-link" href="work.html">Work</a>
-    <span class="menu-flat-sep">/</span>
-    <a class="menu-flat-link is-current" href="contact.html">Contact</a>
-  </div>
 
-  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
-    <span></span><span></span>
-  </button>
-</nav>
-
-<div class="m-menu" id="mMenu" aria-hidden="true">
-  <button class="m-menu-close" aria-label="Close menu">&times;</button>
-  <div class="m-menu-links">
-    <a href="index.html">Home</a>
-    <a href="work.html">Work</a>
-    <a href="contact.html">Contact</a>
-  </div>
-</div>
 
 <main class="contact-main">
   <div class="stage">
@@ -555,6 +560,7 @@ window.addEventListener('DOMContentLoaded', function() {
 /* Mobile overlay menu toggle. Opens the full-screen menu from the
    burger, closes on the ×, on any link tap, or on backdrop tap. */
 (function () {
+  function initMenu() {
   var burger = document.querySelector('.m-burger');
   var menu = document.getElementById('mMenu');
   if (!burger || !menu) return;
@@ -577,8 +583,39 @@ window.addEventListener('DOMContentLoaded', function() {
   var links = menu.querySelectorAll('a');
   for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMenu);
+  } else {
+    initMenu();
+  }
 })();
 </script>
 
+<nav class="nav" aria-label="Primary">
+  <a href="index.html" class="brand" aria-label="Home">
+    <span class="brand-mono" aria-hidden="true">MB</span>
+    <span class="brand-name">Mike Becker</span>
+  </a>
+  <div class="menu-flat">
+    <a class="menu-flat-link" href="index.html">Home</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="work.html">Work</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link is-current" href="contact.html">Contact</a>
+  </div>
+
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
+</nav>
+<div class="m-menu" id="mMenu" aria-hidden="true">
+  <button class="m-menu-close" aria-label="Close menu">&times;</button>
+  <div class="m-menu-links">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
 </body>
 </html>

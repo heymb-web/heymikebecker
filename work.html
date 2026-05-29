@@ -457,7 +457,6 @@ a { color: inherit; text-decoration: none; }
   width: calc(100% + 2px); height: calc(100% + 2px);
   object-fit: cover;
   display: block;
-  z-index: 0;
 }
 .work-grid .tile.is-quarter .tile-media .tile-poster {
   object-position: 50% 50%;
@@ -470,7 +469,6 @@ a { color: inherit; text-decoration: none; }
   width: calc(100% + 2px); height: calc(100% + 2px);
   object-fit: cover;
   display: block;
-  z-index: 1;
   transform: scale(1.02);
   transition: transform 700ms cubic-bezier(.22,.61,.36,1);
 }
@@ -488,7 +486,6 @@ a { color: inherit; text-decoration: none; }
 .tile-overlay {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  z-index: 2;
   padding: clamp(14px, 1.8vw, 24px) clamp(16px, 2vw, 28px);
   background: linear-gradient(to top, rgba(12,11,9,0.55) 0%, rgba(12,11,9,0) 100%);
   pointer-events: none;
@@ -761,6 +758,50 @@ a { color: inherit; text-decoration: none; }
   color: #fff !important;
   mix-blend-mode: difference !important;
 }
+/* ===================================================================
+   BLEND ARCHITECTURE FIX — where mix-blend-mode: difference must be
+   applied to actually invert against the page.
+
+   The see-through effect only works when the blended element is in
+   (or composites against) the ROOT stacking context. Applying it to
+   a child inside an isolated stacking context blends against that
+   parent's background (transparent) instead of the page — so the text
+   just stays white, with no inversion.
+
+   .nav is position:fixed → root stacking context. Applying the blend
+   to .nav itself makes its white content invert against the page.
+   Children inside .nav must be reset to normal so they don't double-blend
+   against the nav's transparent background before the nav composites.
+=================================================================== */
+.nav {
+  mix-blend-mode: difference;
+}
+.nav .brand-name,
+.nav .brand-mono,
+.nav .brand-sub-dot,
+.nav .menu-flat,
+.nav .menu-flat-link,
+.nav .menu-flat-link:hover,
+.nav .menu-flat-link.is-current,
+.nav .menu-flat-sep,
+.nav .m-burger,
+.nav .m-burger span {
+  mix-blend-mode: normal !important;
+}
+
+/* Tile overlay: apply the blend to the overlay element (not just the
+   title text inside it). The overlay (position:absolute, z-index:2 in
+   the tile's stacking context) composites with difference blend against
+   the tile's content — poster and video. The dark gradient inverts to
+   near-transparent over the video, and the white title text inverts
+   against the actual footage frame. */
+.tile-overlay {
+  mix-blend-mode: difference;
+}
+.tile-overlay-title {
+  mix-blend-mode: normal !important;
+}
+
 </style>
 
 </head>
@@ -769,38 +810,7 @@ a { color: inherit; text-decoration: none; }
 <div class="page-cover" id="pageCover" aria-hidden="true"></div>
 
 <!-- ====== NAV ====== -->
-<nav class="nav" aria-label="Primary">
-  <a href="index.html" class="brand" aria-label="Home">
-    <span class="brand-mono" aria-hidden="true">MB</span>
-    <span class="brand-name">Mike Becker</span>
-    <span class="brand-sub" aria-hidden="true">
-      <span class="brand-sub-bracket">[</span>
-      <span>Director</span>
-      <span class="brand-sub-dot">·</span>
-      <span>Specialty Camera</span>
-      <span class="brand-sub-bracket">]</span>
-    </span>
-  </a>
 
-  <div class="menu-flat">
-    <a class="menu-flat-link" href="index.html">Home</a>
-    <span class="menu-flat-sep">/</span>
-    <a class="menu-flat-link" href="contact.html">Contact</a>
-  </div>
-
-  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
-    <span></span><span></span>
-  </button>
-</nav>
-
-<div class="m-menu" id="mMenu" aria-hidden="true">
-  <button class="m-menu-close" aria-label="Close menu">&times;</button>
-  <div class="m-menu-links">
-    <a href="index.html">Home</a>
-    <a href="work.html">Work</a>
-    <a href="contact.html">Contact</a>
-  </div>
-</div>
 
 <!-- ====== WORK MAIN ====== -->
 <main class="work-main" id="workMain">
@@ -1511,6 +1521,7 @@ a { color: inherit; text-decoration: none; }
 /* Mobile overlay menu toggle. Opens the full-screen menu from the
    burger, closes on the ×, on any link tap, or on backdrop tap. */
 (function () {
+  function initMenu() {
   var burger = document.querySelector('.m-burger');
   var menu = document.getElementById('mMenu');
   if (!burger || !menu) return;
@@ -1533,8 +1544,45 @@ a { color: inherit; text-decoration: none; }
   var links = menu.querySelectorAll('a');
   for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMenu);
+  } else {
+    initMenu();
+  }
 })();
 </script>
 
+<nav class="nav" aria-label="Primary">
+  <a href="index.html" class="brand" aria-label="Home">
+    <span class="brand-mono" aria-hidden="true">MB</span>
+    <span class="brand-name">Mike Becker</span>
+    <span class="brand-sub" aria-hidden="true">
+      <span class="brand-sub-bracket">[</span>
+      <span>Director</span>
+      <span class="brand-sub-dot">·</span>
+      <span>Specialty Camera</span>
+      <span class="brand-sub-bracket">]</span>
+    </span>
+  </a>
+
+  <div class="menu-flat">
+    <a class="menu-flat-link" href="index.html">Home</a>
+    <span class="menu-flat-sep">/</span>
+    <a class="menu-flat-link" href="contact.html">Contact</a>
+  </div>
+
+  <button class="m-burger" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span>
+  </button>
+</nav>
+<div class="m-menu" id="mMenu" aria-hidden="true">
+  <button class="m-menu-close" aria-label="Close menu">&times;</button>
+  <div class="m-menu-links">
+    <a href="index.html">Home</a>
+    <a href="work.html">Work</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</div>
 </body>
 </html>
