@@ -183,25 +183,26 @@ body::after {
 
    mix-blend-mode: difference makes it readable on both halves. Over the
    photo the white text inverts against the image; where it overhangs onto
-   the dark page it reads as near-white on black. Hidden until hover;
-   revealed via visibility + transform (never opacity, which would isolate
-   and break the blend). */
+   the dark page it reads as near-white on black, exactly like the nav
+   wordmark. The rise on reveal is done with the `bottom` offset, NOT a
+   transform: a transform (like opacity or filter) creates an isolated
+   layer that breaks mix-blend-mode and leaves the text flat white. So the
+   reveal uses only visibility + bottom, keeping the blend intact. */
 .bio-reveal {
   position: absolute;
   left: 33%;
   right: -18%;
-  bottom: clamp(26px, 8%, 56px);
+  bottom: clamp(16px, 6.5%, 46px);
   pointer-events: none;
   visibility: hidden;
-  transform: translateY(10px);
-  transition: transform 560ms cubic-bezier(.22,.61,.36,1),
+  transition: bottom 560ms cubic-bezier(.22,.61,.36,1),
               visibility 0s linear 560ms;
 }
 .figure:hover .bio-reveal,
 .figure.is-near .bio-reveal {
   visibility: visible;
-  transform: translateY(0);
-  transition: transform 560ms cubic-bezier(.22,.61,.36,1),
+  bottom: clamp(26px, 8%, 56px);
+  transition: bottom 560ms cubic-bezier(.22,.61,.36,1),
               visibility 0s;
 }
 .bio-reveal p {
