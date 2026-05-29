@@ -357,6 +357,24 @@ a { color: inherit; text-decoration: none; }
     aspect-ratio: 8 / 9;
   }
 
+  /* CRACKED runs ~30% wider than a standard is-small (span 3 -> 4), paired
+     with an is-half-narrow beside it (span 6 -> 5) so the cluster row still
+     totals 12 columns and all three tiles keep the same height (3.375
+     col-units). Aspects are width/height in col-units: 4/3.375 = 1.185 and
+     5/3.375 = 1.481. */
+  .work-grid .tile.is-small-wide {
+    grid-column: span 4;
+  }
+  .work-grid .tile.is-small-wide .tile-media {
+    aspect-ratio: 1.185 / 1;
+  }
+  .work-grid .tile.is-half-narrow {
+    grid-column: span 5;
+  }
+  .work-grid .tile.is-half-narrow .tile-media {
+    aspect-ratio: 1.481 / 1;
+  }
+
   /* 2/3 + 1/3 asymmetric pair. Used in single-row layouts where
      two pieces sit beside each other at varied sizes. Heights
      match exactly: 8 cols at 9/16 aspect = 4 cols at 9/8 aspect.
@@ -1034,13 +1052,13 @@ a { color: inherit; text-decoration: none; }
         //   row 3: wide-mate (8 cols, 2:1) + square (4 cols, 1:1)
         layout = ['is-hero', 'is-half', 'is-half', 'is-wide-mate', 'is-square'];
       } else if (count === 6 && group.role === 'Specialty Camera') {
-        // Specialty section with 6 projects: the standard 4-tile
-        // layout (hero, then small + half + small) plus a new
-        // bottom row of two halves.
+        // Specialty section with 6 projects: hero, then a cluster row,
+        // then a bottom row of two halves.
         //   row 1: hero
-        //   row 2: small + half + small
+        //   row 2: small-wide (CRACKED, span 4) + half-narrow (span 5)
+        //          + small (span 3) — totals 12, equal heights
         //   row 3: half + half
-        layout = ['is-hero', 'is-small', 'is-half', 'is-small', 'is-half', 'is-half'];
+        layout = ['is-hero', 'is-small-wide', 'is-half-narrow', 'is-small', 'is-half', 'is-half'];
       } else {
         // 5+ tiles: take the role's standard 4-tile layout and
         // extend it by appending hero slots for the remaining
