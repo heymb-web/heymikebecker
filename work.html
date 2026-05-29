@@ -1245,8 +1245,9 @@ a { color: inherit; text-decoration: none; }
       return;
     }
 
-    // Desktop / pointer: play on hover, pause + reset on leave.
-    // This path is UNCHANGED from the original desktop behavior.
+    // Desktop / pointer: play on hover, pause + reset on leave. The only
+    // addition to the original behavior is the first tile (the Director
+    // hero at the top), which autoplays a single pass on load — see below.
     document.querySelectorAll('.work-grid .tile').forEach(tile => {
       const video = tile.querySelector('video');
       if (!video) return;
@@ -1258,6 +1259,30 @@ a { color: inherit; text-decoration: none; }
         try { video.currentTime = 0; } catch (e) {}
       });
     });
+
+    // First thumbnail (Director hero) autoplays once when the page opens, so
+    // the top of the page isn't a static frame while the cursor is still up
+    // by the nav after clicking "Work". It plays a single pass (loop turned
+    // off just for this), then pauses back on its first frame and hands off
+    // to the normal hover behavior. If the visitor hovers it before the pass
+    // ends, looping is restored so it behaves exactly like every other tile.
+    const firstTile = document.querySelector('.work-grid .tile');
+    if (firstTile) {
+      const fv = firstTile.querySelector('video');
+      if (fv) {
+        fv.muted = true;
+        fv.loop = false;
+        if (fv.preload !== 'auto') fv.preload = 'auto';
+        fv.addEventListener('ended', function () {
+          fv.pause();
+          try { fv.currentTime = 0; } catch (e) {}
+          fv.loop = true;
+        }, { once: true });
+        firstTile.addEventListener('mouseenter', function () { fv.loop = true; }, { once: true });
+        const p0 = fv.play();
+        if (p0 && p0.catch) p0.catch(function () {});
+      }
+    }
   }
 
   // Wire the labels.
