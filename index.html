@@ -916,8 +916,10 @@ body.lightbox-open { overflow: hidden; }
 =================================================================== */
 @media (max-width: 720px) {
   .hero {
-    height: 100vh;
+    height: 100vh;   /* fallback for browsers without viewport units */
     height: 100dvh;
+    height: 100svh;  /* fill the small viewport; survives mobile browser chrome */
+    width: 100%;
     display: block;
     background: #000;
   }
@@ -979,18 +981,43 @@ body.lightbox-open { overflow: hidden; }
   .m-burger span {
     display: block; height: 2px; width: 28px; margin-left: auto;
     background: #fff; border-radius: 2px;
-    transition: transform 280ms cubic-bezier(.22,.61,.36,1),
+    transform-origin: center;
+    transition: transform 320ms cubic-bezier(.22,.61,.36,1),
                 opacity 220ms ease;
   }
+  /* The hamburger IS the close control: while the menu is open it morphs
+     into an X in place (upper right). */
+  .m-burger.is-open span:nth-child(1) {
+    transform: translateY(4px) rotate(45deg);
+  }
+  .m-burger.is-open span:nth-child(2) {
+    transform: translateY(-4px) rotate(-45deg);
+  }
 
-  /* Blurred veil over the still-playing reel. Sits just beneath the menu
-     text layer so the words can blend against the blurred footage. The
-     reel keeps playing underneath, faintly visible through the blur. */
+  /* Keep the nav ABOVE the overlay on mobile so the small wordmark stays
+     visible in the upper-left and the burger/X stays tappable in the
+     upper-right while the menu is open. Sits below the lightbox (z-500).
+     Desktop nav z-index (200) is unchanged — this only applies here. */
+  .nav { z-index: 410; }
+
+  /* ===============================================================
+     MOBILE MENU — OPTION A (robust)
+     A full-screen overlay above the still-playing reel:
+       z-390  .m-veil   frosts/blurs the reel with a slight dark tint,
+                        so the motion stays faintly visible behind it.
+       z-395  .m-menu   the links, translucent white over the blur.
+       z-410  .nav      wordmark + burger/X stay on top (above).
+     No mix-blend-mode on the overlay: a position:fixed overlay forms
+     its own stacking context, so difference would blend against the
+     overlay's own (transparent) backdrop and fall back to flat color.
+     Translucent white is used directly instead. The hero <video> keeps
+     playing underneath the whole time — it is never paused for the menu.
+     =============================================================== */
   .m-veil {
     display: block;
     position: fixed; inset: 0;
-    z-index: 399;
-    background: rgba(10, 9, 8, 0.40);
+    z-index: 390;
+    background: rgba(10, 9, 8, 0.42);
     -webkit-backdrop-filter: blur(22px) saturate(1.05);
     backdrop-filter: blur(22px) saturate(1.05);
     opacity: 0; pointer-events: none;
@@ -998,30 +1025,16 @@ body.lightbox-open { overflow: hidden; }
   }
   .m-veil.open { opacity: 1; }
 
-  /* Menu text layer — transparent and difference-blended like the nav,
-     so the words invert against the blurred reel behind them and the
-     video reads through the letterforms. No backdrop-filter here: that
-     would isolate the layer and kill the blend. The veil provides blur. */
   .m-menu {
     display: block;
     position: fixed; inset: 0;
-    z-index: 400;
+    z-index: 395;
     background: transparent;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    mix-blend-mode: difference;
     opacity: 0; pointer-events: none;
-    transition: opacity 380ms cubic-bezier(.22,.61,.36,1);
+    transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
   }
-  .m-menu.open {
-    opacity: 1; pointer-events: auto;
-  }
-  .m-menu-close {
-    position: absolute; top: 12px; right: 16px;
-    width: 44px; height: 44px;
-    background: none; border: 0; cursor: pointer;
-    color: #fff; font-size: 36px; font-weight: 300; line-height: 1;
-  }
+  .m-menu.open { opacity: 1; pointer-events: auto; }
+
   .m-menu-links {
     height: 100%;
     display: flex; flex-direction: column;
@@ -1035,7 +1048,10 @@ body.lightbox-open { overflow: hidden; }
     letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
-    color: #fff;
+    /* Option A: translucent white over the blurred reel. A soft shadow
+       keeps the words legible if a bright frame passes behind. */
+    color: rgba(255, 255, 255, 0.88);
+    text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
     text-decoration: none;
     transition: color 200ms ease;
   }
@@ -1671,35 +1687,51 @@ body.lightbox-open { overflow: hidden; }
 </script>
 
 <script>
-/* Mobile overlay menu toggle. Opens the full-screen menu from the
-   burger, closes on the ×, on any link tap, or on backdrop tap. */
+/* Mobile overlay menu (Option A). The burger opens the full-screen
+   overlay over the still-playing reel and, while open, morphs into an X
+   that closes it. Also closes on any link tap, a tap on empty overlay
+   space, or Escape. The hero <video> is never paused — it keeps playing
+   under the blur. */
 (function () {
   function initMenu() {
-  var burger = document.querySelector('.m-burger');
-  var menu = document.getElementById('mMenu');
-  if (!burger || !menu) return;
-  var veil = document.getElementById('mVeil');
-  var closeBtn = menu.querySelector('.m-menu-close');
-  function openMenu() {
-    menu.classList.add('open');
-    if (veil) veil.classList.add('open');
-    burger.setAttribute('aria-expanded', 'true');
-    menu.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMenu() {
-    menu.classList.remove('open');
-    if (veil) veil.classList.remove('open');
-    burger.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-  burger.addEventListener('click', openMenu);
-  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
-  var links = menu.querySelectorAll('a');
-  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+    var burger = document.querySelector('.m-burger');
+    var menu = document.getElementById('mMenu');
+    if (!burger || !menu) return;
+    var veil = document.getElementById('mVeil');
+    var links = menu.querySelectorAll('.m-menu-links a');
+
+    function openMenu() {
+      menu.classList.add('open');
+      if (veil) veil.classList.add('open');
+      burger.classList.add('is-open');
+      burger.setAttribute('aria-expanded', 'true');
+      burger.setAttribute('aria-label', 'Close menu');
+      menu.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      menu.classList.remove('open');
+      if (veil) veil.classList.remove('open');
+      burger.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', 'Open menu');
+      menu.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    function toggleMenu() {
+      if (menu.classList.contains('open')) closeMenu();
+      else openMenu();
+    }
+
+    burger.addEventListener('click', toggleMenu);
+    // Tap on empty overlay space (not a link) closes the menu.
+    menu.addEventListener('click', function (e) {
+      if (e.target === menu || e.target.classList.contains('m-menu-links')) closeMenu();
+    });
+    for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu();
+    });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMenu);
@@ -1736,7 +1768,6 @@ body.lightbox-open { overflow: hidden; }
 </nav>
 <div class="m-veil" id="mVeil" aria-hidden="true"></div>
 <div class="m-menu" id="mMenu" aria-hidden="true">
-  <button class="m-menu-close" aria-label="Close menu">&times;</button>
   <div class="m-menu-links">
     <a href="index.html">Home</a>
     <a href="work.html">Work</a>
