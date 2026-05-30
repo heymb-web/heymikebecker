@@ -320,20 +320,26 @@ body::after {
 .m-menu { display: none; }
 
 @media (max-width: 720px) {
-  .brand-name { display: none; }
+  /* Full MIKE BECKER wordmark in the upper-left, sized to match the
+     homepage's small resting nav wordmark. Solid white (the .nav blend is
+     neutralised just below) so it never washes out — contact has no reel
+     behind the name, so the mark is a static small wordmark, never "MB". */
+  .brand-name {
+    display: inline-block;
+    font-size: clamp(15px, 4.4vw, 18px);
+    letter-spacing: 0.03em;
+    color: #fff;
+    mix-blend-mode: normal;
+  }
   .brand-sub { display: none; }
   .menu-flat { display: none; }
 
-  .brand-mono {
-    display: inline-block;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 21px;
-    letter-spacing: 0.04em;
-    line-height: 1;
-    color: #fff;
-    mix-blend-mode: difference;
-  }
+  /* Solid white header on mobile — neutralise the nav's layer-level blend
+     so the wordmark and burger don't invert against the dark page. */
+  .nav { mix-blend-mode: normal !important; }
+
+  /* Monogram hidden on mobile — the full wordmark is shown instead. */
+  .brand-mono { display: none; }
 
   .m-burger {
     display: inline-flex;
@@ -343,7 +349,8 @@ body::after {
     width: 34px; height: 34px;
     padding: 0; margin: 0;
     background: none; border: 0; cursor: pointer;
-    mix-blend-mode: difference;
+    /* Solid white — no blend on mobile (the nav blend is neutralised). */
+    mix-blend-mode: normal;
   }
   .m-burger span {
     display: block; height: 2px; width: 28px; margin-left: auto;
