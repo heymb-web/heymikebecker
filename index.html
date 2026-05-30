@@ -954,6 +954,7 @@ body.lightbox-open { overflow: hidden; }
 .m-burger { display: none; }
 .m-menu { display: none; }
 .m-veil { display: none; }
+.m-knockout { display: none; }
 
 @media (max-width: 720px) {
   /* Show the small MIKE BECKER wordmark (not the MB monogram) in the
@@ -1025,6 +1026,33 @@ body.lightbox-open { overflow: hidden; }
   }
   .m-veil.open { opacity: 1; }
 
+  /* KNOCKOUT (mobile menu enhancement) — a second, half-blurred copy of
+     the reel, stacked ABOVE the veil and masked to the menu-link letter
+     shapes (the mask is built in JS from the live link geometry). Result:
+     background = blur(22) + tint (the veil, left exactly as-is); inside
+     the letters = the moving footage at blur(11), no tint.
+     The veil is intentionally NOT masked: only this one element carries a
+     mask, and it uses filter:blur (not backdrop-filter), which sidesteps
+     the Safari backdrop-filter + mask pitfall. If the mask/clone can't
+     run, JS never adds .knockout and the links stay translucent white. */
+  .m-knockout {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 393;                 /* above the veil (390), below .m-menu (395) */
+    width: 100%; height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+    -webkit-filter: blur(11px);
+    filter: blur(11px);           /* B/2 — half the veil's blur(22) */
+    /* Mask (data-URL SVG of the link words) is assigned by JS on open. */
+    -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+    -webkit-mask-position: center; mask-position: center;
+    -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+    opacity: 0;
+    transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-knockout.open { opacity: 1; }
+
   .m-menu {
     display: block;
     position: fixed; inset: 0;
@@ -1056,6 +1084,17 @@ body.lightbox-open { overflow: hidden; }
     transition: color 200ms ease;
   }
   .m-menu-links a:active { color: #fff; }
+
+  /* When the knockout is active the visible glyphs come from the masked,
+     half-blurred reel, so the real links go transparent — they remain
+     full-row tap targets (see .m-menu-links layout above). If the
+     knockout never activates, .knockout is absent and the links stay
+     translucent white: the always-available fallback. */
+  .m-menu.knockout .m-menu-links a,
+  .m-menu.knockout .m-menu-links a:active {
+    color: transparent;
+    text-shadow: none;
+  }
 }
 
 /* ===================================================================
@@ -1687,18 +1726,116 @@ body.lightbox-open { overflow: hidden; }
 </script>
 
 <script>
-/* Mobile overlay menu (Option A). The burger opens the full-screen
-   overlay over the still-playing reel and, while open, morphs into an X
-   that closes it. Also closes on any link tap, a tap on empty overlay
-   space, or Escape. The hero <video> is never paused — it keeps playing
-   under the blur. */
+/* Mobile overlay menu (Option A) + knockout enhancement.
+   The burger opens the full-screen overlay over the still-playing reel
+   and morphs into an X to close. Closes on link tap, empty-space tap, or
+   Escape. The hero <video> is NEVER paused — it keeps playing under the
+   blur the whole time the menu is open.
+
+   Knockout: while the menu is open, a second, half-blurred clone of the
+   reel is revealed, masked to the menu-link letter shapes, so the moving
+   footage shows THROUGH the words (the veil stays full blur + tint
+   around them). Progressive enhancement — if masking is unsupported, the
+   user prefers reduced motion, or the clone can't play, .knockout is
+   never added and the links stay translucent white (visible + tappable).
+   The clone runs only while the menu is open. */
 (function () {
   function initMenu() {
     var burger = document.querySelector('.m-burger');
     var menu = document.getElementById('mMenu');
     if (!burger || !menu) return;
     var veil = document.getElementById('mVeil');
+    var knockout = document.getElementById('mKnockout');
     var links = menu.querySelectorAll('.m-menu-links a');
+
+    var reduced = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function maskSupported() {
+      if (!(window.CSS && CSS.supports)) return false;
+      var v = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'/>")';
+      return CSS.supports('mask-image', v) || CSS.supports('-webkit-mask-image', v);
+    }
+    var canKnockout = !!knockout && !reduced && maskSupported();
+
+    var primed = false;
+    function primeKnockout() {
+      if (!knockout || primed) return;
+      primed = true;
+      // Clone whatever source the hero is actually playing (the mobile
+      // reel on phones); nothing loads until the menu is first opened.
+      var heroSrc = document.getElementById('heroSource');
+      var src = (heroSrc && heroSrc.getAttribute('src')) || 'media/reel/reel-mobile.mp4';
+      try { knockout.src = src; knockout.load(); } catch (e) {}
+      knockout.addEventListener('error', deactivateKnockout);
+    }
+
+    // Build a data-URL SVG mask (white letters on a transparent field)
+    // from the LIVE link geometry, so the cut-out glyphs land exactly
+    // where the links are, at the page's own font/size/tracking. White =
+    // reveal the (half-blurred) reel; transparent = hide it.
+    function buildMask() {
+      if (!knockout || !links.length) return false;
+      var box = knockout.getBoundingClientRect();
+      var w = Math.round(box.width) || window.innerWidth;
+      var h = Math.round(box.height) || window.innerHeight;
+      var texts = '';
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        var r = a.getBoundingClientRect();
+        if (!r.width || !r.height) continue;
+        var cs = window.getComputedStyle(a);
+        var fs = parseFloat(cs.fontSize) || 40;
+        var ls = (cs.letterSpacing && cs.letterSpacing !== 'normal')
+          ? parseFloat(cs.letterSpacing) : 0;
+        var fw = cs.fontWeight || '500';
+        var cx = (r.left - box.left) + r.width / 2;
+        var cy = (r.top - box.top) + r.height / 2;
+        var word = (a.textContent || '').trim().toUpperCase()
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        if (!word) continue;
+        texts += '<text x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '"' +
+          ' font-family="Inter, -apple-system, BlinkMacSystemFont, system-ui, Helvetica, Arial, sans-serif"' +
+          ' font-size="' + fs.toFixed(1) + '" font-weight="' + fw + '"' +
+          ' letter-spacing="' + ls.toFixed(2) + '"' +
+          ' text-anchor="middle" dominant-baseline="central"' +
+          ' fill="#fff">' + word + '</text>';
+      }
+      if (!texts) return false;
+      var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='" + w +
+        "' height='" + h + "' viewBox='0 0 " + w + ' ' + h + "'>" + texts + '</svg>';
+      var url = 'url("data:image/svg+xml,' + encodeURIComponent(svg) + '")';
+      knockout.style.webkitMaskImage = url;
+      knockout.style.maskImage = url;
+      return true;
+    }
+
+    var rafId = null;
+    function scheduleRebuild() {
+      if (!menu.classList.contains('knockout')) return;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(buildMask);
+    }
+
+    function activateKnockout() {
+      if (!menu.classList.contains('open')) return;
+      if (!buildMask()) return;            // mask failed -> stay on fallback
+      menu.classList.add('knockout');      // hide the translucent-white links
+      knockout.classList.add('open');      // fade in the masked, half-blurred reel
+      try {
+        var hero = document.getElementById('heroVideo');
+        if (hero && !isNaN(hero.currentTime)) knockout.currentTime = hero.currentTime;
+      } catch (e) {}
+      var p = knockout.play();
+      if (p && p.catch) p.catch(deactivateKnockout);   // can't play -> fallback
+      window.addEventListener('resize', scheduleRebuild);
+      window.addEventListener('orientationchange', scheduleRebuild);
+    }
+    function deactivateKnockout() {
+      menu.classList.remove('knockout');
+      if (knockout) knockout.classList.remove('open');
+      window.removeEventListener('resize', scheduleRebuild);
+      window.removeEventListener('orientationchange', scheduleRebuild);
+    }
 
     function openMenu() {
       menu.classList.add('open');
@@ -1708,6 +1845,14 @@ body.lightbox-open { overflow: hidden; }
       burger.setAttribute('aria-label', 'Close menu');
       menu.setAttribute('aria-hidden', 'false');
       document.body.style.overflow = 'hidden';
+      // NOTE: the hero reel is intentionally NOT paused.
+      if (canKnockout) {
+        primeKnockout();
+        // Wait for layout + fonts so the glyph geometry is final.
+        var go = function () { requestAnimationFrame(activateKnockout); };
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(go);
+        else go();
+      }
     }
     function closeMenu() {
       menu.classList.remove('open');
@@ -1717,6 +1862,13 @@ body.lightbox-open { overflow: hidden; }
       burger.setAttribute('aria-label', 'Open menu');
       menu.setAttribute('aria-hidden', 'true');
       document.body.style.overflow = '';
+      deactivateKnockout();
+      // Pause the clone a beat after the fade so it stops decoding.
+      if (knockout) {
+        setTimeout(function () {
+          if (!menu.classList.contains('open')) { try { knockout.pause(); } catch (e) {} }
+        }, 420);
+      }
     }
     function toggleMenu() {
       if (menu.classList.contains('open')) closeMenu();
@@ -1767,6 +1919,13 @@ body.lightbox-open { overflow: hidden; }
   </button>
 </nav>
 <div class="m-veil" id="mVeil" aria-hidden="true"></div>
+<!-- Knockout layer (mobile only): a half-blurred clone of the hero reel,
+     masked to the menu-link letter shapes so the moving footage reads
+     through the words. Source + mask are wired up by JS on open; nothing
+     loads until the menu is used. Degrades to the translucent-white links
+     if the mask or clone can't run. -->
+<video class="m-knockout" id="mKnockout" muted loop playsinline preload="none"
+       disablepictureinpicture disableremoteplayback aria-hidden="true"></video>
 <div class="m-menu" id="mMenu" aria-hidden="true">
   <div class="m-menu-links">
     <a href="index.html">Home</a>
