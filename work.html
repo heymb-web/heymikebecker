@@ -655,16 +655,14 @@ a { color: inherit; text-decoration: none; }
   }
   .work-grid .tile.is-playing .tile-overlay { opacity: 1; }
 
-  /* Mobile uses the SAME floating blurred label as desktop: show the
-     labels layer and keep the static inline headers hidden. This gives
-     mobile the exact desktop label behaviour — one label per section that
-     tracks the section as you scroll, blends over the footage with
-     mix-blend-mode: difference, and cross-fades between Director /
-     Specialty / Camera. The positioning JS (wireStickyLabels) already
-     runs on every screen size; a mobile-only top clamp inside it keeps
-     the label from sliding under the fixed header. */
-  .work-labels-layer { display: block; }
-  .work-section-head { display: none; }
+  /* Mobile uses the SAME floating blurred label system as desktop: show
+     the labels layer and hide the static inline header. The floating
+     label (positioned by wireStickyLabels, which runs on all platforms)
+     tracks each section, blends over the footage with
+     mix-blend-mode: difference, and cross-fades between roles — and is
+     clamped below the fixed mobile header by navClearance() in that JS. */
+  .work-labels-layer { display: block !important; }
+  .work-section-head { display: none !important; }
 }
 
 /* ===================================================================
@@ -681,36 +679,30 @@ a { color: inherit; text-decoration: none; }
 .m-menu { display: none; }
 
 @media (max-width: 720px) {
-  /* Full MIKE BECKER wordmark in the upper-left, sized to match the
-     homepage's small resting nav wordmark. Solid white (the .nav blend
-     is neutralised just below), never the "MB" monogram. */
   .brand-name {
     display: inline-block;
-    font-size: clamp(15px, 4.4vw, 18px);
-    letter-spacing: 0.03em;
     color: #fff;
-    mix-blend-mode: normal;
+    mix-blend-mode: normal !important;
   }
   .brand-sub { display: none; }
   .menu-flat { display: none; }
 
   /* ===============================================================
-     WORK-FEED MOBILE (phones, <=720px only — desktop untouched)
-     1. Header: the full MIKE BECKER wordmark (above) + a solid-white
-        (no-blend) burger over a short dark->transparent scrim, so they
-        stay readable over any tile. The fixed header is its own stacking
-        context, so its blend never reached the tiles — it only washed
-        the text out — hence the scrim instead.
+     WORK-FEED MOBILE FIXES (phones, <=720px only — desktop untouched)
+     1. Header legibility: a short dark->transparent scrim behind the
+        fixed header, and a solid-white (no-blend) monogram + burger.
+        The fixed header is its own stacking context, so its blend
+        never reached the tiles — it only washed the text out, so we
+        drop it on mobile and let the scrim carry legibility instead.
      2. Header collision: push the whole feed clear of the fixed header
         so nothing renders underneath it.
-     3. Section labels: handled by the floating .work-section-label layer
-        (now shown on mobile, see the touch block above), tracked by JS
-        and clamped below the header — not static stacked headers.
+     3. Section labels: the desktop floating label is now shown on mobile
+        too (see the touch block above); the static header is hidden.
      4. Tiles: one 16:9 aspect for every tile + an even vertical gap.
      =============================================================== */
 
   /* (2) Solid white header — neutralise the layer-level blend on mobile
-     so the wordmark/burger don't invert or wash against the tiles. */
+     so the monogram/burger don't invert or wash against the tiles. */
   .nav { mix-blend-mode: normal !important; }
 
   /* (1) Short scrim behind the header. Fixed at the top, above the tiles
@@ -737,8 +729,17 @@ a { color: inherit; text-decoration: none; }
   .work-grid { gap: clamp(20px, 6vw, 30px); }
   .work-grid .tile-media { aspect-ratio: 16 / 9; }
 
-  /* Monogram hidden on mobile — the full wordmark is shown instead. */
-  .brand-mono { display: none; }
+  .brand-mono {
+    display: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #fff;
+    /* Solid white over the scrim — no blend on mobile (see note above). */
+    mix-blend-mode: normal;
+  }
 
   .m-burger {
     display: inline-flex;
@@ -1255,6 +1256,7 @@ a { color: inherit; text-decoration: none; }
       }
 
       function pickCentre() {
+        if (window.scrollY < 4) { setActive(tiles[0]); return; }
         const mid = window.innerHeight / 2;
         let best = null, bestDist = Infinity;
         for (let i = 0; i < tiles.length; i++) {
@@ -1268,28 +1270,17 @@ a { color: inherit; text-decoration: none; }
       }
 
       // Re-evaluate on scroll/resize, throttled to one check per frame.
-      function pickActive() {
-        // At rest at the very top, the first tile is the feature: it sits
-        // at the top and never reaches screen centre, so it would stay
-        // frozen on its poster. Force it active while we're at the top,
-        // then hand straight back to nearest-centre the moment the user
-        // scrolls.
-        const y = window.scrollY || window.pageYOffset || 0;
-        if (y <= 4) { setActive(tiles[0]); return; }
-        pickCentre();
-      }
-
       let ticking = false;
       function onScroll() {
         if (ticking) return;
         ticking = true;
-        requestAnimationFrame(function () { pickActive(); ticking = false; });
+        requestAnimationFrame(function () { pickCentre(); ticking = false; });
       }
       window.addEventListener('scroll', onScroll, { passive: true });
       window.addEventListener('resize', onScroll);
-      // Initial pick (after layout settles): first tile is active at top.
-      pickActive();
-      requestAnimationFrame(pickActive);
+      // Initial pick (after layout settles).
+      pickCentre();
+      requestAnimationFrame(pickCentre);
       return;
     }
 
@@ -1386,6 +1377,19 @@ a { color: inherit; text-decoration: none; }
     });
     if (!pairs.length) return;
 
+    // Mobile only: clamp the floating label so it can never slide up
+    // under the fixed header bar. Returns 0 on desktop, so desktop label
+    // positioning is left exactly as-is.
+    const mqMobile = window.matchMedia('(max-width: 720px)');
+    function navClearance() {
+      if (!mqMobile.matches) return 0;
+      const navH = parseInt(
+        getComputedStyle(document.documentElement)
+          .getPropertyValue('--nav-h')
+      ) || 64;
+      return navH + 34;
+    }
+
     // labelH: the label's rendered height. Needed to clamp its
     // position to the section's bounds.
     // labelPad: breathing room between the label and the section's
@@ -1394,16 +1398,9 @@ a { color: inherit; text-decoration: none; }
     // as the next section's label has below it.
     let labelH = 24;
     let labelPad = 16;
-    // Mobile (<=720px) shows a fixed header bar (wordmark + burger). On
-    // mobile we clamp the label so it can never slide up under that bar.
-    // Desktop label positioning is left exactly as-is.
-    const mqMobile = window.matchMedia('(max-width: 720px)');
-    let navH = 64;
     function measureLayout() {
       labelH = pairs[0].label.offsetHeight || 24;
       labelPad = Math.max(14, Math.min(22, Math.round(window.innerWidth * 0.013)));
-      const navEl = document.querySelector('.nav');
-      navH = navEl ? navEl.offsetHeight : 64;
     }
 
     function update() {
@@ -1492,12 +1489,8 @@ a { color: inherit; text-decoration: none; }
           labelTop = vc - halfLabel;
         }
 
-        // Mobile only: never let the label slide up under the fixed
-        // header bar. Desktop positioning is untouched.
-        if (mqMobile.matches) {
-          const minTop = navH + PAD;
-          if (labelTop < minTop) labelTop = minTop;
-        }
+        const nc = navClearance();
+        if (nc) labelTop = Math.max(labelTop, nc);
 
         label.style.top = labelTop + 'px';
         label.style.opacity = '1';
