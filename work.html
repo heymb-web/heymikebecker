@@ -729,10 +729,30 @@ a { color: inherit; text-decoration: none; }
      burger float over it; the fixed scrim above carries their legibility.
      No padding-top so nothing is pushed down. */
 
-  /* (4) Even single-column rhythm: one 16:9 aspect for every tile and a
-     consistent vertical gap. object-fit is left as-is. */
-  .work-grid { gap: var(--edge); }
-  .work-grid .tile-media { aspect-ratio: 4 / 5; }
+  /* (4) Desktop-like rhythm on mobile: a 2-column grid where each section's
+     hero spans the full width (a cinematic banner) and the remaining tiles
+     sit half-width, pairing two-up in reading order — mirroring how the work
+     reads on desktop. A trailing tile with no partner (the odd one out in a
+     run) is promoted to full width by JS (.is-m-solo) so a row never shows a
+     half-width tile beside an empty gap. */
+  .work-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--edge);
+  }
+  /* Full-width lead tiles: section heroes and any promoted solo tile. */
+  .work-grid .tile.is-hero,
+  .work-grid .tile.is-wide,
+  .work-grid .tile.is-m-solo {
+    grid-column: 1 / -1;
+  }
+  /* Half-width companions pair two-up; one shared aspect ratio so a row's
+     two thumbnails are always the same height. */
+  .work-grid .tile .tile-media { aspect-ratio: 4 / 5; }
+  /* Heroes read as wide cinematic banners across the full width. */
+  .work-grid .tile.is-hero .tile-media,
+  .work-grid .tile.is-wide .tile-media { aspect-ratio: 2 / 1; }
+  /* A promoted solo tile is full width, so give it a wider frame too. */
+  .work-grid .tile.is-m-solo .tile-media { aspect-ratio: 16 / 9; }
 
   .brand-mono {
     display: none;
@@ -1235,6 +1255,36 @@ a { color: inherit; text-decoration: none; }
     main.appendChild(labelsLayer);
   }
 
+  // Mobile-only layout aid: in the 2-up mobile grid (see the
+  // max-width:720px CSS), section heroes span the full width and the
+  // remaining tiles pair two-up in reading order. Within each section we
+  // walk the tiles in order, treating the full-width tiles (is-hero /
+  // is-wide) as run-breakers; any run of half-width companions with an odd
+  // count gets its LAST tile promoted to full width (.is-m-solo) so a row
+  // never renders a half-width tile beside an empty gap. Desktop ignores
+  // .is-m-solo entirely (the class is only consumed inside the mobile
+  // media query), so this is safe to set on every build.
+  function promoteMobileSolos() {
+    const FULL = ['is-hero', 'is-wide'];
+    document.querySelectorAll('.work-section .work-grid').forEach((grid) => {
+      const tiles = Array.from(grid.children).filter((el) =>
+        el.classList && el.classList.contains('tile'));
+      let run = [];
+      const flush = () => {
+        if (run.length % 2 === 1) {
+          run[run.length - 1].classList.add('is-m-solo');
+        }
+        run = [];
+      };
+      tiles.forEach((tile) => {
+        tile.classList.remove('is-m-solo');
+        const isFull = FULL.some((c) => tile.classList.contains(c));
+        if (isFull) { flush(); } else { run.push(tile); }
+      });
+      flush();
+    });
+  }
+
   // Hover play/pause for tile videos. On mouseenter, play. On
   // mouseleave, pause and reset to first frame for a clean idle state.
   //
@@ -1248,15 +1298,19 @@ a { color: inherit; text-decoration: none; }
       window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
     if (isTouch) {
-      // Mobile / touch: exactly ONE tile plays at a time — the one whose
-      // centre is nearest the vertical centre of the screen. Everything
-      // else pauses and rests on its poster still (the video crossfades
-      // out via the .is-playing class in CSS). As you scroll, focus
-      // passes from one piece to the next, so the work reads one subject
-      // at a time instead of fifteen clips competing. Tapping a tile
-      // still opens the full video in the lightbox (wired separately).
+      // Mobile / touch: thumbnails play ONE AT A TIME, advancing in reading
+      // order as you scroll — the section hero first, then the LEFT tile of
+      // the next paired row, then (a little further down) the RIGHT tile,
+      // then the next row, and so on. This mirrors how a cursor would sweep
+      // the desktop grid, and keeps only one video decoding at a time so the
+      // feed stays smooth on cellular. Tapping a tile still opens the full
+      // video in the lightbox (wired separately).
       const tiles = Array.from(document.querySelectorAll('.work-grid .tile'));
       if (!tiles.length) return;
+
+      // Fraction of viewport height that acts as the "playhead" line: a tile
+      // goes live once its centre scrolls up past this line.
+      const PLAYHEAD = 0.42;
 
       let active = null;
 
@@ -1281,32 +1335,58 @@ a { color: inherit; text-decoration: none; }
         }
       }
 
-      function pickCentre() {
-        if (window.scrollY < 4) { setActive(tiles[0]); return; }
-        const mid = window.innerHeight / 2;
-        let best = null, bestDist = Infinity;
-        for (let i = 0; i < tiles.length; i++) {
-          const r = tiles[i].getBoundingClientRect();
-          if (r.bottom <= 0 || r.top >= window.innerHeight) continue; // off-screen
-          const centre = r.top + r.height / 2;
-          const d = Math.abs(centre - mid);
-          if (d < bestDist) { bestDist = d; best = tiles[i]; }
-        }
-        if (best) setActive(best);
+      // Each tile gets an activation scroll position: the scrollY at which
+      // its centre reaches the playhead line. The RIGHT-hand tile of a 2-up
+      // row shares its partner's vertical position, so we push its
+      // activation half a tile-height further down — that is the "scroll a
+      // little further and the second one plays" beat. Activations are cached
+      // here and recomputed only on resize, so the scroll handler never
+      // touches layout.
+      let activations = []; // { tile, at } in ascending DOM/reading order
+      function measure() {
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
+        const line = vh * PLAYHEAD;
+        // Column-2 tiles start roughly halfway across; full-width tiles and
+        // column-1 tiles start at the page's left gutter. 0.3 * width sits
+        // safely between the two, so only true right-column tiles get biased.
+        const rightThreshold = (window.innerWidth || 0) * 0.3;
+        activations = tiles.map(function (tile) {
+          const r = tile.getBoundingClientRect();
+          const docCentre = r.top + sy + r.height / 2;
+          const isRight = r.left > rightThreshold;
+          const bias = isRight ? r.height * 0.5 : 0;
+          return { tile: tile, at: docCentre - line + bias };
+        });
       }
 
-      // Re-evaluate on scroll/resize, throttled to one check per frame.
+      function pickSequential() {
+        const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
+        // Walk in reading order; the active tile is the furthest-progressed
+        // one whose activation point has been scrolled past. Defaults to the
+        // first tile at the very top of the page.
+        let chosen = tiles[0];
+        for (let i = 0; i < activations.length; i++) {
+          if (activations[i].at <= sy) chosen = activations[i].tile;
+        }
+        if (chosen) setActive(chosen);
+      }
+
+      // Re-evaluate on scroll, throttled to one check per frame. Re-measure
+      // on resize (and after load/fonts) since tile geometry can shift.
       let ticking = false;
       function onScroll() {
         if (ticking) return;
         ticking = true;
-        requestAnimationFrame(function () { pickCentre(); ticking = false; });
+        requestAnimationFrame(function () { pickSequential(); ticking = false; });
       }
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll);
-      // Initial pick (after layout settles).
-      pickCentre();
-      requestAnimationFrame(pickCentre);
+      window.addEventListener('resize', function () { measure(); pickSequential(); });
+      // Initial measure + pick, then once more after layout settles.
+      measure();
+      pickSequential();
+      requestAnimationFrame(function () { measure(); pickSequential(); });
+      window.addEventListener('load', function () { measure(); pickSequential(); });
       return;
     }
 
@@ -1638,6 +1718,7 @@ a { color: inherit; text-decoration: none; }
       const projects = collectProjects(cfg);
       const groups = groupByRole(projects);
       safe('buildPage', function () { buildPage(groups); });
+      safe('promoteMobileSolos', function () { promoteMobileSolos(); });
       safe('wireTileHover', function () { wireTileHover(); });
       safe('wireStickyLabels', function () { wireStickyLabels(); });
       safe('wireLightbox', function () { wireLightbox(); });
