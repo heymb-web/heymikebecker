@@ -276,8 +276,12 @@ a { color: inherit; text-decoration: none; }
      scroll and the cross-fade stops in place. Only opacity has a
      time-based transition (for fade in/out when a section enters
      or leaves the viewport). */
-  transition: opacity 220ms cubic-bezier(.22,.61,.36,1),
-              top 0s;
+  /* Both opacity and blur are driven continuously by JS from the scroll
+     position (see wireStickyLabels), so the cross-fade follows the scroll
+     exactly rather than running on its own clock — no time-based transition
+     here. Only `top` is listed (instant) to keep the position glued to the
+     scroll frame too. */
+  transition: top 0s;
   will-change: opacity, filter, top;
 }
 
@@ -677,6 +681,7 @@ a { color: inherit; text-decoration: none; }
 .brand-mono { display: none; }
 .m-burger { display: none; }
 .m-menu { display: none; }
+.m-veil { display: none; }
 
 @media (max-width: 720px) {
   .brand-name {
@@ -755,33 +760,53 @@ a { color: inherit; text-decoration: none; }
   .m-burger span {
     display: block; height: 2px; width: 28px; margin-left: auto;
     background: #fff; border-radius: 2px;
-    transition: transform 280ms cubic-bezier(.22,.61,.36,1),
+    transform-origin: center;
+    transition: transform 320ms cubic-bezier(.22,.61,.36,1),
                 opacity 220ms ease;
   }
+  /* The hamburger IS the close control: while the menu is open it morphs
+     into an X in place (upper right) — matches the homepage menu. */
+  .m-burger.is-open span:nth-child(1) {
+    transform: translateY(4px) rotate(45deg);
+  }
+  .m-burger.is-open span:nth-child(2) {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+
+  /* Keep the nav ABOVE the overlay on mobile so the wordmark stays visible
+     in the upper-left and the burger/X stays tappable in the upper-right
+     while the menu is open. Desktop nav z-index (50) is unchanged. */
+  .nav { z-index: 410; }
+
+  /* ===============================================================
+     MOBILE MENU — matches the homepage (index.html) exactly:
+       z-390  .m-veil   frosts/blurs the page behind it with a light tint
+       z-395  .m-menu   the links, over the blur
+       z-410  .nav      wordmark + burger/X stay on top (above)
+     The burger morphs into an X to close; the menu also closes on a link
+     tap, an empty-space tap, or Escape.
+     =============================================================== */
+  .m-veil {
+    display: block;
+    position: fixed; inset: 0;
+    z-index: 390;
+    background: rgba(10, 9, 8, 0.42);
+    -webkit-backdrop-filter: blur(22px) saturate(1.05);
+    backdrop-filter: blur(22px) saturate(1.05);
+    opacity: 0; pointer-events: none;
+    transition: opacity 420ms cubic-bezier(.22,.61,.36,1);
+  }
+  .m-veil.open { opacity: 1; }
 
   .m-menu {
     display: block;
     position: fixed; inset: 0;
-    z-index: 400;
-    background: rgba(10,9,8,0);
-    -webkit-backdrop-filter: blur(0px);
-    backdrop-filter: blur(0px);
+    z-index: 395;
+    background: transparent;
     opacity: 0; pointer-events: none;
-    transition: opacity 380ms cubic-bezier(.22,.61,.36,1),
-                background 380ms cubic-bezier(.22,.61,.36,1);
+    transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
   }
-  .m-menu.open {
-    opacity: 1; pointer-events: auto;
-    background: rgba(10,9,8,0.97);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-  }
-  .m-menu-close {
-    position: absolute; top: 12px; right: 16px;
-    width: 44px; height: 44px;
-    background: none; border: 0; cursor: pointer;
-    color: #EDE6D8; font-size: 36px; font-weight: 300; line-height: 1;
-  }
+  .m-menu.open { opacity: 1; pointer-events: auto; }
   .m-menu-links {
     height: 100%;
     display: flex; flex-direction: column;
@@ -1494,10 +1519,16 @@ a { color: inherit; text-decoration: none; }
         if (nc) labelTop = Math.max(labelTop, nc);
 
         label.style.top = labelTop + 'px';
-        label.style.opacity = '1';
 
-        // Blur: derived from the focal weight.
+        // Cross-fade tied to the focal weight. The label that owns the
+        // viewport centre is sharp and fully opaque; the one being left
+        // behind fades AND blurs out at the same time, so two adjacent
+        // titles dissolve smoothly into each other during the handoff
+        // instead of both sitting fully opaque with only a blur difference
+        // between them (which read as cluttered/clunky). Both values track
+        // the scroll position exactly.
         const w = weights[i];
+        label.style.opacity = w.toFixed(3);
         const blurPx = 8 * (1 - w);
         label.style.filter = blurPx < 0.15
           ? 'none'
@@ -1520,6 +1551,16 @@ a { color: inherit; text-decoration: none; }
       measureLayout();
       schedule();
     });
+
+    // The first measure/update runs right after the tiles are built, before
+    // fonts and tile media have finalised their sizes — which left the first
+    // label mis-measured and made it jump on the first scroll ("clunky on
+    // start"). Re-measure once the page has fully loaded and once the web
+    // font is ready, so the labels are positioned correctly from frame one.
+    window.addEventListener('load', function () { measureLayout(); update(); });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { measureLayout(); update(); });
+    }
   }
 
   // Lightbox open/close and content swap.
@@ -1617,32 +1658,48 @@ a { color: inherit; text-decoration: none; }
 </script>
 
 <script>
-/* Mobile overlay menu toggle. Opens the full-screen menu from the
-   burger, closes on the ×, on any link tap, or on backdrop tap. */
+/* Mobile overlay menu — matches the homepage (index.html): the burger
+   opens a full-screen overlay over a frosted veil and morphs into an X to
+   close. Closes on a link tap, an empty-space tap, or Escape. */
 (function () {
   function initMenu() {
-  var burger = document.querySelector('.m-burger');
-  var menu = document.getElementById('mMenu');
-  if (!burger || !menu) return;
-  var closeBtn = menu.querySelector('.m-menu-close');
-  function openMenu() {
-    menu.classList.add('open');
-    burger.setAttribute('aria-expanded', 'true');
-    menu.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeMenu() {
-    menu.classList.remove('open');
-    burger.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-hidden', 'true');
-    document.body.style.overflow = '';
-  }
-  burger.addEventListener('click', openMenu);
-  if (closeBtn) closeBtn.addEventListener('click', closeMenu);
-  menu.addEventListener('click', function (e) { if (e.target === menu) closeMenu(); });
-  var links = menu.querySelectorAll('a');
-  for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenu(); });
+    var burger = document.querySelector('.m-burger');
+    var menu = document.getElementById('mMenu');
+    if (!burger || !menu) return;
+    var veil = document.getElementById('mVeil');
+    var links = menu.querySelectorAll('.m-menu-links a');
+
+    function openMenu() {
+      menu.classList.add('open');
+      if (veil) veil.classList.add('open');
+      burger.classList.add('is-open');
+      burger.setAttribute('aria-expanded', 'true');
+      burger.setAttribute('aria-label', 'Close menu');
+      menu.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeMenu() {
+      menu.classList.remove('open');
+      if (veil) veil.classList.remove('open');
+      burger.classList.remove('is-open');
+      burger.setAttribute('aria-expanded', 'false');
+      burger.setAttribute('aria-label', 'Open menu');
+      menu.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    function toggleMenu() {
+      if (menu.classList.contains('open')) closeMenu();
+      else openMenu();
+    }
+    burger.addEventListener('click', toggleMenu);
+    // Tap on empty overlay space (not a link) closes the menu.
+    menu.addEventListener('click', function (e) {
+      if (e.target === menu || e.target.classList.contains('m-menu-links')) closeMenu();
+    });
+    for (var i = 0; i < links.length; i++) links[i].addEventListener('click', closeMenu);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && menu.classList.contains('open')) closeMenu();
+    });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMenu);
@@ -1677,8 +1734,8 @@ a { color: inherit; text-decoration: none; }
     <span></span><span></span>
   </button>
 </nav>
+<div class="m-veil" id="mVeil" aria-hidden="true"></div>
 <div class="m-menu" id="mMenu" aria-hidden="true">
-  <button class="m-menu-close" aria-label="Close menu">&times;</button>
   <div class="m-menu-links">
     <a href="index.html">Home</a>
     <a href="work.html">Work</a>

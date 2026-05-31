@@ -750,7 +750,15 @@ body.intro-active .hero-inner {
 =================================================================== */
 @media (max-width: 720px) {
   .intro-mark {
-    font-size: clamp(28px, 8.5vw, 56px);
+    /* Span the FULL width of the top of the screen, but keep the same
+       left/right margins the small wordmark and burger use (var(--nav-edge)
+       on each side). The font size is derived from that available width so
+       "MIKE BECKER" stretches edge to edge on a single line. The divisor
+       (~6.8) is the rendered width of the uppercase wordmark in ems at
+       weight 600 — nudge it up if the text overflows the right margin, down
+       if it falls short of it. */
+    right: var(--nav-edge);
+    font-size: calc((100vw - 2 * var(--nav-edge)) / 6.8);
     line-height: 1;
     white-space: nowrap;
     transform-origin: top left;
