@@ -634,7 +634,7 @@ a { color: inherit; text-decoration: none; }
 .work-section-head { display: none; }
 
 @media (hover: none), (pointer: coarse) {
-  .work-grid { gap: clamp(20px, 6vw, 34px); }
+  .work-grid { gap: var(--edge); }
   .work-section { margin-bottom: clamp(18px, 6vw, 36px); }
 
   /* Each tile's video is hidden until it becomes the active (centred)
@@ -720,14 +720,14 @@ a { color: inherit; text-decoration: none; }
     pointer-events: none;
   }
 
-  /* (2) Start the feed fully below the fixed header. (Desktop keeps no
-     padding-top so its hero tile can sit behind the floating nav.) */
-  .work-main { padding-top: calc(var(--nav-h) + clamp(6px, 2vw, 12px)); }
+  /* (2) First tile starts at the very top, like desktop. The wordmark and
+     burger float over it; the fixed scrim above carries their legibility.
+     No padding-top so nothing is pushed down. */
 
   /* (4) Even single-column rhythm: one 16:9 aspect for every tile and a
      consistent vertical gap. object-fit is left as-is. */
-  .work-grid { gap: clamp(20px, 6vw, 30px); }
-  .work-grid .tile-media { aspect-ratio: 16 / 9; }
+  .work-grid { gap: var(--edge); }
+  .work-grid .tile-media { aspect-ratio: 4 / 5; }
 
   .brand-mono {
     display: none;
@@ -796,6 +796,7 @@ a { color: inherit; text-decoration: none; }
     text-transform: uppercase;
     line-height: 1;
     color: #EDE6D8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 2px 22px rgba(0,0,0,0.45);
     text-decoration: none;
     transition: color 200ms ease;
   }

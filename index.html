@@ -750,14 +750,15 @@ body.intro-active .hero-inner {
 =================================================================== */
 @media (max-width: 720px) {
   .intro-mark {
-    font-size: clamp(60px, 19vw, 104px);
-    line-height: 0.86;
+    font-size: clamp(28px, 8.5vw, 56px);
+    line-height: 1;
+    white-space: nowrap;
     transform-origin: top left;
     transition: opacity 450ms cubic-bezier(.22,.61,.36,1),
                 transform 620ms cubic-bezier(.22,.61,.36,1);
   }
-  .intro-mark .im-w { display: block; }
-  .intro-mark.gone { transform: scale(0.26); }
+  .intro-mark .im-w { display: inline; }
+  .intro-mark.gone { transform: scale(0.42); }
 }
 
 /* Brand and menu are held hidden during the intro (both .intro-active
@@ -1076,10 +1077,10 @@ body.lightbox-open { overflow: hidden; }
     letter-spacing: 0.12em;
     text-transform: uppercase;
     line-height: 1;
-    /* Option A: translucent white over the blurred reel. A soft shadow
-       keeps the words legible if a bright frame passes behind. */
-    color: rgba(255, 255, 255, 0.88);
-    text-shadow: 0 1px 18px rgba(0, 0, 0, 0.45);
+    /* Solid warm off-white, identical to work and contact menus. A
+       readable shadow keeps the words legible over the playing reel. */
+    color: #EDE6D8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.55), 0 2px 22px rgba(0,0,0,0.45);
     text-decoration: none;
     transition: color 200ms ease;
   }
@@ -1217,7 +1218,10 @@ body.lightbox-open { overflow: hidden; }
       if (!isSmall) return;
       var src = document.getElementById('heroSource');
       var hero = document.getElementById('heroVideo');
+      var poster = document.getElementById('heroPoster');
       if (src) src.setAttribute('src', 'media/reel/reel-mobile.mp4');
+      if (poster) poster.setAttribute('src', 'media/reel/reel-mobile-poster.jpg');
+      if (hero) hero.setAttribute('poster', 'media/reel/reel-mobile-poster.jpg');
       if (hero) { try { hero.load(); } catch (e) {} }
     } catch (e) {}
   })();
@@ -1755,7 +1759,9 @@ body.lightbox-open { overflow: hidden; }
       var v = 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'/>")';
       return CSS.supports('mask-image', v) || CSS.supports('-webkit-mask-image', v);
     }
-    var canKnockout = !!knockout && !reduced && maskSupported();
+    // Knockout disabled: the see-through-video links were unreadable over
+    // moving footage and the masked clone caused lag. Links stay solid.
+    var canKnockout = false;
 
     var primed = false;
     function primeKnockout() {
