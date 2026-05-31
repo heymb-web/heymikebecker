@@ -910,10 +910,11 @@ body.lightbox-open { overflow: hidden; }
 .lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
 /* ===================================================================
-   MOBILE HERO — full-bleed reel. The reel fills the whole screen
-   (cropped to the portrait viewport via object-fit: cover) so the
-   homepage plays full screen, matching the reference. The earlier
-   16:9 letterbox is intentionally dropped on mobile.
+   MOBILE HERO — show the full 4:5 reel frame, uncropped. The reel and
+   its poster are 4:5 (864x1080), so a 4:5 hero box centered in the
+   viewport on black shows the whole frame with object-fit: cover and
+   nothing lost. The box is the largest 4:5 that fits the screen in
+   either orientation; the black background fills the space around it.
 =================================================================== */
 @media (max-width: 720px) {
   .hero {
@@ -921,15 +922,17 @@ body.lightbox-open { overflow: hidden; }
     height: 100dvh;
     height: 100svh;  /* fill the small viewport; survives mobile browser chrome */
     width: 100%;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #000;
   }
   .hero-media {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: auto;
+    position: relative;
+    inset: auto;
+    width: min(100vw, calc(100svh * 4 / 5));
+    height: auto;
+    aspect-ratio: 4 / 5;
     border-radius: 0;
   }
   .hero-inner { position: absolute; inset: 0; }
@@ -938,7 +941,7 @@ body.lightbox-open { overflow: hidden; }
   .hero-placeholder {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover; /* crop the 16:9 reel to fill the portrait screen */
+    object-fit: cover; /* 4:5 source in a 4:5 box: whole frame, nothing cropped */
   }
 }
 
