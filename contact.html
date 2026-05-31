@@ -320,12 +320,16 @@ body::after {
 .m-menu { display: none; }
 
 @media (max-width: 720px) {
-  .brand-name { display: none; }
+  .brand-name {
+    display: inline-block;
+    color: #fff;
+    mix-blend-mode: normal !important;
+  }
   .brand-sub { display: none; }
   .menu-flat { display: none; }
 
   .brand-mono {
-    display: inline-block;
+    display: none;
     font-family: 'Inter', sans-serif;
     font-weight: 700;
     font-size: 21px;
