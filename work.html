@@ -602,10 +602,24 @@ a { color: inherit; text-decoration: none; }
   font-family: 'Inter', sans-serif;
   font-size: clamp(11px, 0.85vw, 13px);
   font-weight: 500;
-  letter-spacing: 0.22em;
+  /* Same uppercase tracking as the work-page section labels so the credit
+     under the player reads as the same mark, scaled down. */
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.78);
   pointer-events: none;
+}
+
+/* When the lightbox is open, fully hide the fixed nav (wordmark + burger)
+   on every breakpoint so nothing shows behind the close X. The lightbox
+   already sits at z-index 600 above the nav, but this also drops the
+   nav from the tab order and keeps it from catching taps in the corner. */
+body.lightbox-open .nav,
+body.lightbox-open .m-veil,
+body.lightbox-open .m-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .lightbox-close {
@@ -704,15 +718,15 @@ a { color: inherit; text-decoration: none; }
   /* ===============================================================
      WORK-FEED MOBILE FIXES (phones, <=720px only — desktop untouched)
      1. Header legibility: a short dark->transparent scrim behind the
-        fixed header, and a solid-white (no-blend) monogram + burger.
-        The fixed header is its own stacking context, so its blend
-        never reached the tiles — it only washed the text out, so we
-        drop it on mobile and let the scrim carry legibility instead.
+        fixed header keeps the wordmark + burger readable over footage.
      2. Header collision: push the whole feed clear of the fixed header
         so nothing renders underneath it.
-     3. Section labels: the desktop floating label is now shown on mobile
-        too (see the touch block above); the static header is hidden.
-     4. Tiles: one 16:9 aspect for every tile + an even vertical gap.
+     3. Section labels: a static inline header above each group, in
+        reading flow (not sticky), so the role title never overlaps a
+        tile or the header.
+     4. Tiles: ONE column, every tile a 4:5 portrait frame so the feed
+        reads as an even immersive stack where the next tile peeks in
+        below.
      =============================================================== */
 
   /* (2) Solid white header — neutralise the layer-level blend on mobile
@@ -734,47 +748,62 @@ a { color: inherit; text-decoration: none; }
     pointer-events: none;
   }
 
-  /* (2) First tile starts at the very top, like desktop. The wordmark and
-     burger float over it; the fixed scrim above carries their legibility.
-     No padding-top so nothing is pushed down. */
+  /* (2) First tile + first section label start BELOW the fixed nav.
+     Padding equals the nav height plus the same breathing room used by
+     the scrim, so the top of the feed sits clear of the wordmark/burger. */
+  .work-main {
+    padding-top: calc(var(--nav-h) + clamp(20px, 6vw, 40px));
+  }
 
-  /* (4) Desktop-like rhythm on mobile: a 2-column grid where each section's
-     hero spans the full width (a cinematic banner) and the remaining tiles
-     sit half-width, pairing two-up in reading order — mirroring how the work
-     reads on desktop. A trailing tile with no partner (the odd one out in a
-     run) is promoted to full width by JS (.is-m-solo) so a row never shows a
-     half-width tile beside an empty gap. */
+  /* (4) Single-column feed, every tile a 4:5 portrait. Slim gap. */
   .work-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: var(--edge);
   }
-  /* Full-width lead tiles: section heroes and any promoted solo tile. */
+  /* One consistent aspect for every tile — heroes, halves, smalls,
+     promoted solos and all per-section variants collapse to the same
+     4:5 portrait on mobile. */
+  .work-grid .tile,
   .work-grid .tile.is-hero,
   .work-grid .tile.is-wide,
-  .work-grid .tile.is-m-solo {
+  .work-grid .tile.is-m-solo,
+  .work-grid .tile.is-half,
+  .work-grid .tile.is-half-narrow,
+  .work-grid .tile.is-small,
+  .work-grid .tile.is-small-wide,
+  .work-grid .tile.is-major,
+  .work-grid .tile.is-minor,
+  .work-grid .tile.is-three-quarter,
+  .work-grid .tile.is-quarter,
+  .work-grid .tile.is-wide-mate,
+  .work-grid .tile.is-square {
     grid-column: 1 / -1;
   }
-  /* Half-width companions pair two-up; one shared aspect ratio so a row's
-     two thumbnails are always the same height. Twice as tall as before
-     (was 4/5) so each thumbnail has real presence and the footage reads
-     clearly while it plays. */
-  .work-grid .tile .tile-media { aspect-ratio: 2 / 5; }
-  /* Heroes read as full-width banners — twice as tall as before (was 2/1). */
+  .work-grid .tile .tile-media,
   .work-grid .tile.is-hero .tile-media,
-  .work-grid .tile.is-wide .tile-media { aspect-ratio: 1 / 1; }
-  /* A promoted solo tile is full width — twice as tall as before (was 16/9). */
-  .work-grid .tile.is-m-solo .tile-media { aspect-ratio: 8 / 9; }
+  .work-grid .tile.is-wide .tile-media,
+  .work-grid .tile.is-m-solo .tile-media,
+  .work-grid .tile.is-half .tile-media,
+  .work-grid .tile.is-half-narrow .tile-media,
+  .work-grid .tile.is-small .tile-media,
+  .work-grid .tile.is-small-wide .tile-media,
+  .work-grid .tile.is-major .tile-media,
+  .work-grid .tile.is-minor .tile-media,
+  .work-grid .tile.is-three-quarter .tile-media,
+  .work-grid .tile.is-quarter .tile-media,
+  .work-grid .tile.is-wide-mate .tile-media,
+  .work-grid .tile.is-square .tile-media {
+    aspect-ratio: 4 / 5;
+  }
 
-  /* Inline section header (Director / Specialty / Camera) on mobile.
-     Sits in the normal scroll flow above each section's grid and sticks
-     just below the fixed header bar while you're inside that section, so
-     the role is always labelled. Replaces the floating blurred label here,
-     which was unreliable on phones. */
+  /* (3) Inline section header (Director / Specialty / Camera).
+     Sits ABOVE each section's grid in normal scroll flow — NOT sticky —
+     so it can never overlap a tile or be hidden behind the fixed
+     header. Solid white plus a soft shadow keeps it legible over the
+     dark page background and any footage that scrolls behind it. */
   .work-section-head {
     display: block;
-    position: sticky;
-    top: calc(var(--nav-h) + 8px);
-    z-index: 46;
+    position: static;
     margin: 0 0 var(--edge);
     padding: 2px var(--edge) 10px;
     font-family: 'Inter', sans-serif;
@@ -786,6 +815,11 @@ a { color: inherit; text-decoration: none; }
     color: #fff;
     text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 2px 18px rgba(0,0,0,0.5);
     pointer-events: none;
+  }
+  /* Sections after the first need extra room above their header so each
+     group reads as a separate beat in the feed. */
+  .work-section + .work-section .work-section-head {
+    margin-top: clamp(28px, 9vw, 56px);
   }
 
   .brand-mono {
@@ -1251,7 +1285,7 @@ a { color: inherit; text-decoration: none; }
         tile.innerHTML =
           '<div class="tile-media">' +
             '<img class="tile-poster" src="' + posterSrc + '" alt="' + p.title + '" loading="lazy">' +
-            '<video preload="metadata" muted loop playsinline disablepictureinpicture poster="' + posterSrc + '">' +
+            '<video preload="metadata" muted loop playsinline webkit-playsinline disablepictureinpicture poster="' + posterSrc + '">' +
               '<source src="' + fileSrc + '" type="video/mp4">' +
             '</video>' +
           '</div>' +
@@ -1360,8 +1394,16 @@ a { color: inherit; text-decoration: none; }
         if (active) {
           const v = active.querySelector('video');
           if (v) {
-            if (v.preload !== 'auto') v.preload = 'auto';
+            // Explicit iOS-safe defaults: muted + playsinline as JS
+            // properties AND attributes (some Safari builds only honor the
+            // attribute form), then load() if the source hasn't started.
             v.muted = true;
+            v.playsInline = true;
+            v.setAttribute('muted', '');
+            v.setAttribute('playsinline', '');
+            v.setAttribute('webkit-playsinline', '');
+            if (v.preload !== 'auto') v.preload = 'auto';
+            if (v.readyState === 0) { try { v.load(); } catch (e) {} }
             active.classList.add('is-playing');
             const p = v.play();
             if (p && p.catch) p.catch(() => {});
@@ -1697,10 +1739,15 @@ a { color: inherit; text-decoration: none; }
       // under the player always matches ("Camera", "Specialty", "Director").
       lightboxRole.textContent = role ? (ROLE_LABEL[role] || role) : '';
       lightbox.setAttribute('aria-hidden', 'false');
+      // Hide the fixed nav (the close X is the only top-right control while
+      // a project is playing). The CSS rule on body.lightbox-open does the
+      // hiding; we just toggle the class here.
+      document.body.classList.add('lightbox-open');
       lightboxVideo.play().catch(() => {});
     }
     function closeLightbox() {
       lightbox.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('lightbox-open');
       lightboxVideo.pause();
       lightboxVideo.src = '';
     }

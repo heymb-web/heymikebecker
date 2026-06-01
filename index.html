@@ -842,37 +842,45 @@ body.lightbox-open { overflow: hidden; }
   align-items: baseline;
   justify-content: space-between;
 }
+/* Match the work-page tile title styling exactly: weight 500, uppercase,
+   tight tracking, same size clamp — so the lightbox title reads as the
+   same mark, just lifted into the player chrome. */
 .lightbox-title {
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 24;
-  font-weight: 600;
-  font-size: clamp(18px, 1.6vw, 26px);
-  letter-spacing: 0.02em;
+  font-variation-settings: "opsz" 28;
+  font-weight: 500;
+  font-size: clamp(18px, 1.8vw, 26px);
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   color: #fff;
   margin: 0;
 }
-/* Role credit sits inside the player at the bottom right, overlaid
-   on the video itself. Small drop shadow keeps it readable against
-   any frame. Sits above the video controls' own area; the native
-   controls only render on hover/play, so the credit overlaps cleanly
-   when the controls are hidden. */
+/* Role credit (Director / Specialty / Camera) sits BELOW the player,
+   bottom-left, outside the video frame — never overlaid on the footage.
+   Same uppercase tracking as the work-page section labels so this credit
+   matches the labels in the section feed. */
 .lightbox-role {
-  position: absolute;
-  right: clamp(14px, 1.4vw, 22px);
-  bottom: clamp(12px, 1.2vw, 20px);
-  z-index: 3;
+  align-self: flex-start;
   font-family: 'Inter', sans-serif;
-  font-variation-settings: "opsz" 14;
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(11px, 0.85vw, 14px);
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.7), 0 1px 2px rgba(0, 0, 0, 0.5);
   margin: 0;
-  white-space: nowrap;
   pointer-events: none;
+}
+
+/* When the lightbox is open, fully hide the fixed nav on every
+   breakpoint so nothing shows behind the close X. The lightbox is
+   already at z-index 500 above the nav, but this also drops the
+   nav from the tab order and the corner tap area. */
+body.lightbox-open .nav,
+body.lightbox-open .m-veil,
+body.lightbox-open .m-menu {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 .lightbox-player {
@@ -918,11 +926,11 @@ body.lightbox-open { overflow: hidden; }
 .lightbox-close:hover .lightbox-close-line { background: rgba(255,255,255,0.7); }
 
 /* ===================================================================
-   MOBILE HERO — show the full 4:5 reel frame, uncropped. The reel and
-   its poster are 4:5 (864x1080), so a 4:5 hero box centered in the
-   viewport on black shows the whole frame with object-fit: cover and
-   nothing lost. The box is the largest 4:5 that fits the screen in
-   either orientation; the black background fills the space around it.
+   MOBILE HERO — full-bleed 9:16. The reel fills the whole screen,
+   width 100% and the small-viewport height (100svh, with 100dvh/100vh
+   fallbacks) so it survives the iOS browser chrome. object-fit: cover
+   crops the wider source frame to fill the portrait viewport; that
+   crop is intended.
 =================================================================== */
 @media (max-width: 720px) {
   .hero {
@@ -930,17 +938,15 @@ body.lightbox-open { overflow: hidden; }
     height: 100dvh;
     height: 100svh;  /* fill the small viewport; survives mobile browser chrome */
     width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     background: #000;
   }
   .hero-media {
-    position: relative;
-    inset: auto;
-    width: min(100vw, calc(100svh * 4 / 5));
-    height: auto;
-    aspect-ratio: 4 / 5;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
     border-radius: 0;
   }
   .hero-inner { position: absolute; inset: 0; }
@@ -949,7 +955,7 @@ body.lightbox-open { overflow: hidden; }
   .hero-placeholder {
     position: absolute; inset: 0;
     width: 100%; height: 100%;
-    object-fit: cover; /* 4:5 source in a 4:5 box: whole frame, nothing cropped */
+    object-fit: cover; /* crop the source frame to fill the portrait viewport */
   }
 }
 
@@ -1211,8 +1217,8 @@ body.lightbox-open { overflow: hidden; }
     </div>
     <div class="lightbox-player">
       <video id="lightboxVideo" controls playsinline preload="metadata"></video>
-      <span class="lightbox-role" id="lightboxRole"></span>
     </div>
+    <span class="lightbox-role" id="lightboxRole"></span>
   </div>
 </div>
 
@@ -1407,7 +1413,17 @@ body.lightbox-open { overflow: hidden; }
       if (introMark && introMark.parentNode) introMark.remove();
       if (heroPoster) heroPoster.classList.add('gone');
       await contentReady;
-      if (heroVideo) heroVideo.play().catch(() => {});
+      if (heroVideo) {
+        // Explicit iOS-safe defaults before play(): muted + playsinline as
+        // properties AND attributes (some Safari builds only honor the
+        // attribute form for autoplay).
+        heroVideo.muted = true;
+        heroVideo.playsInline = true;
+        heroVideo.setAttribute('muted', '');
+        heroVideo.setAttribute('playsinline', '');
+        heroVideo.setAttribute('webkit-playsinline', '');
+        heroVideo.play().catch(() => {});
+      }
       return;
     }
 
@@ -1487,6 +1503,14 @@ body.lightbox-open { overflow: hidden; }
     // If the reel fails to load (e.g. large file on cellular), the poster
     // stays visible as a fallback instead of leaving a blank screen.
     if (heroVideo) {
+      // Explicit iOS-safe defaults before play(): muted + playsinline as
+      // properties AND attributes (some Safari builds only honor the
+      // attribute form for autoplay).
+      heroVideo.muted = true;
+      heroVideo.playsInline = true;
+      heroVideo.setAttribute('muted', '');
+      heroVideo.setAttribute('playsinline', '');
+      heroVideo.setAttribute('webkit-playsinline', '');
       heroVideo.play().catch(function () {});
       var hidePoster = function () {
         if (heroPoster) heroPoster.classList.add('gone');
