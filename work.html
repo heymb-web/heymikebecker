@@ -539,7 +539,11 @@ a { color: inherit; text-decoration: none; }
 .lightbox {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  /* Above the nav on every breakpoint. The mobile nav sits at z-index 410
+     (so the wordmark/burger stay tappable over the menu overlay); the
+     lightbox must cover it so its own close button isn't buried under the
+     burger and the whole nav is hidden while a project plays. */
+  z-index: 600;
   background: rgba(8, 7, 6, 0.92);
   display: flex;
   align-items: center;
@@ -588,29 +592,33 @@ a { color: inherit; text-decoration: none; }
   background: #000;
   display: block;
 }
+/* Role credit (Director / Specialty / Camera) sits BELOW the player,
+   bottom-left, outside the video frame — so it never overlaps the
+   footage or the native video controls. The label text is mapped through
+   the same ROLE_LABEL table used by the section titles on the work page,
+   so it always matches what's shown there. */
 .lightbox-role {
-  position: absolute;
-  right: clamp(12px, 1.4vw, 22px);
-  bottom: clamp(12px, 1.4vw, 22px);
+  align-self: flex-start;
   font-family: 'Inter', sans-serif;
-  font-size: clamp(10px, 0.8vw, 12px);
+  font-size: clamp(11px, 0.85vw, 13px);
   font-weight: 500;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: rgba(255,255,255,0.78);
-  padding: 6px 10px;
-  background: rgba(0,0,0,0.4);
-  border-radius: 999px;
   pointer-events: none;
-  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
 }
 
 .lightbox-close {
   position: absolute;
   top: clamp(14px, 1.6vw, 22px);
   right: clamp(14px, 1.6vw, 22px);
-  width: 36px; height: 36px;
-  background: transparent;
+  width: 44px; height: 44px;
+  /* Above the player/frame and always reachable, even on mobile where the
+     nav burger would otherwise sit in the same corner (the lightbox now
+     covers the nav, so this is the only control in that corner). */
+  z-index: 10;
+  background: rgba(8, 7, 6, 0.55);
+  border-radius: 999px;
   border: 0;
   cursor: pointer;
   padding: 0;
@@ -659,14 +667,15 @@ a { color: inherit; text-decoration: none; }
   }
   .work-grid .tile.is-playing .tile-overlay { opacity: 1; }
 
-  /* Mobile uses the SAME floating blurred label system as desktop: show
-     the labels layer and hide the static inline header. The floating
-     label (positioned by wireStickyLabels, which runs on all platforms)
-     tracks each section, blends over the footage with
-     mix-blend-mode: difference, and cross-fades between roles — and is
-     clamped below the fixed mobile header by navClearance() in that JS. */
-  .work-labels-layer { display: block !important; }
-  .work-section-head { display: none !important; }
+  /* Mobile uses the simple inline per-section header (.work-section-head),
+     which scrolls in the normal document flow above each group and is
+     styled to stick just under the fixed header bar while you're in that
+     section. This is far more robust on phones than the desktop floating
+     blurred label, which relies on mix-blend-mode + per-frame fixed
+     positioning and behaved unreliably on mobile. So: show the inline head,
+     hide the floating labels layer here. */
+  .work-labels-layer { display: none !important; }
+  .work-section-head { display: block !important; }
 }
 
 /* ===================================================================
@@ -746,13 +755,38 @@ a { color: inherit; text-decoration: none; }
     grid-column: 1 / -1;
   }
   /* Half-width companions pair two-up; one shared aspect ratio so a row's
-     two thumbnails are always the same height. */
-  .work-grid .tile .tile-media { aspect-ratio: 4 / 5; }
-  /* Heroes read as wide cinematic banners across the full width. */
+     two thumbnails are always the same height. Twice as tall as before
+     (was 4/5) so each thumbnail has real presence and the footage reads
+     clearly while it plays. */
+  .work-grid .tile .tile-media { aspect-ratio: 2 / 5; }
+  /* Heroes read as full-width banners — twice as tall as before (was 2/1). */
   .work-grid .tile.is-hero .tile-media,
-  .work-grid .tile.is-wide .tile-media { aspect-ratio: 2 / 1; }
-  /* A promoted solo tile is full width, so give it a wider frame too. */
-  .work-grid .tile.is-m-solo .tile-media { aspect-ratio: 16 / 9; }
+  .work-grid .tile.is-wide .tile-media { aspect-ratio: 1 / 1; }
+  /* A promoted solo tile is full width — twice as tall as before (was 16/9). */
+  .work-grid .tile.is-m-solo .tile-media { aspect-ratio: 8 / 9; }
+
+  /* Inline section header (Director / Specialty / Camera) on mobile.
+     Sits in the normal scroll flow above each section's grid and sticks
+     just below the fixed header bar while you're inside that section, so
+     the role is always labelled. Replaces the floating blurred label here,
+     which was unreliable on phones. */
+  .work-section-head {
+    display: block;
+    position: sticky;
+    top: calc(var(--nav-h) + 8px);
+    z-index: 46;
+    margin: 0 0 var(--edge);
+    padding: 2px var(--edge) 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(20px, 6vw, 30px);
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 2px 18px rgba(0,0,0,0.5);
+    pointer-events: none;
+  }
 
   .brand-mono {
     display: none;
@@ -933,8 +967,8 @@ a { color: inherit; text-decoration: none; }
     </div>
     <div class="lightbox-player">
       <video id="lightboxVideo" controls playsinline preload="metadata"></video>
-      <span class="lightbox-role" id="lightboxRole"></span>
     </div>
+    <span class="lightbox-role" id="lightboxRole"></span>
   </div>
 </div>
 
@@ -1658,7 +1692,10 @@ a { color: inherit; text-decoration: none; }
       else lightboxVideo.removeAttribute('poster');
       lightboxVideo.src = src;
       lightboxTitle.textContent = title || '';
-      lightboxRole.textContent = role || '';
+      // Map the raw role ("Operator", "Specialty Camera") to the SAME
+      // display label shown on the work-page section titles, so the credit
+      // under the player always matches ("Camera", "Specialty", "Director").
+      lightboxRole.textContent = role ? (ROLE_LABEL[role] || role) : '';
       lightbox.setAttribute('aria-hidden', 'false');
       lightboxVideo.play().catch(() => {});
     }
