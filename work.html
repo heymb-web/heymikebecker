@@ -592,21 +592,22 @@ a { color: inherit; text-decoration: none; }
   background: #000;
   display: block;
 }
-/* Role credit (Director / Specialty / Camera) sits BELOW the player,
-   bottom-left, outside the video frame — so it never overlaps the
-   footage or the native video controls. The label text is mapped through
-   the same ROLE_LABEL table used by the section titles on the work page,
-   so it always matches what's shown there. */
+/* Role credit (Director / Specialty / Camera) sits in the LOWER-LEFT
+   of the video player, over the footage. A soft shadow keeps it legible
+   over any frame. The text is mapped through the same ROLE_LABEL table
+   used by the section titles on the work page, so it always matches. */
 .lightbox-role {
-  align-self: flex-start;
+  position: absolute;
+  left: clamp(12px, 1.4vw, 20px);
+  bottom: clamp(12px, 1.4vw, 20px);
+  z-index: 4;
   font-family: 'Inter', sans-serif;
   font-size: clamp(11px, 0.85vw, 13px);
   font-weight: 500;
-  /* Same uppercase tracking as the work-page section labels so the credit
-     under the player reads as the same mark, scaled down. */
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.78);
+  color: rgba(255,255,255,0.92);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.7), 0 2px 16px rgba(0,0,0,0.55);
   pointer-events: none;
 }
 
@@ -710,7 +711,7 @@ body.lightbox-open .m-menu {
   .brand-name {
     display: inline-block;
     color: #fff;
-    mix-blend-mode: normal !important;
+    mix-blend-mode: difference !important;
   }
   .brand-sub { display: none; }
   .menu-flat { display: none; }
@@ -729,9 +730,9 @@ body.lightbox-open .m-menu {
         below.
      =============================================================== */
 
-  /* (2) Solid white header — neutralise the layer-level blend on mobile
-     so the monogram/burger don't invert or wash against the tiles. */
-  .nav { mix-blend-mode: normal !important; }
+  /* (2) See-through header to match the homepage: the wordmark and
+     burger invert against whatever is behind them (white +
+     mix-blend-mode: difference), identical to index. */
 
   /* (1) Short scrim behind the header. Fixed at the top, above the tiles
      (z 0) and below the nav (z 50). Decorative only — never traps taps. */
@@ -804,7 +805,7 @@ body.lightbox-open .m-menu {
   .work-section-head {
     display: block;
     position: static;
-    margin: 0 0 var(--edge);
+    margin: clamp(14px, 4vw, 22px) 0 var(--edge);
     padding: 2px var(--edge) 10px;
     font-family: 'Inter', sans-serif;
     font-size: clamp(20px, 6vw, 30px);
@@ -842,8 +843,8 @@ body.lightbox-open .m-menu {
     width: 34px; height: 34px;
     padding: 0; margin: 0;
     background: none; border: 0; cursor: pointer;
-    /* Solid white over the scrim — no blend on mobile (see note above). */
-    mix-blend-mode: normal;
+    /* See-through blend to match the homepage burger. */
+    mix-blend-mode: difference;
   }
   .m-burger span {
     display: block; height: 2px; width: 28px; margin-left: auto;
@@ -1001,8 +1002,8 @@ body.lightbox-open .m-menu {
     </div>
     <div class="lightbox-player">
       <video id="lightboxVideo" controls playsinline preload="metadata"></video>
+      <span class="lightbox-role" id="lightboxRole"></span>
     </div>
-    <span class="lightbox-role" id="lightboxRole"></span>
   </div>
 </div>
 
