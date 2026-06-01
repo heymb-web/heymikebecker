@@ -20,7 +20,19 @@
     display: flex; align-items: center; justify-content: center;
     text-align: center; padding: 24px;
   }
-  .wrap { max-width: 520px; }
+  .wrap { max-width: 520px; position: relative; z-index: 1; }
+  /* Mountain line art behind the 404 — faint, the lost-in-the-mountains
+     backdrop. Off-white line on transparent, so it sits on the dark page. */
+  .peaks {
+    position: fixed;
+    left: 50%; top: 46%;
+    transform: translate(-50%, -50%);
+    width: min(88vw, 760px);
+    height: auto;
+    opacity: 0.16;
+    pointer-events: none;
+    z-index: 0;
+  }
   .code {
     font-variation-settings: "opsz" 32; font-weight: 600;
     font-size: clamp(64px, 16vw, 140px); line-height: 0.9;
@@ -46,6 +58,7 @@
 </style>
 </head>
 <body>
+  <img class="peaks" src="media/mountains-line.png" alt="" aria-hidden="true" />
   <div class="wrap">
     <h1 class="code">404</h1>
     <p>That page doesn't exist.</p>

@@ -1412,58 +1412,41 @@ body.lightbox-open .m-menu {
         }
       }
 
-      // Each tile gets an activation scroll position: the scrollY at which
-      // its centre reaches the playhead line. The RIGHT-hand tile of a 2-up
-      // row shares its partner's vertical position, so we push its
-      // activation half a tile-height further down — that is the "scroll a
-      // little further and the second one plays" beat. Activations are cached
-      // here and recomputed only on resize, so the scroll handler never
-      // touches layout.
-      let activations = []; // { tile, at } in ascending DOM/reading order
-      function measure() {
-        const vh = window.innerHeight || document.documentElement.clientHeight;
-        const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
-        const line = vh * PLAYHEAD;
-        // Column-2 tiles start roughly halfway across; full-width tiles and
-        // column-1 tiles start at the page's left gutter. 0.3 * width sits
-        // safely between the two, so only true right-column tiles get biased.
-        const rightThreshold = (window.innerWidth || 0) * 0.3;
-        activations = tiles.map(function (tile) {
-          const r = tile.getBoundingClientRect();
-          const docCentre = r.top + sy + r.height / 2;
-          const isRight = r.left > rightThreshold;
-          const bias = isRight ? r.height * 0.5 : 0;
-          return { tile: tile, at: docCentre - line + bias };
-        });
-      }
-
-      function pickSequential() {
-        const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
-        // Walk in reading order; the active tile is the furthest-progressed
-        // one whose activation point has been scrolled past. Defaults to the
-        // first tile at the very top of the page.
-        let chosen = tiles[0];
-        for (let i = 0; i < activations.length; i++) {
-          if (activations[i].at <= sy) chosen = activations[i].tile;
+      // The active tile is the one whose centre is nearest the vertical
+      // centre of the screen. As a tile scrolls up and off, the next tile's
+      // centre becomes closer and takes over while the leaving tile is still
+      // mostly in view, so the leaving tile's title never rides up to the top
+      // of the screen detached from its footage. This mirrors desktop hover:
+      // the one prominent tile in frame names itself, the rest stay silent.
+      function pickCentre() {
+        // At the very top, the first tile's centre sits above mid-screen, so
+        // nearest-centre would skip to the second tile. Force the first tile
+        // active while resting at the top so it plays and titles like the rest.
+        if ((window.pageYOffset || document.documentElement.scrollTop || 0) < 4) {
+          setActive(tiles[0]); return;
         }
-        if (chosen) setActive(chosen);
+        const mid = (window.innerHeight || document.documentElement.clientHeight) / 2;
+        let best = null, bestDist = Infinity;
+        for (let i = 0; i < tiles.length; i++) {
+          const r = tiles[i].getBoundingClientRect();
+          const dist = Math.abs(r.top + r.height / 2 - mid);
+          if (dist < bestDist) { bestDist = dist; best = tiles[i]; }
+        }
+        if (best) setActive(best);
       }
 
-      // Re-evaluate on scroll, throttled to one check per frame. Re-measure
-      // on resize (and after load/fonts) since tile geometry can shift.
+      // Re-evaluate on scroll, throttled to one check per frame.
       let ticking = false;
       function onScroll() {
         if (ticking) return;
         ticking = true;
-        requestAnimationFrame(function () { pickSequential(); ticking = false; });
+        requestAnimationFrame(function () { pickCentre(); ticking = false; });
       }
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', function () { measure(); pickSequential(); });
-      // Initial measure + pick, then once more after layout settles.
-      measure();
-      pickSequential();
-      requestAnimationFrame(function () { measure(); pickSequential(); });
-      window.addEventListener('load', function () { measure(); pickSequential(); });
+      window.addEventListener('resize', pickCentre);
+      pickCentre();
+      requestAnimationFrame(pickCentre);
+      window.addEventListener('load', pickCentre);
       return;
     }
 
