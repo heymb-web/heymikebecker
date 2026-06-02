@@ -681,7 +681,7 @@ body.lightbox-open .m-menu {
 .work-section-head { display: none; }
 
 @media (hover: none), (pointer: coarse) {
-  .work-grid { gap: var(--edge); }
+  .work-grid { gap: 4px; }
   .work-section { margin-bottom: clamp(18px, 6vw, 36px); }
 
   /* Each tile's video is hidden until it becomes the active (centred)
@@ -698,14 +698,20 @@ body.lightbox-open .m-menu {
   .work-grid .tile .tile-overlay,
   .work-grid .tile.is-playing .tile-overlay { display: none !important; }
 
-  /* Floating section label on mobile: the SAME scroll-linked fade and blur
-     handoff as desktop, driven per scroll frame by wireStickyLabels. The JS
-     pins the label at centre so it never repositions on a phone (that is
-     what swam) — only opacity and blur change, exactly like desktop. No CSS
-     transition here, so the cross-fade follows the scroll instant for
-     instant. */
+  /* Floating section label on mobile: the SAME scroll-linked travel, fade
+     and blur handoff as desktop, but the travel is applied with a GPU
+     transform (translateY) by the JS so it rides the phone's scroll
+     compositor smoothly. A transform turns off mix-blend-mode, so on mobile
+     the title uses a soft shadow for legibility instead of the blend. */
   .work-labels-layer { display: block !important; }
   .work-section-head { display: none !important; }
+  .work-section-label {
+    top: 0 !important;
+    mix-blend-mode: normal !important;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 2px 18px rgba(0,0,0,0.5);
+    will-change: transform, opacity, filter;
+  }
 }
 
 /* ===================================================================
@@ -757,10 +763,10 @@ body.lightbox-open .m-menu {
     padding-top: 0;
   }
 
-  /* (4) Single-column feed, every tile a 4:5 portrait. Slim gap. */
+  /* (4) Single-column feed, every tile a 4:5 portrait. Thin divider. */
   .work-grid {
     grid-template-columns: 1fr;
-    gap: var(--edge);
+    gap: 4px;
   }
   /* One consistent aspect for every tile — heroes, halves, smalls,
      promoted solos and all per-section variants collapse to the same
@@ -1660,26 +1666,34 @@ body.lightbox-open .m-menu {
           return;
         }
 
-        // Position. On DESKTOP the label rides its section bounds and
-        // settles at centre, travelling as you scroll. On MOBILE that
-        // per-frame repositioning of a fixed element fights the phone's
-        // scroll compositor and visibly swims, so the label is PINNED at
-        // centre — only opacity and blur change. The fade and blur handoff
-        // below are computed from scroll EXACTLY like desktop, so the
-        // title-to-title transition is identical; only the vertical drift
-        // is dropped (the drift is what swam).
+        // Position. The label rides its section bounds and settles at
+        // centre, travelling as you scroll, the SAME on desktop and mobile:
+        // it tracks the section's top as the section enters from below, sits
+        // centred while the section owns the viewport, then tracks the
+        // section's bottom as it leaves — so it stays inside its own section
+        // and never crosses the divider into the next one. On DESKTOP the
+        // travel is applied via `top`; on MOBILE via a GPU transform
+        // (translateY), which the phone composites smoothly instead of
+        // swimming the way per-frame `top` writes do.
         let labelTop;
-        if (mqMobile.matches) {
-          labelTop = Math.max(vc - halfLabel, navClearance());
-        } else if (rect.top > vc - halfLabel - PAD) {
+        if (rect.top > vc - halfLabel - PAD) {
           labelTop = rect.top + PAD;
         } else if (rect.bottom < vc + halfLabel + PAD) {
           labelTop = rect.bottom - labelH - PAD;
         } else {
           labelTop = vc - halfLabel;
         }
-        const desiredTop = Math.round(labelTop) + 'px';
-        if (label.style.top !== desiredTop) label.style.top = desiredTop;
+        const nc = navClearance();
+        if (nc) labelTop = Math.max(labelTop, nc);
+        const yPx = Math.round(labelTop);
+        if (mqMobile.matches) {
+          const tf = 'translateY(' + yPx + 'px)';
+          if (label.style.transform !== tf) label.style.transform = tf;
+        } else {
+          const desiredTop = yPx + 'px';
+          if (label.style.top !== desiredTop) label.style.top = desiredTop;
+          if (label.style.transform && label.style.transform !== 'none') label.style.transform = 'none';
+        }
 
         // Cross-fade tied to the focal weight. The label that owns the
         // viewport centre is sharp and fully opaque; the one being left
