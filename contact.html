@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#FFFFFF">
+<meta name="theme-color" content="#0C0B09">
 <title>Contact — Mike Becker</title>
 <meta name="description" content="Contact Mike Becker. Director and cinematographer based in Los Angeles." />
 <link rel="canonical" href="https://heymikebecker.com/contact.html" />
@@ -29,8 +29,8 @@
 
 <style>
 :root {
-  --bg:           #FFFFFF;
-  --bg-2:         #F2EFE9;
+  --bg:           #0C0B09;
+  --bg-2:         #161513;
   --fg:           #F4F1EB;
   --fg-dim:       #D9D5CC;
   --muted:        #8A867D;
@@ -357,9 +357,16 @@ body::before {
 .m-veil { display: none; }
 
 @media (max-width: 720px) {
-  /* Top-align so the panel always starts below the nav and never rides
-     up under the MIKE BECKER header / burger when content is tall. */
-  .contact-main { align-items: flex-start; }
+  /* Lock the page to the viewport: it cannot scroll at all, so the
+     content is pinned below the nav and no text can ever pass behind
+     the MIKE BECKER header / burger. */
+  html, body { overflow: hidden; overscroll-behavior: none; }
+  .contact-main {
+    align-items: flex-start;
+    min-height: 0;
+    height: 100vh;
+    height: 100svh;
+  }
   .brand-name {
     display: inline-block;
     color: #fff;
