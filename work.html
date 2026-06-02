@@ -1636,14 +1636,21 @@ body.lightbox-open .m-menu {
         const inViewport = rect.top < vh && rect.bottom > 0;
 
         if (!inViewport) {
-          label.style.opacity = '0';
-          label.style.filter = 'blur(8px)';
+          if (label.style.opacity !== '0') label.style.opacity = '0';
+          if (label.style.filter !== 'blur(8px)') label.style.filter = 'blur(8px)';
           return;
         }
 
-        // Position: clamp to section bounds with equal inset.
+        // Position. On DESKTOP the label rides the section bounds and
+        // settles at centre — smooth on a desktop main thread. On MOBILE
+        // that per-frame movement fights the phone's compositor-driven
+        // scroll and makes the label swim, so the label is PINNED at a
+        // fixed centred position and never moves during scroll; only its
+        // opacity and blur cross-fade. That removes the jank entirely.
         let labelTop;
-        if (rect.top > vc - halfLabel - PAD) {
+        if (mqMobile.matches) {
+          labelTop = Math.max(vc - halfLabel, navClearance());
+        } else if (rect.top > vc - halfLabel - PAD) {
           labelTop = rect.top + PAD;
         } else if (rect.bottom < vc + halfLabel + PAD) {
           labelTop = rect.bottom - labelH - PAD;
@@ -1651,10 +1658,10 @@ body.lightbox-open .m-menu {
           labelTop = vc - halfLabel;
         }
 
-        const nc = navClearance();
-        if (nc) labelTop = Math.max(labelTop, nc);
-
-        label.style.top = labelTop + 'px';
+        // Only touch the DOM when the value actually changes, so on mobile
+        // (constant top) the position is never rewritten while scrolling.
+        const desiredTop = Math.round(labelTop) + 'px';
+        if (label.style.top !== desiredTop) label.style.top = desiredTop;
 
         // Cross-fade tied to the focal weight. The label that owns the
         // viewport centre is sharp and fully opaque; the one being left
@@ -1664,11 +1671,13 @@ body.lightbox-open .m-menu {
         // between them (which read as cluttered/clunky). Both values track
         // the scroll position exactly.
         const w = weights[i];
-        label.style.opacity = w.toFixed(3);
+        const op = w.toFixed(3);
+        if (label.style.opacity !== op) label.style.opacity = op;
         const blurPx = 8 * (1 - w);
-        label.style.filter = blurPx < 0.15
+        const fil = blurPx < 0.15
           ? 'none'
           : 'blur(' + blurPx.toFixed(2) + 'px)';
+        if (label.style.filter !== fil) label.style.filter = fil;
       });
     }
 
