@@ -1704,8 +1704,8 @@ body.lightbox-open .m-menu {
       const ts = [];
       for (let i = 0; i < pairs.length - 1; i++) {
         const nextRect = pairs[i + 1].section.getBoundingClientRect();
-        const raw = (START_TOP - nextRect.top) / DENOM;
-        ts.push(Math.max(0, Math.min(1, raw)));
+        const raw = Math.max(0, Math.min(1, (START_TOP - nextRect.top) / DENOM));
+        ts.push(raw * raw * (3 - 2 * raw));   // smoothstep easing (matches mobile)
       }
 
       const weights = [];
@@ -1860,7 +1860,11 @@ body.lightbox-open .m-menu {
       const ts = [];
       for (let i = 0; i < sections.length - 1; i++) {
         const bTop = tops[i + 1] - y;          // viewport-space top, no reflow
-        ts.push(Math.max(0, Math.min(1, (vc + Z - bTop) / DENOM)));
+        const t = Math.max(0, Math.min(1, (vc + Z - bTop) / DENOM));
+        // smoothstep: ease the fade in and out (zero slope at both ends) so a
+        // title starts appearing gently instead of snapping into a linear ramp,
+        // and a change of scroll direction reverses softly rather than abruptly.
+        ts.push(t * t * (3 - 2 * t));
       }
 
       for (let i = 0; i < labels.length; i++) {
