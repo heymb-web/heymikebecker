@@ -592,22 +592,22 @@ a { color: inherit; text-decoration: none; }
   background: #000;
   display: block;
 }
-/* Role credit (Director / Specialty / Camera) sits in the LOWER-LEFT
-   of the video player, over the footage. A soft shadow keeps it legible
-   over any frame. The text is mapped through the same ROLE_LABEL table
+/* Role credit (Director / Specialty / Camera) sits OUTSIDE the video,
+   in the lower-right beneath the player — never over the footage or the
+   native controls. The text is mapped through the same ROLE_LABEL table
    used by the section titles on the work page, so it always matches. */
+.lightbox-foot {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
 .lightbox-role {
-  position: absolute;
-  left: clamp(12px, 1.4vw, 20px);
-  bottom: clamp(12px, 1.4vw, 20px);
-  z-index: 4;
   font-family: 'Inter', sans-serif;
-  font-size: clamp(11px, 0.85vw, 13px);
+  font-size: clamp(11px, 0.9vw, 13px);
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.92);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.7), 0 2px 16px rgba(0,0,0,0.55);
+  color: rgba(244,241,235,0.75);
   pointer-events: none;
 }
 
@@ -932,7 +932,7 @@ body.lightbox-open .m-menu {
 .brand, .brand-name,
 .menu-flat, .menu-flat-link, .menu-flat-link:hover, .menu-flat-link.is-current,
 .menu-flat-sep, .tile-overlay-title,
-.lightbox-meta, .lightbox-title, .lightbox-role {
+.lightbox-meta, .lightbox-title {
   color: #fff !important;
   mix-blend-mode: difference !important;
 }
@@ -1009,6 +1009,8 @@ body.lightbox-open .m-menu {
     </div>
     <div class="lightbox-player">
       <video id="lightboxVideo" controls playsinline preload="metadata"></video>
+    </div>
+    <div class="lightbox-foot">
       <span class="lightbox-role" id="lightboxRole"></span>
     </div>
   </div>

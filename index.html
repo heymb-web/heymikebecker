@@ -855,18 +855,18 @@ body.lightbox-open { overflow: hidden; }
   color: #fff;
   margin: 0;
 }
-/* Role credit (Director / Specialty / Camera) sits BELOW the player,
-   bottom-left, outside the video frame — never overlaid on the footage.
-   Same uppercase tracking as the work-page section labels so this credit
-   matches the labels in the section feed. */
+/* Role credit (Director / Specialty / Camera) sits BELOW the player, in
+   the lower-RIGHT, outside the video frame — never overlaid on the footage.
+   Same uppercase tracking as the work-page section labels and lightbox so
+   the credit is consistent across the site. */
 .lightbox-role {
-  align-self: flex-start;
+  align-self: flex-end;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
-  font-size: clamp(11px, 0.85vw, 14px);
-  letter-spacing: 0.18em;
+  font-size: clamp(11px, 0.9vw, 13px);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(244,241,235,0.75);
   margin: 0;
   pointer-events: none;
 }
@@ -1127,7 +1127,7 @@ body.lightbox-open .m-menu {
 .menu-flat-sep, .menu, .menu .sep, .menu a, .menu-label,
 .hero-caption, .hero-caption .role-primary, .hero-caption .role-sep,
 .hero-caption .role-secondary, .section-title h2,
-.tile-overlay-title, .lightbox-title, .lightbox-role {
+.tile-overlay-title, .lightbox-title {
   color: #fff !important;
   mix-blend-mode: difference !important;
 }
