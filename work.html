@@ -121,6 +121,9 @@ a { color: inherit; text-decoration: none; }
 body.wk-hold-nav .brand { transform: translateY(-46px); opacity: 0; }
 body.wk-hold-nav .m-burger { opacity: 0; }
 body.wk-hold-label .work-section-label { opacity: 0 !important; }
+/* During the intro reveal only, give the title a one-time fade-in; JS
+   removes this right after so the scroll-linked opacity stays instant. */
+body.wk-intro-fade .work-section-label { transition: opacity 620ms ease; }
 @media (prefers-reduced-motion: reduce) {
   .brand { transition: none; }
   body.wk-hold-nav .brand { transform: none; opacity: 1; }
@@ -695,18 +698,14 @@ body.lightbox-open .m-menu {
   .work-grid .tile .tile-overlay,
   .work-grid .tile.is-playing .tile-overlay { display: none !important; }
 
-  /* Floating section label on mobile. For a smooth phone scroll the label
-     does NOT move (movement swims against the compositor): JS pins all
-     three titles at the same centred spot and the active one cross-fades
-     in via this opacity transition, which the phone runs on its own
-     thread. No blur on mobile — it forces per-frame work and breaks the
-     see-through blend. */
+  /* Floating section label on mobile: the SAME scroll-linked fade and blur
+     handoff as desktop, driven per scroll frame by wireStickyLabels. The JS
+     pins the label at centre so it never repositions on a phone (that is
+     what swam) — only opacity and blur change, exactly like desktop. No CSS
+     transition here, so the cross-fade follows the scroll instant for
+     instant. */
   .work-labels-layer { display: block !important; }
   .work-section-head { display: none !important; }
-  .work-section-label {
-    filter: none !important;
-    transition: opacity 480ms cubic-bezier(.22,.61,.36,1) !important;
-  }
 }
 
 /* ===================================================================
@@ -1580,43 +1579,12 @@ body.lightbox-open .m-menu {
     // as the next section's label has below it.
     let labelH = 24;
     let labelPad = 16;
-    let lastActive = -1;
     function measureLayout() {
       labelH = pairs[0].label.offsetHeight || 24;
       labelPad = Math.max(14, Math.min(22, Math.round(window.innerWidth * 0.013)));
     }
 
     function update() {
-      // MOBILE: pinned titles with a CSS-driven opacity cross-fade. The
-      // label never moves during scroll (movement swims against the phone's
-      // compositor); only the active title fades in. Per-frame cost is just
-      // reading section tops and toggling opacity when the active section
-      // changes — the dissolve itself is the CSS transition, run by the
-      // phone on its own thread, so it stays smooth at any scroll speed.
-      if (mqMobile.matches) {
-        const vhm = window.innerHeight;
-        const labelHm = pairs[0].label.offsetHeight || labelH || 24;
-        const topPx = Math.round(Math.max((vhm - labelHm) / 2, navClearance())) + 'px';
-        const line = vhm * 0.45;
-        let active = 0;
-        for (let i = 0; i < pairs.length; i++) {
-          if (pairs[i].section.getBoundingClientRect().top <= line) active = i;
-        }
-        for (let i = 0; i < pairs.length; i++) {
-          const lab = pairs[i].label;
-          if (lab.style.top !== topPx) lab.style.top = topPx;
-          if (lab.style.filter !== 'none') lab.style.filter = 'none';
-        }
-        if (active !== lastActive) {
-          lastActive = active;
-          for (let i = 0; i < pairs.length; i++) {
-            const op = (i === active) ? '1' : '0';
-            if (pairs[i].label.style.opacity !== op) pairs[i].label.style.opacity = op;
-          }
-        }
-        return;
-      }
-
       const vh = window.innerHeight;
       const vc = vh / 2;
       const halfLabel = labelH / 2;
@@ -1692,22 +1660,24 @@ body.lightbox-open .m-menu {
           return;
         }
 
-        // Position. The label rides the section bounds and settles at
-        // centre, IDENTICAL to desktop on every screen size: the role
-        // title tracks its section as it scrolls and cross-fades into the
-        // next. The nav-clearance floor only keeps it from sliding under
-        // the fixed mobile header at the very top of a section.
+        // Position. On DESKTOP the label rides its section bounds and
+        // settles at centre, travelling as you scroll. On MOBILE that
+        // per-frame repositioning of a fixed element fights the phone's
+        // scroll compositor and visibly swims, so the label is PINNED at
+        // centre — only opacity and blur change. The fade and blur handoff
+        // below are computed from scroll EXACTLY like desktop, so the
+        // title-to-title transition is identical; only the vertical drift
+        // is dropped (the drift is what swam).
         let labelTop;
-        if (rect.top > vc - halfLabel - PAD) {
+        if (mqMobile.matches) {
+          labelTop = Math.max(vc - halfLabel, navClearance());
+        } else if (rect.top > vc - halfLabel - PAD) {
           labelTop = rect.top + PAD;
         } else if (rect.bottom < vc + halfLabel + PAD) {
           labelTop = rect.bottom - labelH - PAD;
         } else {
           labelTop = vc - halfLabel;
         }
-        const nc = navClearance();
-        if (nc) labelTop = Math.max(labelTop, nc);
-
         const desiredTop = Math.round(labelTop) + 'px';
         if (label.style.top !== desiredTop) label.style.top = desiredTop;
 
@@ -1829,7 +1799,13 @@ body.lightbox-open .m-menu {
     }
     // 1) wordmark descends from the top, then 2) the active title fades in.
     setTimeout(function () { b.classList.remove('wk-hold-nav'); }, 360);
-    setTimeout(function () { b.classList.remove('wk-hold-label'); }, 1240);
+    setTimeout(function () {
+      // enable a one-time fade, reveal the title, then remove the
+      // transition so the scroll-linked cross-fade stays instant.
+      b.classList.add('wk-intro-fade');
+      requestAnimationFrame(function () { b.classList.remove('wk-hold-label'); });
+      setTimeout(function () { b.classList.remove('wk-intro-fade'); }, 760);
+    }, 1240);
   }
 
   function revealPage() {
