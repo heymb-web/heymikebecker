@@ -674,13 +674,9 @@ body.lightbox-open .m-menu {
   }
   .work-grid .tile.is-playing .tile-media video { opacity: 1; }
 
-  /* Only the active piece names itself, so the eye always has one
-     clear subject with its title. */
-  .work-grid .tile .tile-overlay {
-    opacity: 0;
-    transition: opacity 360ms cubic-bezier(.22,.61,.36,1);
-  }
-  .work-grid .tile.is-playing .tile-overlay { opacity: 1; }
+  /* No tile titles on mobile — remove every project-name overlay. */
+  .work-grid .tile .tile-overlay,
+  .work-grid .tile.is-playing .tile-overlay { display: none !important; }
 
   /* Match desktop exactly: show the floating, centered, blur-cross-fading
      label that tracks each section, and hide the static inline head. The
@@ -745,11 +741,11 @@ body.lightbox-open .m-menu {
     pointer-events: none;
   }
 
-  /* (2) First tile starts just below the fixed header — no dead gap.
-     Padding equals the nav height plus a small breath, so the top tile
-     sits right under the wordmark/burger instead of behind a black bar. */
+  /* First tile bleeds to the very top of the screen (full-bleed hero),
+     so the feed starts at the viewport top and the header floats over it,
+     exactly like the homepage hero. */
   .work-main {
-    padding-top: calc(var(--nav-h) + clamp(6px, 2vw, 12px));
+    padding-top: 0;
   }
 
   /* (4) Single-column feed, every tile a 4:5 portrait. Slim gap. */
@@ -791,6 +787,21 @@ body.lightbox-open .m-menu {
   .work-grid .tile.is-wide-mate .tile-media,
   .work-grid .tile.is-square .tile-media {
     aspect-ratio: 4 / 5;
+  }
+
+  /* The very first tile (first section's hero) is a full-bleed, full-screen
+     opener: edge to edge and the full viewport height. Everything after it
+     stays 4:5 and is revealed as you scroll. */
+  .work-section:first-child .work-grid .tile:first-child {
+    width: 100vw;
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+  .work-section:first-child .work-grid .tile:first-child .tile-media {
+    aspect-ratio: auto;
+    height: 100vh;
+    height: 100svh;
+    border-radius: 0;
   }
 
   /* (3) Inline section header (Director / Specialty / Camera).
@@ -1641,25 +1652,22 @@ body.lightbox-open .m-menu {
           return;
         }
 
-        // Position. On DESKTOP the label rides the section bounds and
-        // settles at centre — smooth on a desktop main thread. On MOBILE
-        // that per-frame movement fights the phone's compositor-driven
-        // scroll and makes the label swim, so the label is PINNED at a
-        // fixed centred position and never moves during scroll; only its
-        // opacity and blur cross-fade. That removes the jank entirely.
+        // Position. The label rides the section bounds and settles at
+        // centre, IDENTICAL to desktop on every screen size: the role
+        // title tracks its section as it scrolls and cross-fades into the
+        // next. The nav-clearance floor only keeps it from sliding under
+        // the fixed mobile header at the very top of a section.
         let labelTop;
-        if (mqMobile.matches) {
-          labelTop = Math.max(vc - halfLabel, navClearance());
-        } else if (rect.top > vc - halfLabel - PAD) {
+        if (rect.top > vc - halfLabel - PAD) {
           labelTop = rect.top + PAD;
         } else if (rect.bottom < vc + halfLabel + PAD) {
           labelTop = rect.bottom - labelH - PAD;
         } else {
           labelTop = vc - halfLabel;
         }
+        const nc = navClearance();
+        if (nc) labelTop = Math.max(labelTop, nc);
 
-        // Only touch the DOM when the value actually changes, so on mobile
-        // (constant top) the position is never rewritten while scrolling.
         const desiredTop = Math.round(labelTop) + 'px';
         if (label.style.top !== desiredTop) label.style.top = desiredTop;
 
