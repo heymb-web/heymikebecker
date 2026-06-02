@@ -120,10 +120,12 @@ a { color: inherit; text-decoration: none; }
 }
 body.wk-hold-nav .brand { transform: translateY(-46px); opacity: 0; }
 body.wk-hold-nav .m-burger { opacity: 0; }
-body.wk-hold-label .work-section-label { opacity: 0 !important; }
+body.wk-hold-label .work-section-label,
+body.wk-hold-label .work-label-sticky { opacity: 0 !important; }
 /* During the intro reveal only, give the title a one-time fade-in; JS
    removes this right after so the scroll-linked opacity stays instant. */
-body.wk-intro-fade .work-section-label { transition: opacity 620ms ease; }
+body.wk-intro-fade .work-section-label,
+body.wk-intro-fade .work-label-sticky { transition: opacity 620ms ease; }
 @media (prefers-reduced-motion: reduce) {
   .brand { transition: none; }
   body.wk-hold-nav .brand { transform: none; opacity: 1; }
@@ -304,6 +306,10 @@ body.wk-intro-fade .work-section-label { transition: opacity 620ms ease; }
   transition: top 0s;
   will-change: opacity, filter, top;
 }
+
+/* Mobile-only sticky section title. Hidden by default (desktop uses the
+   floating fixed-layer title above). */
+.work-label-sticky { display: none; }
 
 /* The grid within a section. On desktop we use a 12-column grid
    so each section can compose its own rhythm. Every row is always
@@ -698,19 +704,33 @@ body.lightbox-open .m-menu {
   .work-grid .tile .tile-overlay,
   .work-grid .tile.is-playing .tile-overlay { display: none !important; }
 
-  /* Floating section label on mobile: the SAME scroll-linked travel, fade
-     and blur handoff as desktop, but the travel is applied with a GPU
-     transform (translateY) by the JS so it rides the phone's scroll
-     compositor smoothly. A transform turns off mix-blend-mode, so on mobile
-     the title uses a soft shadow for legibility instead of the blend. */
-  .work-labels-layer { display: block !important; }
+  /* Mobile titles ride natively via position: sticky inside each section,
+     so motion is perfectly in sync with scroll (no swim, no jump). JS only
+     fades them. The see-through blend is kept (no transform, which would
+     have killed it). Hide the desktop floating title and the inline head. */
+  .work-labels-layer { display: none !important; }
   .work-section-head { display: none !important; }
-  .work-section-label {
-    top: 0 !important;
-    mix-blend-mode: normal !important;
-    color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.6), 0 2px 18px rgba(0,0,0,0.5);
-    will-change: transform, opacity, filter;
+  .work-label-sticky {
+    display: block;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 46vh;
+    height: 0;                 /* takes no layout space; text overflows */
+    z-index: 40;
+    margin-left: clamp(22px, 5.6vw, 34px);
+    font-family: 'Inter', sans-serif;
+    font-size: clamp(22px, 5.8vw, 28px);
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    line-height: 1;
+    white-space: nowrap;
+    color: #fff;               /* same see-through treatment as the rest */
+    mix-blend-mode: difference;
+    opacity: 0;
+    filter: blur(8px);
+    pointer-events: none;
+    will-change: opacity, filter;
   }
 }
 
@@ -1185,6 +1205,18 @@ body.lightbox-open .m-menu {
       section.className = 'work-section';
       section.setAttribute('data-role', group.role);
 
+      // Mobile sticky title: lives inside the section so the browser moves
+      // it with the content natively (position: sticky), perfectly in sync
+      // with scroll and with no swim. JS only animates its opacity/blur.
+      // First child + z-index so it paints on top of the tiles and the
+      // see-through blend still inverts against them. Hidden on desktop,
+      // where the floating fixed-layer title is used instead.
+      const mLabel = document.createElement('span');
+      mLabel.className = 'work-label-sticky';
+      mLabel.setAttribute('data-role', group.role);
+      mLabel.textContent = ROLE_LABEL[group.role] || group.role;
+      section.appendChild(mLabel);
+
       // Inline section header — shown on mobile (the floating blurred
       // label is hidden there). Scrolls naturally above each group.
       const head = document.createElement('div');
@@ -1591,6 +1623,7 @@ body.lightbox-open .m-menu {
     }
 
     function update() {
+      if (mqMobile.matches) return;   // mobile uses sticky titles (wireMobileLabels)
       const vh = window.innerHeight;
       const vc = vh / 2;
       const halfLabel = labelH / 2;
@@ -1740,6 +1773,75 @@ body.lightbox-open .m-menu {
     }
   }
 
+  // Mobile section titles. They are position:sticky inside each section, so
+  // the BROWSER moves them with the content natively — perfectly in sync
+  // with the finger, no swim, no jump, and the see-through blend survives
+  // (no transform). This routine ONLY sets opacity + blur, never position.
+  //
+  // The cross-fade is centred on the black divider between two sections
+  // passing the middle of the screen, with a generous lead-up zone, so the
+  // outgoing title fades out as its tile nears the divider while the next
+  // fades in low in the next tile. Sticky keeps each title inside its own
+  // tile (the outgoing one can't pass its section's bottom, the incoming one
+  // can't rise above its section's top), so neither ever sits on the divider.
+  // Reverses naturally on scroll up because it's purely scroll-position based.
+  function wireMobileLabels() {
+    const mq = window.matchMedia('(max-width: 720px)');
+    const sections = Array.prototype.slice.call(
+      document.querySelectorAll('.work-section')
+    );
+    if (!sections.length) return;
+    const labels = sections.map(function (s) {
+      return s.querySelector('.work-label-sticky');
+    });
+    if (!labels.some(Boolean)) return;
+
+    function update() {
+      if (!mq.matches) return;
+      const vh = window.innerHeight;
+      const vc = vh / 2;
+      const Z = vh * 0.30;          // lead-up zone: cross-fade spans ~0.6vh of scroll
+      const DENOM = 2 * Z;
+
+      // Handoff parameter per boundary: 0 when the next section's top edge
+      // (the divider) is Z below centre, 0.5 at centre, 1 when it is Z above.
+      const ts = [];
+      for (let i = 0; i < sections.length - 1; i++) {
+        const bTop = sections[i + 1].getBoundingClientRect().top;
+        ts.push(Math.max(0, Math.min(1, (vc + Z - bTop) / DENOM)));
+      }
+
+      for (let i = 0; i < labels.length; i++) {
+        const lab = labels[i];
+        if (!lab) continue;
+        let w;
+        if (labels.length === 1) w = 1;
+        else if (i === 0) w = 1 - ts[0];
+        else if (i === labels.length - 1) w = ts[i - 1];
+        else w = ts[i - 1] - ts[i];
+        w = Math.max(0, Math.min(1, w));
+
+        const op = w.toFixed(3);
+        if (lab.style.opacity !== op) lab.style.opacity = op;
+        const blurPx = 8 * (1 - w);
+        const fil = blurPx < 0.15 ? 'none' : 'blur(' + blurPx.toFixed(2) + 'px)';
+        if (lab.style.filter !== fil) lab.style.filter = fil;
+      }
+    }
+
+    let ticking = false;
+    function schedule() {
+      if (!ticking) {
+        requestAnimationFrame(function () { update(); ticking = false; });
+        ticking = true;
+      }
+    }
+    update();
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    window.addEventListener('load', update);
+  }
+
   // Lightbox open/close and content swap.
   function wireLightbox() {
     const lightbox      = document.getElementById('lightbox');
@@ -1846,6 +1948,7 @@ body.lightbox-open .m-menu {
       safe('promoteMobileSolos', function () { promoteMobileSolos(); });
       safe('wireTileHover', function () { wireTileHover(); });
       safe('wireStickyLabels', function () { wireStickyLabels(); });
+      safe('wireMobileLabels', function () { wireMobileLabels(); });
       safe('wireLightbox', function () { wireLightbox(); });
       safe('wireContact', function () { wireContact(cfg); });
     } catch (e) {
