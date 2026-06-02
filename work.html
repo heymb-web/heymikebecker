@@ -47,6 +47,12 @@
      rest of the site. */
   --edge:        clamp(8px, 1vw, 14px);
 
+  /* Mobile sticky section-title line height. The title box is exactly this
+     tall and the grid below is pulled up by the same amount, so the title
+     occupies no layout space yet its top and bottom stay clamped inside the
+     section's own thumbnails and never dip into a divider. */
+  --wls-fs:      clamp(22px, 5.8vw, 28px);
+
   /* Nav gutter — wider than --edge so the nav contents sit comfortably
      in from the page edges. */
   --nav-edge:    clamp(16px, 1.8vw, 28px);
@@ -688,7 +694,10 @@ body.lightbox-open .m-menu {
 
 @media (hover: none), (pointer: coarse) {
   .work-grid { gap: 8px; }
-  .work-section { margin-bottom: clamp(18px, 6vw, 36px); }
+  /* Section-to-section divider = the SAME 8px as the gaps between thumbnails
+     within a section, so every divider in the feed reads identically. */
+  .work-section { margin-top: 0; margin-bottom: 0; }
+  .work-section + .work-section { margin-top: 8px; }
 
   /* Each tile's video is hidden until it becomes the active (centred)
      tile, then crossfades up from the poster beneath it. Paused tiles
@@ -715,15 +724,17 @@ body.lightbox-open .m-menu {
     position: -webkit-sticky;
     position: sticky;
     top: 46vh;
-    height: 0;                 /* takes no layout space; text overflows */
+    height: var(--wls-fs);     /* one text line; box bottom clamps at the
+                                  section's last thumbnail, so the title can
+                                  never spill into the divider below it */
     z-index: 40;
     margin-left: clamp(22px, 5.6vw, 34px);
     font-family: 'Inter', sans-serif;
-    font-size: clamp(22px, 5.8vw, 28px);
+    font-size: var(--wls-fs);
     font-weight: 500;
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    line-height: 1;
+    line-height: var(--wls-fs);
     white-space: nowrap;
     color: #fff;               /* same see-through treatment as the rest */
     mix-blend-mode: difference;
@@ -787,6 +798,10 @@ body.lightbox-open .m-menu {
   .work-grid {
     grid-template-columns: 1fr;
     gap: 8px;
+    /* The sticky title is the section's first child and is one line tall;
+       pull the grid up by that line so the title overlays the thumbnails and
+       adds no layout space (the full-bleed hero stays flush to the top). */
+    margin-top: calc(-1 * var(--wls-fs));
   }
   /* One consistent aspect for every tile — heroes, halves, smalls,
      promoted solos and all per-section variants collapse to the same
