@@ -678,11 +678,18 @@ body.lightbox-open .m-menu {
   .work-grid .tile .tile-overlay,
   .work-grid .tile.is-playing .tile-overlay { display: none !important; }
 
-  /* Match desktop exactly: show the floating, centered, blur-cross-fading
-     label that tracks each section, and hide the static inline head. The
-     label JS clamps it clear of the fixed top header on mobile. */
+  /* Floating section label on mobile. For a smooth phone scroll the label
+     does NOT move (movement swims against the compositor): JS pins all
+     three titles at the same centred spot and the active one cross-fades
+     in via this opacity transition, which the phone runs on its own
+     thread. No blur on mobile — it forces per-frame work and breaks the
+     see-through blend. */
   .work-labels-layer { display: block !important; }
   .work-section-head { display: none !important; }
+  .work-section-label {
+    filter: none !important;
+    transition: opacity 480ms cubic-bezier(.22,.61,.36,1) !important;
+  }
 }
 
 /* ===================================================================
@@ -1573,12 +1580,43 @@ body.lightbox-open .m-menu {
     // as the next section's label has below it.
     let labelH = 24;
     let labelPad = 16;
+    let lastActive = -1;
     function measureLayout() {
       labelH = pairs[0].label.offsetHeight || 24;
       labelPad = Math.max(14, Math.min(22, Math.round(window.innerWidth * 0.013)));
     }
 
     function update() {
+      // MOBILE: pinned titles with a CSS-driven opacity cross-fade. The
+      // label never moves during scroll (movement swims against the phone's
+      // compositor); only the active title fades in. Per-frame cost is just
+      // reading section tops and toggling opacity when the active section
+      // changes — the dissolve itself is the CSS transition, run by the
+      // phone on its own thread, so it stays smooth at any scroll speed.
+      if (mqMobile.matches) {
+        const vhm = window.innerHeight;
+        const labelHm = pairs[0].label.offsetHeight || labelH || 24;
+        const topPx = Math.round(Math.max((vhm - labelHm) / 2, navClearance())) + 'px';
+        const line = vhm * 0.45;
+        let active = 0;
+        for (let i = 0; i < pairs.length; i++) {
+          if (pairs[i].section.getBoundingClientRect().top <= line) active = i;
+        }
+        for (let i = 0; i < pairs.length; i++) {
+          const lab = pairs[i].label;
+          if (lab.style.top !== topPx) lab.style.top = topPx;
+          if (lab.style.filter !== 'none') lab.style.filter = 'none';
+        }
+        if (active !== lastActive) {
+          lastActive = active;
+          for (let i = 0; i < pairs.length; i++) {
+            const op = (i === active) ? '1' : '0';
+            if (pairs[i].label.style.opacity !== op) pairs[i].label.style.opacity = op;
+          }
+        }
+        return;
+      }
+
       const vh = window.innerHeight;
       const vc = vh / 2;
       const halfLabel = labelH / 2;
