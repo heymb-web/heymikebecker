@@ -682,15 +682,11 @@ body.lightbox-open .m-menu {
   }
   .work-grid .tile.is-playing .tile-overlay { opacity: 1; }
 
-  /* Mobile uses the simple inline per-section header (.work-section-head),
-     which scrolls in the normal document flow above each group and is
-     styled to stick just under the fixed header bar while you're in that
-     section. This is far more robust on phones than the desktop floating
-     blurred label, which relies on mix-blend-mode + per-frame fixed
-     positioning and behaved unreliably on mobile. So: show the inline head,
-     hide the floating labels layer here. */
-  .work-labels-layer { display: none !important; }
-  .work-section-head { display: block !important; }
+  /* Match desktop exactly: show the floating, centered, blur-cross-fading
+     label that tracks each section, and hide the static inline head. The
+     label JS clamps it clear of the fixed top header on mobile. */
+  .work-labels-layer { display: block !important; }
+  .work-section-head { display: none !important; }
 }
 
 /* ===================================================================
@@ -740,7 +736,7 @@ body.lightbox-open .m-menu {
     content: "";
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: calc(var(--nav-h) + clamp(20px, 6vw, 40px));
+    height: calc(var(--nav-h) + clamp(8px, 3vw, 18px));
     background: linear-gradient(to bottom,
                   rgba(8, 7, 6, 0.72) 0%,
                   rgba(8, 7, 6, 0.42) 48%,
@@ -749,11 +745,11 @@ body.lightbox-open .m-menu {
     pointer-events: none;
   }
 
-  /* (2) First tile + first section label start BELOW the fixed nav.
-     Padding equals the nav height plus the same breathing room used by
-     the scrim, so the top of the feed sits clear of the wordmark/burger. */
+  /* (2) First tile starts just below the fixed header — no dead gap.
+     Padding equals the nav height plus a small breath, so the top tile
+     sits right under the wordmark/burger instead of behind a black bar. */
   .work-main {
-    padding-top: calc(var(--nav-h) + clamp(20px, 6vw, 40px));
+    padding-top: calc(var(--nav-h) + clamp(6px, 2vw, 12px));
   }
 
   /* (4) Single-column feed, every tile a 4:5 portrait. Slim gap. */
