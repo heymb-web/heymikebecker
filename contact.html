@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0C0B09">
+<meta name="theme-color" content="#FFFFFF">
 <title>Contact — Mike Becker</title>
 <meta name="description" content="Contact Mike Becker. Director and cinematographer based in Los Angeles." />
 <link rel="canonical" href="https://heymikebecker.com/contact.html" />
@@ -29,8 +29,8 @@
 
 <style>
 :root {
-  --bg:           #0C0B09;
-  --bg-2:         #161513;
+  --bg:           #FFFFFF;
+  --bg-2:         #F2EFE9;
   --fg:           #F4F1EB;
   --fg-dim:       #D9D5CC;
   --muted:        #8A867D;
@@ -154,20 +154,36 @@ body::before {
   color: var(--fg);
   margin: 0 0 1.6em;
 }
+/* Letterhead block, above the form. Three deliberate weights/sizes:
+   a quiet locator eyebrow, the email as the prominent anchor, the
+   phone as a soft footnote. Quietness is opacity, not colour, so the
+   see-through blend stays intact. */
 .details {
-  display: flex; flex-direction: column; gap: 0.55em;
-  margin: 3em 0 0;
+  display: flex; flex-direction: column;
+  margin: 0 0 2.6em;
 }
-.details a, .details span {
+.details .loc {
+  font-family: var(--mono);
+  font-size: clamp(11px, 0.95vw, 13px);
+  font-weight: 500; letter-spacing: 0.26em; text-transform: uppercase;
+  opacity: 0.55; margin: 0 0 1em; width: fit-content;
+}
+.details .email {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(19px, 2.1vw, 27px);
+  font-weight: 400; letter-spacing: -0.012em; line-height: 1.1;
+  width: fit-content;
+}
+.details .tel {
   font-family: var(--mono);
   font-size: clamp(13px, 1vw, 15px);
-  font-weight: 400; letter-spacing: 0.02em;
-  color: var(--muted); width: fit-content;
+  font-weight: 400; letter-spacing: 0.05em;
+  opacity: 0.6; margin: 0.7em 0 0; width: fit-content;
 }
 .details a { position: relative; }
 .details a::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -2px;
-  height: 1px; background: var(--fg);
+  height: 1px; background: #fff;
   transform: scaleX(0); transform-origin: left;
   transition: transform 320ms cubic-bezier(.22,.61,.36,1);
 }
@@ -341,6 +357,9 @@ body::before {
 .m-veil { display: none; }
 
 @media (max-width: 720px) {
+  /* Top-align so the panel always starts below the nav and never rides
+     up under the MIKE BECKER header / burger when content is tall. */
+  .contact-main { align-items: flex-start; }
   .brand-name {
     display: inline-block;
     color: #fff;
@@ -492,6 +511,22 @@ body::before {
   mix-blend-mode: normal !important;
 }
 
+/* Same architecture for the page content: .contact-main composites as
+   one group against the page, so its white text inverts to dark on the
+   white background (and stays light over any darker media). Children
+   paint normally so they don't double-blend within the group. */
+.contact-main { mix-blend-mode: difference; }
+.contact-main .panel-role,
+.contact-main .details .loc,
+.contact-main .details a,
+.contact-main .reach-label,
+.contact-main .reach-field input,
+.contact-main .reach-field textarea,
+.contact-main .reach-send,
+.contact-main .reach-status {
+  mix-blend-mode: normal !important;
+}
+
 </style>
 
 </head>
@@ -504,6 +539,11 @@ body::before {
 
     <div class="panel">
       <h1 class="panel-role">Hey Mike,</h1>
+      <div class="details">
+        <span class="loc">Los Angeles, California</span>
+        <a class="email" href="mailto:heymikebecker@gmail.com">heymikebecker@gmail.com</a>
+        <a class="tel" href="tel:+14107071596">410.707.1596</a>
+      </div>
       <div class="reach">
         <form id="reachForm">
           <input type="hidden" name="access_key" value="5cbb2f65-1dbf-47d7-88ed-4a7197711492">
@@ -525,11 +565,6 @@ body::before {
           </button>
           <p class="reach-status" id="reachStatus" role="status" aria-live="polite"></p>
         </form>
-      </div>
-      <div class="details">
-        <span>Los Angeles, California</span>
-        <a href="mailto:heymikebecker@gmail.com">heymikebecker@gmail.com</a>
-        <a href="tel:+14107071596">410.707.1596</a>
       </div>
     </div>
 
