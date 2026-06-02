@@ -109,6 +109,23 @@ a { color: inherit; text-decoration: none; }
   color: #fff;
   text-shadow: 0 1px 14px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.35);
 }
+
+/* ===== WORK PAGE INTRO =====
+   On load the full-bleed first tile shows first; then the MIKE BECKER
+   wordmark descends from the top; then the active section title (Director)
+   fades in. Two body classes hold each piece until JS lifts them on a
+   timer after the page cover drops. */
+.brand {
+  transition: transform 860ms cubic-bezier(.22,.61,.36,1), opacity 720ms ease;
+}
+body.wk-hold-nav .brand { transform: translateY(-46px); opacity: 0; }
+body.wk-hold-nav .m-burger { opacity: 0; }
+body.wk-hold-label .work-section-label { opacity: 0 !important; }
+@media (prefers-reduced-motion: reduce) {
+  .brand { transition: none; }
+  body.wk-hold-nav .brand { transform: none; opacity: 1; }
+  body.wk-hold-nav .m-burger { opacity: 1; }
+}
 .brand-name {
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 32;
@@ -731,22 +748,8 @@ body.lightbox-open .m-menu {
 
   /* (2) See-through header to match the homepage: the wordmark and
      burger invert against whatever is behind them (white +
-     mix-blend-mode: difference), identical to index. */
-
-  /* (1) Short scrim behind the header. Fixed at the top, above the tiles
-     (z 0) and below the nav (z 50). Decorative only — never traps taps. */
-  .work-main::before {
-    content: "";
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: calc(var(--nav-h) + clamp(8px, 3vw, 18px));
-    background: linear-gradient(to bottom,
-                  rgba(8, 7, 6, 0.72) 0%,
-                  rgba(8, 7, 6, 0.42) 48%,
-                  rgba(8, 7, 6, 0) 100%);
-    z-index: 45;
-    pointer-events: none;
-  }
+     mix-blend-mode: difference), identical to index. No dark scrim —
+     the blend keeps them legible over any footage on its own. */
 
   /* First tile bleeds to the very top of the screen (full-bleed hero),
      so the feed starts at the viewport top and the header floats over it,
@@ -797,13 +800,10 @@ body.lightbox-open .m-menu {
   }
 
   /* The very first tile (first section's hero) is a full-bleed, full-screen
-     opener: edge to edge and the full viewport height. Everything after it
-     stays 4:5 and is revealed as you scroll. */
-  .work-section:first-child .work-grid .tile:first-child {
-    width: 100vw;
-    margin-left: 50%;
-    transform: translateX(-50%);
-  }
+     opener: the full viewport height. It is already full width because the
+     feed has no side padding, so NO 100vw/transform breakout is used — that
+     overflows the viewport on iOS and lets the page slide left/right.
+     Everything after it stays 4:5 and is revealed as you scroll. */
   .work-section:first-child .work-grid .tile:first-child .tile-media {
     aspect-ratio: auto;
     height: 100vh;
@@ -990,7 +990,7 @@ body.lightbox-open .m-menu {
 </style>
 
 </head>
-<body>
+<body class="wk-hold-nav wk-hold-label">
 
 <div class="page-cover" id="pageCover" aria-hidden="true"></div>
 
@@ -1819,10 +1819,24 @@ body.lightbox-open .m-menu {
   }
 
   // Fade out the page cover after content is built.
+  function startWorkIntro() {
+    const b = document.body;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) {
+      b.classList.remove('wk-hold-nav');
+      b.classList.remove('wk-hold-label');
+      return;
+    }
+    // 1) wordmark descends from the top, then 2) the active title fades in.
+    setTimeout(function () { b.classList.remove('wk-hold-nav'); }, 360);
+    setTimeout(function () { b.classList.remove('wk-hold-label'); }, 1240);
+  }
+
   function revealPage() {
     requestAnimationFrame(() => {
       const cover = document.getElementById('pageCover');
       if (cover) cover.classList.add('gone');
+      startWorkIntro();
     });
   }
 
