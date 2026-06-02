@@ -687,7 +687,7 @@ body.lightbox-open .m-menu {
 .work-section-head { display: none; }
 
 @media (hover: none), (pointer: coarse) {
-  .work-grid { gap: 4px; }
+  .work-grid { gap: 8px; }
   .work-section { margin-bottom: clamp(18px, 6vw, 36px); }
 
   /* Each tile's video is hidden until it becomes the active (centred)
@@ -786,7 +786,7 @@ body.lightbox-open .m-menu {
   /* (4) Single-column feed, every tile a 4:5 portrait. Thin divider. */
   .work-grid {
     grid-template-columns: 1fr;
-    gap: 4px;
+    gap: 8px;
   }
   /* One consistent aspect for every tile — heroes, halves, smalls,
      promoted solos and all per-section variants collapse to the same
@@ -1436,6 +1436,22 @@ body.lightbox-open .m-menu {
 
       let active = null;
 
+      // Cache each tile's centre in DOCUMENT coordinates so the scroll
+      // handler never calls getBoundingClientRect per frame. Measuring all
+      // tiles every frame forced a synchronous layout, which is what made the
+      // first scroll on this page hitch. Tile heights are fixed aspect-ratios,
+      // so these positions are stable while scrolling; they are recomputed on
+      // resize, orientation change, load and font-ready. Per frame we now only
+      // read window.scrollY.
+      let centres = [];
+      function measureCentres() {
+        const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        centres = tiles.map(function (t) {
+          const r = t.getBoundingClientRect();
+          return r.top + y + r.height / 2;
+        });
+      }
+
       function setActive(tile) {
         if (tile === active) return;
         // Stand down the previous one.
@@ -1478,11 +1494,12 @@ body.lightbox-open .m-menu {
         if ((window.pageYOffset || document.documentElement.scrollTop || 0) < 4) {
           setActive(tiles[0]); return;
         }
+        const y = window.pageYOffset || document.documentElement.scrollTop || 0;
         const mid = (window.innerHeight || document.documentElement.clientHeight) / 2;
+        if (centres.length !== tiles.length) measureCentres();
         let best = null, bestDist = Infinity;
         for (let i = 0; i < tiles.length; i++) {
-          const r = tiles[i].getBoundingClientRect();
-          const dist = Math.abs(r.top + r.height / 2 - mid);
+          const dist = Math.abs(centres[i] - y - mid);
           if (dist < bestDist) { bestDist = dist; best = tiles[i]; }
         }
         if (best) setActive(best);
@@ -1495,11 +1512,16 @@ body.lightbox-open .m-menu {
         ticking = true;
         requestAnimationFrame(function () { pickCentre(); ticking = false; });
       }
+      measureCentres();
       window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', pickCentre);
+      window.addEventListener('resize', function () { measureCentres(); pickCentre(); });
+      window.addEventListener('orientationchange', function () { measureCentres(); pickCentre(); });
       pickCentre();
       requestAnimationFrame(pickCentre);
-      window.addEventListener('load', pickCentre);
+      window.addEventListener('load', function () { measureCentres(); pickCentre(); });
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(function () { measureCentres(); pickCentre(); });
+      }
       return;
     }
 
@@ -1796,18 +1818,33 @@ body.lightbox-open .m-menu {
     });
     if (!labels.some(Boolean)) return;
 
+    // Cache each section's top in DOCUMENT coordinates so the scroll handler
+    // never calls getBoundingClientRect per frame (that forced a synchronous
+    // layout and contributed to the first-scroll hitch). Section positions are
+    // stable while scrolling (fixed aspect-ratio tiles); recomputed on resize,
+    // orientation change, load and font-ready. Per frame we only read scrollY.
+    let tops = [];
+    function measure() {
+      const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      tops = sections.map(function (s) {
+        return s.getBoundingClientRect().top + y;
+      });
+    }
+
     function update() {
       if (!mq.matches) return;
+      if (tops.length !== sections.length) measure();
       const vh = window.innerHeight;
       const vc = vh / 2;
       const Z = vh * 0.30;          // lead-up zone: cross-fade spans ~0.6vh of scroll
       const DENOM = 2 * Z;
+      const y = window.pageYOffset || document.documentElement.scrollTop || 0;
 
       // Handoff parameter per boundary: 0 when the next section's top edge
       // (the divider) is Z below centre, 0.5 at centre, 1 when it is Z above.
       const ts = [];
       for (let i = 0; i < sections.length - 1; i++) {
-        const bTop = sections[i + 1].getBoundingClientRect().top;
+        const bTop = tops[i + 1] - y;          // viewport-space top, no reflow
         ts.push(Math.max(0, Math.min(1, (vc + Z - bTop) / DENOM)));
       }
 
@@ -1823,8 +1860,16 @@ body.lightbox-open .m-menu {
 
         const op = w.toFixed(3);
         if (lab.style.opacity !== op) lab.style.opacity = op;
-        const blurPx = 8 * (1 - w);
-        const fil = blurPx < 0.15 ? 'none' : 'blur(' + blurPx.toFixed(2) + 'px)';
+        // While the title is fully off, drop the blur entirely so it is not
+        // holding an offscreen blur layer (cheaper to composite). The visible
+        // handoff blur is unchanged because the title is invisible here.
+        let fil;
+        if (w < 0.004) {
+          fil = 'none';
+        } else {
+          const blurPx = 8 * (1 - w);
+          fil = blurPx < 0.15 ? 'none' : 'blur(' + blurPx.toFixed(2) + 'px)';
+        }
         if (lab.style.filter !== fil) lab.style.filter = fil;
       }
     }
@@ -1836,10 +1881,15 @@ body.lightbox-open .m-menu {
         ticking = true;
       }
     }
+    measure();
     update();
     window.addEventListener('scroll', schedule, { passive: true });
-    window.addEventListener('resize', schedule);
-    window.addEventListener('load', update);
+    window.addEventListener('resize', function () { measure(); schedule(); });
+    window.addEventListener('orientationchange', function () { measure(); schedule(); });
+    window.addEventListener('load', function () { measure(); update(); });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { measure(); update(); });
+    }
   }
 
   // Lightbox open/close and content swap.
