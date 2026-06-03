@@ -723,8 +723,12 @@ body.intro-active .hero-inner {
    small one reads as a direct scaled-down version. */
 .intro-mark {
   position: fixed;
-  top: var(--nav-edge);
-  left: var(--nav-edge);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--nav-edge));
+  text-align: center;
   z-index: 300;
   font-family: 'Inter', sans-serif;
   font-variation-settings: "opsz" 32;
@@ -750,23 +754,19 @@ body.intro-active .hero-inner {
 =================================================================== */
 @media (max-width: 720px) {
   .intro-mark {
-    /* Span the FULL width of the top of the screen, but keep the same
-       left/right margins the small wordmark and burger use (var(--nav-edge)
-       on each side). The font size is derived from that available width so
-       "MIKE BECKER" stretches edge to edge on a single line. The divisor
-       (~6.8) is the rendered width of the uppercase wordmark in ems at
-       weight 600 — nudge it up if the text overflows the right margin, down
-       if it falls short of it. */
-    right: var(--nav-edge);
+    /* Centered on screen, full-width single line. */
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
     font-size: calc((100vw - 2 * var(--nav-edge)) / 6.8);
     line-height: 1;
     white-space: nowrap;
-    transform-origin: top left;
-    transition: opacity 450ms cubic-bezier(.22,.61,.36,1),
-                transform 620ms cubic-bezier(.22,.61,.36,1);
+    text-align: center;
+    transition: opacity 450ms cubic-bezier(.22,.61,.36,1);
   }
   .intro-mark .im-w { display: inline; }
-  .intro-mark.gone { transform: scale(0.42); }
+  .intro-mark.gone { opacity: 0; transform: translate(-50%, -50%); }
 }
 
 /* Brand and menu are held hidden during the intro (both .intro-active
@@ -1523,38 +1523,38 @@ body.lightbox-open .m-menu {
       var advancing = function () {
         return !heroVideo.paused && !heroVideo.ended && heroVideo.currentTime > 0;
       };
-      // A single play() call gets silently dropped on mobile Safari more
-      // often than not (conservative buffering, transient stalls, Low Power
-      // Mode). So re-attempt on every buffering signal AND on a slow poll,
-      // and only stop once the frames are actually moving. This is what
-      // makes the reel start reliably instead of "sometimes."
-      var tryPlay = function () {
+      // Muted inline video is allowed to autoplay with no gesture, but a
+      // single play() can be dropped (a transient stall, conservative
+      // buffering). So we re-attempt GENTLY: when the video reports it can
+      // play, and on a slow 600ms cadence for a few seconds. We do NOT
+      // hammer play() on every buffering tick, because rapid-fire play()
+      // calls make iOS Safari throw "operation interrupted" and then demand
+      // a tap. Each attempt no-ops once the frames are actually moving.
+      var attempt = function () {
         if (document.hidden) return;
+        if (advancing()) { hidePoster(); return; }
         var p = heroVideo.play();
-        if (p && p.catch) p.catch(function () {});
+        if (p && p.then) p.then(hidePoster).catch(function () {});
       };
-      var settle = function () { if (advancing()) hidePoster(); else tryPlay(); };
-      ['loadeddata', 'canplay', 'canplaythrough', 'progress',
-       'playing', 'stalled', 'suspend', 'waiting'].forEach(function (ev) {
-        heroVideo.addEventListener(ev, settle);
-      });
-      var lastT = -1;
-      var poll = setInterval(function () {
-        if (advancing() && heroVideo.currentTime !== lastT) {
-          hidePoster();
-          clearInterval(poll);
+      heroVideo.addEventListener('canplay', attempt);
+      heroVideo.addEventListener('canplaythrough', attempt);
+      heroVideo.addEventListener('playing', hidePoster);
+      attempt();
+      var n = 0;
+      var retry = setInterval(function () {
+        if (advancing() || n >= 10) {
+          if (advancing()) hidePoster();
+          clearInterval(retry);
         } else {
-          tryPlay();
+          n++;
+          attempt();
         }
-        lastT = heroVideo.currentTime;
-      }, 400);
-      // Stop nudging after a generous window; the still stays as a clean
-      // fallback if the network never delivers enough data.
-      setTimeout(function () { clearInterval(poll); }, 25000);
+      }, 600);
 
-      // First user interaction is always an allowed moment to start
-      // playback, covering blocked autoplay / Low Power Mode.
-      var kick = function () { tryPlay(); };
+      // Last resort only: the first user interaction is always an allowed
+      // moment to start playback. This covers iOS Low Power Mode and any
+      // OS-level autoplay block, which no site can override automatically.
+      var kick = function () { attempt(); };
       ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (ev) {
         window.addEventListener(ev, kick, { capture: true, passive: true });
       });
@@ -1563,8 +1563,6 @@ body.lightbox-open .m-menu {
           window.removeEventListener(ev, kick, { capture: true });
         });
       }, { once: true });
-
-      tryPlay();
     }
 
     // === Arm interaction listeners + fallback ===
@@ -1994,7 +1992,7 @@ body.lightbox-open .m-menu {
   <div class="menu-flat">
     <a class="menu-flat-link is-current" href="index.html">Home</a>
     <span class="menu-flat-sep">/</span>
-    <a class="menu-flat-link" href="work.html">Work</a>
+    <a class="menu-flat-link" href="work.html">Selected Work</a>
     <span class="menu-flat-sep">/</span>
     <a class="menu-flat-link" href="contact.html">Contact</a>
   </div>
@@ -2014,7 +2012,7 @@ body.lightbox-open .m-menu {
 <div class="m-menu" id="mMenu" aria-hidden="true">
   <div class="m-menu-links">
     <a href="index.html">Home</a>
-    <a href="work.html">Work</a>
+    <a href="work.html">Selected Work</a>
     <a href="contact.html">Contact</a>
   </div>
 </div>
