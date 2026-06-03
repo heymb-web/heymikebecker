@@ -723,9 +723,9 @@ body.intro-active .hero-inner {
    small one reads as a direct scaled-down version. */
 .intro-mark {
   position: fixed;
-  top: 50%;
+  top: var(--nav-edge);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: max-content;
   max-width: calc(100vw - 2 * var(--nav-edge));
   text-align: center;
@@ -754,19 +754,25 @@ body.intro-active .hero-inner {
 =================================================================== */
 @media (max-width: 720px) {
   .intro-mark {
-    /* Centered on screen, full-width single line. */
-    left: 50%;
-    right: auto;
-    transform: translate(-50%, -50%);
-    transform-origin: center center;
+    /* Full-width single line across the TOP (never the vertical middle),
+       sized to the available width inside the nav margins, then shrinks
+       toward the upper-left to become the small nav wordmark on handoff. */
+    top: var(--nav-edge);
+    left: var(--nav-edge);
+    right: var(--nav-edge);
+    width: auto;
+    max-width: none;
+    transform: none;
+    text-align: left;
     font-size: calc((100vw - 2 * var(--nav-edge)) / 6.8);
     line-height: 1;
     white-space: nowrap;
-    text-align: center;
-    transition: opacity 450ms cubic-bezier(.22,.61,.36,1);
+    transform-origin: top left;
+    transition: opacity 450ms cubic-bezier(.22,.61,.36,1),
+                transform 620ms cubic-bezier(.22,.61,.36,1);
   }
   .intro-mark .im-w { display: inline; }
-  .intro-mark.gone { opacity: 0; transform: translate(-50%, -50%); }
+  .intro-mark.gone { transform: scale(0.42); }
 }
 
 /* Brand and menu are held hidden during the intro (both .intro-active
@@ -1550,19 +1556,6 @@ body.lightbox-open .m-menu {
           attempt();
         }
       }, 600);
-
-      // Last resort only: the first user interaction is always an allowed
-      // moment to start playback. This covers iOS Low Power Mode and any
-      // OS-level autoplay block, which no site can override automatically.
-      var kick = function () { attempt(); };
-      ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (ev) {
-        window.addEventListener(ev, kick, { capture: true, passive: true });
-      });
-      heroVideo.addEventListener('playing', function () {
-        ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (ev) {
-          window.removeEventListener(ev, kick, { capture: true });
-        });
-      }, { once: true });
     }
 
     // === Arm interaction listeners + fallback ===
