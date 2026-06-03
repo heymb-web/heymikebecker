@@ -1511,16 +1511,60 @@ body.lightbox-open .m-menu {
       heroVideo.setAttribute('muted', '');
       heroVideo.setAttribute('playsinline', '');
       heroVideo.setAttribute('webkit-playsinline', '');
-      heroVideo.play().catch(function () {});
+
+      // Reveal the reel (fade the still out) only once it is genuinely
+      // advancing, so a stalled or blocked video never leaves a blank hero.
+      var revealed = false;
       var hidePoster = function () {
+        if (revealed) return;
+        revealed = true;
         if (heroPoster) heroPoster.classList.add('gone');
       };
-      if (!heroVideo.paused && heroVideo.currentTime > 0) {
-        hidePoster();
-      } else {
-        heroVideo.addEventListener('playing', hidePoster, { once: true });
-        // If playback never starts, the poster simply remains — no blank.
-      }
+      var advancing = function () {
+        return !heroVideo.paused && !heroVideo.ended && heroVideo.currentTime > 0;
+      };
+      // A single play() call gets silently dropped on mobile Safari more
+      // often than not (conservative buffering, transient stalls, Low Power
+      // Mode). So re-attempt on every buffering signal AND on a slow poll,
+      // and only stop once the frames are actually moving. This is what
+      // makes the reel start reliably instead of "sometimes."
+      var tryPlay = function () {
+        if (document.hidden) return;
+        var p = heroVideo.play();
+        if (p && p.catch) p.catch(function () {});
+      };
+      var settle = function () { if (advancing()) hidePoster(); else tryPlay(); };
+      ['loadeddata', 'canplay', 'canplaythrough', 'progress',
+       'playing', 'stalled', 'suspend', 'waiting'].forEach(function (ev) {
+        heroVideo.addEventListener(ev, settle);
+      });
+      var lastT = -1;
+      var poll = setInterval(function () {
+        if (advancing() && heroVideo.currentTime !== lastT) {
+          hidePoster();
+          clearInterval(poll);
+        } else {
+          tryPlay();
+        }
+        lastT = heroVideo.currentTime;
+      }, 400);
+      // Stop nudging after a generous window; the still stays as a clean
+      // fallback if the network never delivers enough data.
+      setTimeout(function () { clearInterval(poll); }, 25000);
+
+      // First user interaction is always an allowed moment to start
+      // playback, covering blocked autoplay / Low Power Mode.
+      var kick = function () { tryPlay(); };
+      ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (ev) {
+        window.addEventListener(ev, kick, { capture: true, passive: true });
+      });
+      heroVideo.addEventListener('playing', function () {
+        ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown'].forEach(function (ev) {
+          window.removeEventListener(ev, kick, { capture: true });
+        });
+      }, { once: true });
+
+      tryPlay();
     }
 
     // === Arm interaction listeners + fallback ===
